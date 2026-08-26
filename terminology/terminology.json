@@ -1,0 +1,132 @@
+{
+  "terms": [
+    {
+      "english": "stalagmites",
+      "german": "Stalagmiten",
+      "gender": "plural",
+      "number": "plural",
+      "properName": false,
+      "note": "Standard geological term; keep consistent with the paired form stalactites."
+    },
+    {
+      "english": "stalactites",
+      "german": "Stalaktiten",
+      "gender": "plural",
+      "number": "plural",
+      "properName": false,
+      "note": "Standard geological term; should be translated consistently with stalagmites."
+    },
+    {
+      "english": "cloaker",
+      "german": "Schleicher",
+      "gender": "masculine",
+      "number": "singular",
+      "properName": false,
+      "note": "D&D monster name; needs a fixed rendering. If a campaign glossary already exists, reuse it consistently."
+    },
+    {
+      "english": "cloaker mutate",
+      "german": "mutierter Schleicher",
+      "gender": "masculine",
+      "number": "singular",
+      "properName": false,
+      "note": "Composite monster descriptor; keep the mutation qualifier stable. German adjective agreement matters in inflected contexts."
+    },
+    {
+      "english": "gibbering mouthers",
+      "german": "schwatzende Mauler",
+      "gender": "plural",
+      "number": "plural",
+      "properName": false,
+      "note": "Monster name; plural form should be kept consistent across encounters. 'Mouther' is often rendered with a mouth-based creature term."
+    },
+    {
+      "english": "Far Realm",
+      "german": "Far Realm",
+      "gender": "neuter",
+      "number": "singular",
+      "properName": false,
+      "note": "Established D&D cosmology term; usually left untranslated or rendered very consistently if the adventure uses a localized canon."
+    },
+    {
+      "english": "mind flayers",
+      "german": "Gedankenschinder",
+      "gender": "plural",
+      "number": "plural",
+      "properName": false,
+      "note": "Core D&D creature type; highly established German term, important to keep fixed."
+    },
+    {
+      "english": "Underdark",
+      "german": "Unterreich",
+      "gender": "neuter",
+      "number": "singular",
+      "properName": false,
+      "note": "Established D&D setting term; should be translated consistently throughout the adventure."
+    },
+    {
+      "english": "Illithinoch",
+      "german": "Illithinoch",
+      "gender": null,
+      "number": null,
+      "properName": true,
+      "note": "Proper place name; do not translate."
+    },
+    {
+      "english": "Gibbet Crossing",
+      "german": "Gibbet Crossing",
+      "gender": null,
+      "number": null,
+      "properName": true,
+      "note": "Proper place name; keep untranslated unless an official localized form exists."
+    },
+    {
+      "english": "Talhundereth",
+      "german": "Talhundereth",
+      "gender": null,
+      "number": null,
+      "properName": true,
+      "note": "Proper place name; keep untranslated."
+    },
+    {
+      "english": "Thorgran Ironquill",
+      "german": "Thorgran Ironquill",
+      "gender": null,
+      "number": null,
+      "properName": true,
+      "note": "Personal name; keep untranslated."
+    },
+    {
+      "english": "Oshundo",
+      "german": "Oshundo",
+      "gender": null,
+      "number": null,
+      "properName": true,
+      "note": "Personal name; keep untranslated."
+    },
+    {
+      "english": "Ilvaash",
+      "german": "Ilvaash",
+      "gender": null,
+      "number": null,
+      "properName": true,
+      "note": "Named entity/deity-like reference; keep untranslated."
+    },
+    {
+      "english": "Common",
+      "german": "Gemeinsprache",
+      "gender": "feminine",
+      "number": "singular",
+      "properName": false,
+      "note": "D&D language term; needs consistent rendering when referring to in-world speech."
+    },
+    {
+      "english": "saving throw",
+      "german": "Rettungswurf",
+      "gender": "masculine",
+      "number": "singular",
+      "properName": false,
+      "note": "Core rules term; must remain consistent and inflect correctly in German."
+    }
+  ]
+}
