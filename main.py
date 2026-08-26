@@ -13,10 +13,10 @@ def protect_foundry_syntax(text):
         protected[placeholder] = match.group(0)
         return placeholder
 
-    # Foundry @UUID[...] und @Embed[...] schützen
+    # Protect Foundry @UUID[...] and @Embed[...] syntax.
     text = re.sub(r'@(UUID|Embed)\[[^\]]*\]', replace, text)
 
-    # Foundry Inline-Rolls / Checks / Saves schützen
+    # Protect Foundry inline rolls, checks, and saves.
     text = re.sub(r'\[\[[^\]]*\]\]', replace, text)
 
     return text, protected
@@ -28,14 +28,84 @@ def restore_foundry_syntax(text, protected):
     return text
 
 
-# ------------------------------------------------------------
-# JSON einlesen
-# ------------------------------------------------------------
+def translate_text(client, text, terminology):
+    # Protect Foundry syntax before sending the text to the LLM.
+    protected_text, protected = protect_foundry_syntax(text)
 
-with open("input/test-entry.json", "r", encoding="utf-8") as file:
-    data = json.load(file)
+    print("=== PROTECTED TEXT ===")
+    print(protected_text)
 
-original_text = data["Hooked Stones"]["text"]
+    print("\n=== PROTECTED ELEMENTS ===")
+    for placeholder, original in protected.items():
+        print(f"{placeholder} -> {original}")
+
+    # Translate using the existing terminology database.
+    start = time.perf_counter()
+
+    response = client.responses.create(
+        model="gpt-5.4-mini",
+        instructions=f"""
+You are a translator for a D&D 5e fantasy role-playing adventure.
+
+Translate the supplied text into German.
+
+Use the following terminology as authoritative:
+{json.dumps(terminology, ensure_ascii=False, indent=2)}
+
+Follow the specified translations, grammatical information,
+and notes in the terminology exactly.
+
+Every <<<FOUNDRY_###>>> marker is an opaque protected placeholder,
+not translatable content.
+
+NEVER interpret, translate, reconstruct, replace, or omit a protected
+marker.
+
+If the source contains <<<FOUNDRY_004>>>, the translated output MUST
+contain the literal string <<<FOUNDRY_004>>>.
+
+Every protected marker MUST be copied character-for-character.
+The number, identity, and order of all protected markers MUST remain
+unchanged.
+
+Do not attempt to recreate the original Foundry syntax yourself.
+Do not replace a marker with the name or meaning of the element it
+represents.
+
+Return every protected marker exactly as it appears in the input.
+
+Proper names must remain untranslated unless the terminology
+explicitly specifies otherwise.
+
+Return only the translated text.
+""",
+        input=protected_text
+    )
+
+    end = time.perf_counter()
+    print(
+        f"\n=== API Call Duration (Translation): "
+        f"{end - start:.2f} Seconds ==="
+    )
+
+    translated_text = response.output_text
+
+    # Restore the original Foundry syntax.
+    restored_text = restore_foundry_syntax(
+        translated_text,
+        protected
+    )
+
+    # Verify that all protected elements survived unchanged.
+    print("\n=== PROTECTED ELEMENT INTEGRITY ===")
+    for placeholder, original in protected.items():
+        if original in restored_text:
+            print(f"{placeholder}: OK")
+        else:
+            print(f"{placeholder}: MISSING OR MODIFIED")
+
+    return restored_text
+
 
 # ------------------------------------------------------------
 # Initialize OpenAI API client
@@ -47,143 +117,38 @@ api_key = Path(
 
 client = OpenAI(api_key=api_key)
 
+
 # ------------------------------------------------------------
-# Terminologie-Kandidaten extrahieren (OpenAI API call)
+# Load input text
 # ------------------------------------------------------------
 
-start = time.perf_counter()
+with open("input/test-entry.json", "r", encoding="utf-8") as file:
+    data = json.load(file)
 
-terminology_response = client.responses.create(
-    model="gpt-5.4-mini",
-    instructions="""
-You are a terminology analyst for a German translation of a
-D&D 5e fantasy role-playing adventure.
-
-Analyze the supplied English text and identify only terms that
-are likely to require consistent translation across the adventure.
-
-Prioritize:
-- D&D rules terminology
-- creature and monster names or types
-- established fantasy and setting terminology
-- names of places, people, factions, organizations, etc.
-- terms whose German grammatical gender, number, or inflection
-  could cause recurring translation errors
-- terms whose translation is ambiguous or likely to be inconsistent
-
-Do NOT include ordinary vocabulary, generic descriptive words,
-or isolated words that do not require terminological consistency.
-
-Proper names must remain untranslated by default.
-This includes personal names, place names, organization names,
-faction names, and other named entities.
-Do not translate or localize a proper name unless the source
-text itself clearly indicates that it is a translatable descriptive name.
-
-For each selected term provide:
-- the original English term
-- your proposed German translation
-- grammatical gender and number
-- whether it is a proper name
-- a short note explaining an important translation decision,
-  ambiguity, or grammatical consideration
-
-The proposed translations are suggestions only. Do not assume
-that they are official D&D terminology.
-
-Use English for all metadata and notes.
-
-Return only valid JSON. Do not wrap the JSON in Markdown code fences.
-""",
-    input=original_text
-)
-
-end = time.perf_counter()
-print(f"\n=== API Call Duration (Terminology): {end - start:.2f} Seconds ===")
+original_text = data["Hooked Stones"]["text"]
 
 
-terminology = json.loads(terminology_response.output_text)
-
-start = time.perf_counter()
+# ------------------------------------------------------------
+# Load terminology database
+# ------------------------------------------------------------
 
 with open(
         "terminology/terminology.json",
-        "w",
+        "r",
         encoding="utf-8"
 ) as file:
-    json.dump(terminology, file, ensure_ascii=False, indent=2)
-
-print("\n=== TERMINOLOGIE ===")
-print(json.dumps(terminology, ensure_ascii=False, indent=2))
-
-# ------------------------------------------------------------
-# Foundry-Syntax schützen
-# ------------------------------------------------------------
-
-protected_text, protected = protect_foundry_syntax(original_text)
-
-print("=== GESCHÜTZTER TEXT ===")
-print(protected_text)
-
-print("\n=== GESCHÜTZTE ELEMENTE ===")
-for placeholder, original in protected.items():
-    print(f"{placeholder} -> {original}")
-
-# ------------------------------------------------------------
-# Translate (OpenAI API call), using terminology file from above
-# ------------------------------------------------------------
-
-start = time.perf_counter()
-
-with open("terminology/terminology.json", "r", encoding="utf-8") as file:
     terminology = json.load(file)
 
-response = client.responses.create(
-    model="gpt-5.4-mini",
-    instructions=f"""
-You are a translator for a D&D 5e fantasy role-playing adventure.
-
-Translate the supplied text into German.
-
-Use the following terminology as authoritative:
-{json.dumps(terminology, ensure_ascii=False, indent=2)}
-
-Follow the specified translations, grammatical information,
-and notes in the terminology exactly.
-
-Every <<<FOUNDRY_###>>> marker is a protected Foundry VTT element.
-You MUST reproduce every marker exactly once, unchanged,
-and in the same position relative to the surrounding text.
-Never translate, remove, reorder, or otherwise modify these markers.
-
-Proper names must remain untranslated unless the terminology
-explicitly specifies otherwise.
-
-Return only the translated text.
-""",
-    input=protected_text
-)
-
-end = time.perf_counter()
-print(f"\n=== API Call Duration (Translation): {end - start:.2f} Seconds ===")
-
-translated_text = response.output_text
 
 # ------------------------------------------------------------
-# Foundry-Syntax wiederherstellen
+# Translate text
 # ------------------------------------------------------------
 
-restored_text = restore_foundry_syntax(
-    translated_text,
-    protected
+translated_text = translate_text(
+    client,
+    original_text,
+    terminology
 )
 
-print("\n=== ÜBERSETZUNG ===")
-print(restored_text)
-
-print("\n=== GESCHÜTZTE ELEMENTE INTEGRITÄT ===")
-for placeholder, original in protected.items():
-    if original in restored_text:
-        print(f"{placeholder}: OK")
-    else:
-        print(f"{placeholder}: FEHLT ODER VERÄNDERT")
+print("\n=== TRANSLATION ===")
+print(translated_text)
