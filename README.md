@@ -1,0 +1,1 @@
+# FoundryVTT-Babele-translator
