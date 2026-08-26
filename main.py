@@ -51,6 +51,8 @@ client = OpenAI(api_key=api_key)
 # Terminologie-Kandidaten extrahieren (OpenAI API call)
 # ------------------------------------------------------------
 
+start = time.perf_counter()
+
 terminology_response = client.responses.create(
     model="gpt-5.4-mini",
     instructions="""
@@ -81,7 +83,7 @@ text itself clearly indicates that it is a translatable descriptive name.
 For each selected term provide:
 - the original English term
 - your proposed German translation
-- grammatical gender and number where relevant
+- grammatical gender and number
 - whether it is a proper name
 - a short note explaining an important translation decision,
   ambiguity, or grammatical consideration
@@ -96,7 +98,13 @@ Return only valid JSON. Do not wrap the JSON in Markdown code fences.
     input=original_text
 )
 
+end = time.perf_counter()
+print(f"\n=== API Call Duration (Terminology): {end - start:.2f} Seconds ===")
+
+
 terminology = json.loads(terminology_response.output_text)
+
+start = time.perf_counter()
 
 with open(
         "terminology/terminology.json",
@@ -121,34 +129,45 @@ print("\n=== GESCHÜTZTE ELEMENTE ===")
 for placeholder, original in protected.items():
     print(f"{placeholder} -> {original}")
 
-
 # ------------------------------------------------------------
-# Translate (OpenAI API call)
+# Translate (OpenAI API call), using terminology file from above
 # ------------------------------------------------------------
 
 start = time.perf_counter()
 
+with open("terminology/terminology.json", "r", encoding="utf-8") as file:
+    terminology = json.load(file)
+
 response = client.responses.create(
     model="gpt-5.4-mini",
-    instructions=(
-        "You are a translator for a fantasy role-playing game. "
-        "Translate the supplied text into German. "
-        "Preserve the meaning, tone, terminology and formatting. "
-        "Every <<<FOUNDRY_###>>> marker is a protected Foundry VTT element. "
-        "You MUST reproduce every marker exactly once, unchanged, "
-        "and in the same position relative to the surrounding text. "
-        "Never translate, remove, reorder, or otherwise modify these markers. "
-        "Return only the translated text."
-    ),
+    instructions=f"""
+You are a translator for a D&D 5e fantasy role-playing adventure.
+
+Translate the supplied text into German.
+
+Use the following terminology as authoritative:
+{json.dumps(terminology, ensure_ascii=False, indent=2)}
+
+Follow the specified translations, grammatical information,
+and notes in the terminology exactly.
+
+Every <<<FOUNDRY_###>>> marker is a protected Foundry VTT element.
+You MUST reproduce every marker exactly once, unchanged,
+and in the same position relative to the surrounding text.
+Never translate, remove, reorder, or otherwise modify these markers.
+
+Proper names must remain untranslated unless the terminology
+explicitly specifies otherwise.
+
+Return only the translated text.
+""",
     input=protected_text
 )
 
 end = time.perf_counter()
-
-print(f"\n=== API DAUER: {end - start:.2f} Sekunden ===")
+print(f"\n=== API Call Duration (Translation): {end - start:.2f} Seconds ===")
 
 translated_text = response.output_text
-
 
 # ------------------------------------------------------------
 # Foundry-Syntax wiederherstellen
@@ -158,7 +177,6 @@ restored_text = restore_foundry_syntax(
     translated_text,
     protected
 )
-
 
 print("\n=== ÜBERSETZUNG ===")
 print(restored_text)

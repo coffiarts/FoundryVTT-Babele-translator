@@ -1,132 +1,164 @@
 {
   "terms": [
     {
-      "english": "stalagmites",
-      "german": "Stalagmiten",
-      "gender": "plural",
-      "number": "plural",
-      "properName": false,
-      "note": "Standard geological term; keep consistent with the paired form stalactites."
+      "english": "stalagmite",
+      "german": "Stalagmit",
+      "gender": "masculine",
+      "number": "singular",
+      "proper_name": false,
+      "note": "Dungeon text may need consistent singular/plural handling; in German, the term is masculine and plural is usually \"Stalagmiten\"."
     },
     {
-      "english": "stalactites",
-      "german": "Stalaktiten",
-      "gender": "plural",
-      "number": "plural",
-      "properName": false,
-      "note": "Standard geological term; should be translated consistently with stalagmites."
+      "english": "stalactite",
+      "german": "Stalaktit",
+      "gender": "masculine",
+      "number": "singular",
+      "proper_name": false,
+      "note": "The paired term with stalagmite; keep singular/plural forms consistent, plural \"Stalaktiten\"."
     },
     {
       "english": "cloaker",
-      "german": "Schleicher",
+      "german": "Cloaker",
       "gender": "masculine",
       "number": "singular",
-      "properName": false,
-      "note": "D&D monster name; needs a fixed rendering. If a campaign glossary already exists, reuse it consistently."
+      "proper_name": false,
+      "note": "D&D monster name; likely best kept as a loanword for consistency across stat blocks and adventure text."
     },
     {
       "english": "cloaker mutate",
-      "german": "mutierter Schleicher",
+      "german": "mutierter Cloaker",
       "gender": "masculine",
       "number": "singular",
-      "properName": false,
-      "note": "Composite monster descriptor; keep the mutation qualifier stable. German adjective agreement matters in inflected contexts."
+      "proper_name": false,
+      "note": "Compound monster description; decide consistently whether to preserve the base monster name or translate the modifier as an adjective."
     },
     {
-      "english": "gibbering mouthers",
-      "german": "schwatzende Mauler",
-      "gender": "plural",
-      "number": "plural",
-      "properName": false,
-      "note": "Monster name; plural form should be kept consistent across encounters. 'Mouther' is often rendered with a mouth-based creature term."
-    },
-    {
-      "english": "Far Realm",
-      "german": "Far Realm",
-      "gender": "neuter",
+      "english": "mind flayer",
+      "german": "Gedankenschinder",
+      "gender": "masculine",
       "number": "singular",
-      "properName": false,
-      "note": "Established D&D cosmology term; usually left untranslated or rendered very consistently if the adventure uses a localized canon."
+      "proper_name": false,
+      "note": "Core D&D creature term; plural form and adjectival use should be kept consistent throughout the adventure."
     },
     {
       "english": "mind flayers",
       "german": "Gedankenschinder",
-      "gender": "plural",
+      "gender": "masculine",
       "number": "plural",
-      "properName": false,
-      "note": "Core D&D creature type; highly established German term, important to keep fixed."
+      "proper_name": false,
+      "note": "Plural form; German plural is the same shape as the singular in common usage, which can cause inflection inconsistency."
+    },
+    {
+      "english": "Far Realm",
+      "german": "Äußere Sphäre",
+      "gender": "feminine",
+      "number": "singular",
+      "proper_name": false,
+      "note": "Established D&D cosmology term; translation choice should remain stable because the English term is semantically loaded."
     },
     {
       "english": "Underdark",
       "german": "Unterreich",
       "gender": "neuter",
       "number": "singular",
-      "properName": false,
-      "note": "Established D&D setting term; should be translated consistently throughout the adventure."
+      "proper_name": false,
+      "note": "Standard fantasy setting term; should be handled consistently as a fixed locale name."
     },
     {
-      "english": "Illithinoch",
-      "german": "Illithinoch",
-      "gender": null,
-      "number": null,
-      "properName": true,
-      "note": "Proper place name; do not translate."
+      "english": "gibbering mouthers",
+      "german": "schwatzende Massen",
+      "gender": "feminine",
+      "number": "plural",
+      "proper_name": false,
+      "note": "Monster name; the plural form and head noun choice are important for consistency, and a literal rendering may differ from established usage."
     },
     {
-      "english": "Gibbet Crossing",
-      "german": "Gibbet Crossing",
-      "gender": null,
-      "number": null,
-      "properName": true,
-      "note": "Proper place name; keep untranslated unless an official localized form exists."
-    },
-    {
-      "english": "Talhundereth",
-      "german": "Talhundereth",
-      "gender": null,
-      "number": null,
-      "properName": true,
-      "note": "Proper place name; keep untranslated."
-    },
-    {
-      "english": "Thorgran Ironquill",
-      "german": "Thorgran Ironquill",
-      "gender": null,
-      "number": null,
-      "properName": true,
-      "note": "Personal name; keep untranslated."
-    },
-    {
-      "english": "Oshundo",
-      "german": "Oshundo",
-      "gender": null,
-      "number": null,
-      "properName": true,
-      "note": "Personal name; keep untranslated."
-    },
-    {
-      "english": "Ilvaash",
-      "german": "Ilvaash",
-      "gender": null,
-      "number": null,
-      "properName": true,
-      "note": "Named entity/deity-like reference; keep untranslated."
+      "english": "brain pool",
+      "german": "Gehirnpool",
+      "gender": "masculine",
+      "number": "singular",
+      "proper_name": false,
+      "note": "Setting-specific horror term; likely recurring in illithid-related text and should be rendered consistently."
     },
     {
       "english": "Common",
       "german": "Gemeinsprache",
       "gender": "feminine",
       "number": "singular",
-      "properName": false,
-      "note": "D&D language term; needs consistent rendering when referring to in-world speech."
+      "proper_name": false,
+      "note": "Rules/setting language term; keep consistent with any other language names in the adventure."
     },
     {
       "english": "saving throw",
       "german": "Rettungswurf",
       "gender": "masculine",
       "number": "singular",
-      "properName": false,
-      "note": "Core rules term; must remain consistent and inflect correctly in German."
+      "proper_name": false,
+      "note": "Core D&D rules terminology; one of the most important consistency terms in the adventure."
+    },
+    {
+      "english": "round",
+      "german": "Runde",
+      "gender": "feminine",
+      "number": "singular",
+      "proper_name": false,
+      "note": "Rules timing term; should be used consistently in initiative/combat contexts."
+    },
+    {
+      "english": "turn",
+      "german": "Zug",
+      "gender": "masculine",
+      "number": "singular",
+      "proper_name": false,
+      "note": "Rules timing term; important to distinguish from \"round\" in combat procedure text."
+    },
+    {
+      "english": "area J9",
+      "german": "Bereich J9",
+      "gender": "masculine",
+      "number": "singular",
+      "proper_name": false,
+      "note": "Map/reference label; translate the generic term consistently if other area labels appear elsewhere."
+    },
+    {
+      "english": "Illithinoch",
+      "german": "Illithinoch",
+      "gender": null,
+      "number": "singular",
+      "proper_name": true,
+      "note": "Proper place name; should remain untranslated."
+    },
+    {
+      "english": "Gibbet Crossing",
+      "german": "Gibbet Crossing",
+      "gender": null,
+      "number": "singular",
+      "proper_name": true,
+      "note": "Proper place name; keep untranslated unless the source specifically marks it as descriptive."
+    },
+    {
+      "english": "Talhundereth",
+      "german": "Talhundereth",
+      "gender": null,
+      "number": "singular",
+      "proper_name": true,
+      "note": "Proper place name; should remain untranslated."
+    },
+    {
+      "english": "Oshundo",
+      "german": "Oshundo",
+      "gender": null,
+      "number": "singular",
+      "proper_name": true,
+      "note": "Proper personal name; should remain untranslated."
+    },
+    {
+      "english": "Ilvaash",
+      "german": "Ilvaash",
+      "gender": null,
+      "number": "singular",
+      "proper_name": true,
+      "note": "Proper name of an entity/deity-like figure; should remain untranslated."
     }
   ]
 }
