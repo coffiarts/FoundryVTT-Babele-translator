@@ -1,164 +1,1028 @@
 {
   "terms": [
     {
-      "english": "stalagmite",
-      "german": "Stalagmit",
-      "gender": "masculine",
+      "original": "Dagger",
+      "proposedGerman": "Dolch",
+      "gender": "m",
       "number": "singular",
-      "proper_name": false,
-      "note": "Dungeon text may need consistent singular/plural handling; in German, the term is masculine and plural is usually \"Stalagmiten\"."
+      "properName": false,
+      "note": "Generic weapon term; keep consistent with D&D item naming and grammatical gender."
     },
     {
-      "english": "stalactite",
-      "german": "Stalaktit",
-      "gender": "masculine",
+      "original": "Longsword",
+      "proposedGerman": "Langschwert",
+      "gender": "n",
       "number": "singular",
-      "proper_name": false,
-      "note": "The paired term with stalagmite; keep singular/plural forms consistent, plural \"Stalaktiten\"."
+      "properName": false,
+      "note": "Standard weapon term; neuter noun in German."
     },
     {
-      "english": "cloaker",
-      "german": "Cloaker",
-      "gender": "masculine",
+      "original": "Wand of Magic Detection",
+      "proposedGerman": "Zauberstab der magischen Entdeckung",
+      "gender": "m",
       "number": "singular",
-      "proper_name": false,
-      "note": "D&D monster name; likely best kept as a loanword for consistency across stat blocks and adventure text."
+      "properName": false,
+      "note": "Translating as a descriptive magic-item name; 'Detect Magic' should remain the spell name equivalent used consistently elsewhere."
     },
     {
-      "english": "cloaker mutate",
-      "german": "mutierter Cloaker",
-      "gender": "masculine",
+      "original": "Immovable Greataxe",
+      "proposedGerman": "Unbewegliche Großaxt",
+      "gender": "f",
       "number": "singular",
-      "proper_name": false,
-      "note": "Compound monster description; decide consistently whether to preserve the base monster name or translate the modifier as an adjective."
+      "properName": false,
+      "note": "Descriptive magic-item name; 'immovable' should be rendered consistently with the immovable rod concept."
     },
     {
-      "english": "mind flayer",
-      "german": "Gedankenschinder",
-      "gender": "masculine",
+      "original": "Wand of Magic Missiles",
+      "proposedGerman": "Zauberstab der magischen Geschosse",
+      "gender": "m",
       "number": "singular",
-      "proper_name": false,
-      "note": "Core D&D creature term; plural form and adjectival use should be kept consistent throughout the adventure."
+      "properName": false,
+      "note": "Descriptive item name; linked spell terminology should stay consistent with the missile spell translation."
     },
     {
-      "english": "mind flayers",
-      "german": "Gedankenschinder",
-      "gender": "masculine",
+      "original": "greatsword",
+      "proposedGerman": "Zweihänder",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Weapon term; use one established German equivalent consistently."
+    },
+    {
+      "original": "Amulet of Proof against Detection and Location",
+      "proposedGerman": "Amulett des Schutzes vor Entdeckung und Ortung",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive magic-item name; 'detection and location' is a rules-facing divination concept."
+    },
+    {
+      "original": "Ring of Protection",
+      "proposedGerman": "Ring des Schutzes",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Common D&D item name; keep as a fixed term because it appears multiple times."
+    },
+    {
+      "original": "Spell Scroll",
+      "proposedGerman": "Zauberspruchrolle",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Rules term that recurs frequently and affects article/gender agreement."
+    },
+    {
+      "original": "Freedom of Movement",
+      "proposedGerman": "Bewegungsfreiheit",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Spell name; should be standardized because it appears in spell scroll and rules text."
+    },
+    {
+      "original": "Lantern of Revealing",
+      "proposedGerman": "Laterne des Erkennens",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive magic item; name should stay consistent with invisibility/revealing terminology."
+    },
+    {
+      "original": "Dagger of Venom",
+      "proposedGerman": "Giftdolch",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive magic-item name; compact German compound is natural and repeatable."
+    },
+    {
+      "original": "Heward's Handy Haversack",
+      "proposedGerman": "Hewards praktischer Rucksack",
+      "gender": "m",
+      "number": "singular",
+      "properName": true,
+      "note": "Proper name plus descriptive epithet; keep 'Heward' untranslated, but the item descriptor can be localized."
+    },
+    {
+      "original": "Mudslick Tower",
+      "proposedGerman": "Schlammschleim-Turm",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive item name; hyphenation may help readability and consistency."
+    },
+    {
+      "original": "Quickened Mind Crystal",
+      "proposedGerman": "Beschleunigter Gedankenkristall",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Part of a recurring item family; the adjective must align with the Mind Crystal subtypes."
+    },
+    {
+      "original": "Mind Crystal",
+      "proposedGerman": "Gedankenkristall",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Core recurring item family term; masculine gender and plural formation should stay consistent."
+    },
+    {
+      "original": "Periapt of Health",
+      "proposedGerman": "Gesundheitsperiapt",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Magic pendant item; keep consistent across duplicate entries."
+    },
+    {
+      "original": "Shortsword",
+      "proposedGerman": "Kurzschwert",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Standard weapon term; neuter noun."
+    },
+    {
+      "original": "Water Elemental",
+      "proposedGerman": "Wasserelementar",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Creature type/name; elemental types recur and need stable grammatical gender."
+    },
+    {
+      "original": "Chain Mail",
+      "proposedGerman": "Kettenrüstung",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Armor term; should be standardized because it appears as item material and descriptor."
+    },
+    {
+      "original": "Dragonguard",
+      "proposedGerman": "Drachengarde",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive armor name; likely a coined item name, not a proper name."
+    },
+    {
+      "original": "Dragonguard Armor Boost",
+      "proposedGerman": "Drachengarde-Rüstungsbonus",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Interface/item boost label; should align with the base item name."
+    },
+    {
+      "original": "Potion of Supreme Healing",
+      "proposedGerman": "Trank der Überlegenen Heilung",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Standard potion item name; keep the healing modifier consistent."
+    },
+    {
+      "original": "Javelin of Lightning",
+      "proposedGerman": "Blitzlanze",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive magic weapon name; concise compound is natural in German."
+    },
+    {
+      "original": "Extended Mind Crystal",
+      "proposedGerman": "Verlängerter Gedankenkristall",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Subtype in the Mind Crystal family; adjective choice should match the family pattern."
+    },
+    {
+      "original": "Funerary Armor",
+      "proposedGerman": "Bestattungsrüstung",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive armor term; keep linked to funerary/ritual context."
+    },
+    {
+      "original": "Bronze Breastplate",
+      "proposedGerman": "Bronzebrustpanzer",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Armor item; 'breastplate' has multiple German options, so a fixed choice is important."
+    },
+    {
+      "original": "Bead of Force",
+      "proposedGerman": "Kraftkugel",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Magic item name; established force terminology should stay coherent."
+    },
+    {
+      "original": "Alchemy Jug",
+      "proposedGerman": "Alchemiekrug",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Recurring magic item; German compound noun is the likely stable solution."
+    },
+    {
+      "original": "Oil Flask",
+      "proposedGerman": "Ölflasche",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Equipment item with repeated rules text; keep gender consistent."
+    },
+    {
+      "original": "Distant Mind Crystal",
+      "proposedGerman": "Entfernter Gedankenkristall",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Subtype in the Mind Crystal family; adjective must not drift across entries."
+    },
+    {
+      "original": "Large Collapsable Cage",
+      "proposedGerman": "Großer zusammenklappbarer Käfig",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive equipment item; 'collapsable' should be normalized as 'zusammenklappbar'."
+    },
+    {
+      "original": "Potion of Invisibility",
+      "proposedGerman": "Trank der Unsichtbarkeit",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Standard potion item name; recurring visibility rules term."
+    },
+    {
+      "original": "Jeweler's Tools",
+      "proposedGerman": "Juwelierwerkzeuge",
+      "gender": "pl",
       "number": "plural",
-      "proper_name": false,
-      "note": "Plural form; German plural is the same shape as the singular in common usage, which can cause inflection inconsistency."
+      "properName": false,
+      "note": "Tool proficiency term; plural form is important for German agreement."
     },
     {
-      "english": "Far Realm",
-      "german": "Äußere Sphäre",
+      "original": "Silver Bracers of Archery",
+      "proposedGerman": "Silberne Armschienen der Bogenschießkunst",
+      "gender": "pl",
+      "number": "plural",
+      "properName": false,
+      "note": "Magic item plural form; archery term should remain consistent with weapon proficiencies."
+    },
+    {
+      "original": "Bracers of Archery",
+      "proposedGerman": "Armschienen der Bogenschießkunst",
+      "gender": "pl",
+      "number": "plural",
+      "properName": false,
+      "note": "Base item name; likely to recur as a generic magic-item template."
+    },
+    {
+      "original": "Cone of Cold",
+      "proposedGerman": "Kältekegel",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Spell name; important to standardize because it appears in scroll text."
+    },
+    {
+      "original": "Spell Scroll of Comprehend Languages",
+      "proposedGerman": "Zauberspruchrolle von Sprachen verstehen",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Composite item/spell name; spell title should match the campaign's spell translation."
+    },
+    {
+      "original": "Eyes of Minute Seeing",
+      "proposedGerman": "Augen der Minutiensicht",
+      "gender": "pl",
+      "number": "plural",
+      "properName": false,
+      "note": "Magic item name with plural noun form; terminology for fine sight should stay stable."
+    },
+    {
+      "original": "Ring of Mind Shielding",
+      "proposedGerman": "Ring des Gedankenschutzes",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Rules-facing item; 'mind shielding' should be translated consistently with telepathy/thought-reading effects."
+    },
+    {
+      "original": "Heavy Crossbow",
+      "proposedGerman": "Schwere Armbrust",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Standard weapon term; common equipment nomenclature."
+    },
+    {
+      "original": "Cartographer's Tools",
+      "proposedGerman": "Kartografiewerkzeuge",
+      "gender": "pl",
+      "number": "plural",
+      "properName": false,
+      "note": "Tool proficiency term; spelling and pluralization need consistency."
+    },
+    {
+      "original": "Light Crossbow",
+      "proposedGerman": "Leichte Armbrust",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Standard weapon term."
+    },
+    {
+      "original": "Calligrapher's Supplies",
+      "proposedGerman": "Kalligrafiebedarf",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Tool/proficiency term; singular mass noun is a reasonable German choice."
+    },
+    {
+      "original": "Luminous War Pick",
+      "proposedGerman": "Leuchtender Kriegshaken",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive magic weapon name; weapon base term should stay consistent."
+    },
+    {
+      "original": "Illustrated Book on Ropers",
+      "proposedGerman": "Illustriertes Buch über Ropers",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive book title; creature name 'Ropers' may remain untranslated if treated as a proper monster name."
+    },
+    {
+      "original": "Keoghtom's Ointment",
+      "proposedGerman": "Keoghtoms Salbe",
+      "gender": "f",
+      "number": "singular",
+      "properName": true,
+      "note": "Named magic item; possessive proper name should remain untranslated."
+    },
+    {
+      "original": "Silk Rope",
+      "proposedGerman": "Seidenseil",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Equipment term; recurring rope item with rules text."
+    },
+    {
+      "original": "Holy Symbol",
+      "proposedGerman": "Heiliges Symbol",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Core cleric/paladin focus term; gender matters because it is reused in rules text."
+    },
+    {
+      "original": "Dumathoin",
+      "proposedGerman": "Dumathoin",
+      "gender": "m",
+      "number": "singular",
+      "properName": true,
+      "note": "Deity name; proper name must remain untranslated."
+    },
+    {
+      "original": "Amber Inkwell",
+      "proposedGerman": "Bernsteintintenfass",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive treasure/object term; compound noun keeps it concrete."
+    },
+    {
+      "original": "Basilisk Figurine",
+      "proposedGerman": "Basiliskenfigur",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Creature-based object name; keep monster stem consistent."
+    },
+    {
+      "original": "Beholder Statuette",
+      "proposedGerman": "Betrachterstatuette",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Creature-based object name; monster term may be transliterated consistently if the setting uses it."
+    },
+    {
+      "original": "Blessing of Dumathoin",
+      "proposedGerman": "Segen Dumathoins",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Blessing name tied to a deity; genitive construction should stay stable."
+    },
+    {
+      "original": "darkvision",
+      "proposedGerman": "Dunkelsicht",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Rules sense term for a vision ability; should be used consistently across blessings and traits."
+    },
+    {
+      "original": "truesight",
+      "proposedGerman": "Wahre Sicht",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Rules sense term; important for consistent vision-magic terminology."
+    },
+    {
+      "original": "Cape of Enlargement",
+      "proposedGerman": "Umhang der Vergrößerung",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Magic item name tied to size-changing rules."
+    },
+    {
+      "original": "Bracers of Celerity",
+      "proposedGerman": "Armschienen der Schnelligkeit",
+      "gender": "pl",
+      "number": "plural",
+      "properName": false,
+      "note": "Magic item plural name; should align with other bracer items."
+    },
+    {
+      "original": "Censer",
+      "proposedGerman": "Weihrauchgefäß",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Object/treasure term that may recur in item lists."
+    },
+    {
+      "original": "Chalice",
+      "proposedGerman": "Kelch",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Treasure/object term; common in item lists."
+    },
+    {
+      "original": "Collapsable Cage",
+      "proposedGerman": "Zusammenklappbarer Käfig",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive equipment term; shared root with the larger cage entry."
+    },
+    {
+      "original": "Dragon Bile",
+      "proposedGerman": "Drachenbitter",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Alchemical substance name; keep dragon-related material terminology consistent."
+    },
+    {
+      "original": "Emboldening Brandy",
+      "proposedGerman": "Anfeuernder Branntwein",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Consumable item name; adjective should reflect morale/fortitude effect."
+    },
+    {
+      "original": "Energized Shard",
+      "proposedGerman": "Energiegeladener Splitter",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive magical object; shard terminology recurs in gem/fragment lists."
+    },
+    {
+      "original": "Scroll of Fireball",
+      "proposedGerman": "Zauberspruchrolle von Feuerball",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Composite scroll/spell term; spell name must remain consistent."
+    },
+    {
+      "original": "Gnawble",
+      "proposedGerman": "Knabber",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Creature name appears specific and likely needs stable handling; source may be a coined monster name."
+    },
+    {
+      "original": "Gold Wedding Ring",
+      "proposedGerman": "Goldener Ehering",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Object name from treasure lists; keep ring terminology consistent."
+    },
+    {
+      "original": "Golden Earring",
+      "proposedGerman": "Goldener Ohrring",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Treasure/object term; may recur in loot lists."
+    },
+    {
+      "original": "Golden Elf Statuette",
+      "proposedGerman": "Goldene Elfenstatuette",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Object name with creature reference; adjective agreement matters."
+    },
+    {
+      "original": "Heightened Mind Crystal",
+      "proposedGerman": "Erhöhter Gedankenkristall",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Subtype in the Mind Crystal family; should align with Quickened/Extended/etc."
+    },
+    {
+      "original": "Hew",
+      "proposedGerman": "Hew",
+      "gender": "n",
+      "number": "singular",
+      "properName": true,
+      "note": "Named weapon; title within the item should remain untranslated unless the adventure establishes a localized weapon name."
+    },
+    {
+      "original": "Peridot",
+      "proposedGerman": "Peridot",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Gemstone term; often used as a loot category and should remain stable."
+    },
+    {
+      "original": "Potion of Invulnerability",
+      "proposedGerman": "Trank der Unverwundbarkeit",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Standard potion item name; resistance/invulnerability terminology matters."
+    },
+    {
+      "original": "Mundane Bookplate",
+      "proposedGerman": "Buchschild",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "If translated as a physical object term, it should remain consistent in bibliographic items."
+    },
+    {
+      "original": "Jacinths",
+      "proposedGerman": "Hyazinthe",
+      "gender": "f",
+      "number": "plural",
+      "properName": false,
+      "note": "Gemstone plural; German singular/plural handling can be tricky because the English form is already plural."
+    },
+    {
+      "original": "Jade",
+      "proposedGerman": "Jade",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Gemstone/material term; likely used as loot category."
+    },
+    {
+      "original": "Jade Statuette",
+      "proposedGerman": "Jadestatuette",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Treasure/object term; keep material + object compounding consistent."
+    },
+    {
+      "original": "Jewelled Gold Bracelet",
+      "proposedGerman": "Juwelenbesetztes Goldarmband",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Treasure/object term; adjective agreement important."
+    },
+    {
+      "original": "Jewelled Silver Comb",
+      "proposedGerman": "Juwelenbesetzter Silberkamm",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Treasure/object term; keep jewelry object terminology consistent."
+    },
+    {
+      "original": "Keg of Strong Ale",
+      "proposedGerman": "Fass Starkbier",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Container + beverage term; use one standard ale/beer translation choice consistently."
+    },
+    {
+      "original": "Ruby Eyeball",
+      "proposedGerman": "Rubinauge",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive gem object term; keeps body-part object naming compact."
+    },
+    {
+      "original": "Light Feathered Quarterstaff",
+      "proposedGerman": "Leichter, gefiederter Kampfstab",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Weapon name with adjective stack; quarterstaff terminology should stay stable."
+    },
+    {
+      "original": "Lightbringer",
+      "proposedGerman": "Lichtbringer",
+      "gender": "m",
+      "number": "singular",
+      "properName": true,
+      "note": "Named artifact/weapon; proper title should remain recognizable."
+    },
+    {
+      "original": "Silver Medallion",
+      "proposedGerman": "Silbermedaillon",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Treasure/object term; common loot list item."
+    },
+    {
+      "original": "Mindblasting Cap",
+      "proposedGerman": "Gedankenexplodierende Kappe",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive magic item; should align with psychic terminology used elsewhere."
+    },
+    {
+      "original": "Mindguard Crown",
+      "proposedGerman": "Gedankenschutzkrone",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Magic headgear term; recurring mind-warding theme."
+    },
+    {
+      "original": "Obelisk Fragment",
+      "proposedGerman": "Obeliskenfragment",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Fractured object term; likely appears as a collectible fragment category."
+    },
+    {
+      "original": "Platinum Music Box",
+      "proposedGerman": "Platinspieluhr",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Treasure/object term; compact compound noun is natural."
+    },
+    {
+      "original": "Potion of Psionic Fortitude",
+      "proposedGerman": "Trank der psionischen Widerstandskraft",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Consumable item name with psychic rules vocabulary."
+    },
+    {
+      "original": "Rare Perfume",
+      "proposedGerman": "Seltenes Parfüm",
+      "gender": "n",
+      "number": "singular",
+      "properName": false,
+      "note": "Object/loot term; simple but recurring category item."
+    },
+    {
+      "original": "Spell Scroll of Revivify",
+      "proposedGerman": "Zauberspruchrolle von Wiederbeleben",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Composite scroll/spell entry; spell naming should match the campaign's resurrection terminology."
+    },
+    {
+      "original": "Scarlet Cloak",
+      "proposedGerman": "Scharlachroter Umhang",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Clothing item name; the color adjective should remain consistent if repeated."
+    },
+    {
+      "original": "Spell Scroll of Darkness",
+      "proposedGerman": "Zauberspruchrolle von Dunkelheit",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Composite scroll/spell entry; darkness effect terminology is repeated in rules text."
+    },
+    {
+      "original": "Semiprecious Stones",
+      "proposedGerman": "Halbedelsteine",
+      "gender": "pl",
+      "number": "plural",
+      "properName": false,
+      "note": "Gem loot category; plural term used in inventory-style lists."
+    },
+    {
+      "original": "Silver Tiara",
+      "proposedGerman": "Silbertiara",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Treasure/object term; common jewelry item."
+    },
+    {
+      "original": "Snow Globe",
+      "proposedGerman": "Schneekugel",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "Descriptive object term; simple loot item."
+    },
+    {
+      "original": "Spider Staff",
+      "proposedGerman": "Spinnenstab",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Magic staff name; creature-based weapon/item term should remain stable."
+    },
+    {
+      "original": "Staff of Defense",
+      "proposedGerman": "Stab der Verteidigung",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Core magic item; appears with AC-related rules text and should be consistent."
+    },
+    {
+      "original": "Statue Mucus",
+      "proposedGerman": "Statuenschleim",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Unusual consumable/substance term; keep consistent with related fortification entry."
+    },
+    {
+      "original": "Mucus Fortification",
+      "proposedGerman": "Schleimfortifikation",
+      "gender": "f",
+      "number": "singular",
+      "properName": false,
+      "note": "If treated as the effects header for Statue Mucus, it should align terminologically."
+    },
+    {
+      "original": "Statue's Emerald Eyes",
+      "proposedGerman": "Smaragdaugen der Statue",
+      "gender": "pl",
+      "number": "plural",
+      "properName": false,
+      "note": "Object part term; plural eye form should be preserved."
+    },
+    {
+      "original": "Subtle Mind Crystal",
+      "proposedGerman": "Unauffälliger Gedankenkristall",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "Subtype in the Mind Crystal family; adjective must match the family naming pattern."
+    },
+    {
+      "original": "Talon",
+      "proposedGerman": "Talon",
+      "gender": "n",
+      "number": "singular",
+      "properName": true,
+      "note": "Named weapon; keep untranslated as a proper item name."
+    },
+    {
+      "original": "Deurgar Tapestry",
+      "proposedGerman": "Duergar-Gobelin",
+      "gender": "m",
+      "number": "singular",
+      "properName": false,
+      "note": "If translated as a tapestry type, 'duergar' should remain a creature/race term; source spelling may be a typo of duergar."
+    },
+    {
+      "original": "The Granite Ledger",
+      "proposedGerman": "Das Granitregister",
+      "gender": "n",
+      "number": "singular",
+      "properName": true,
+      "note": "Named book/title; proper title should be preserved as a fixed artifact name."
+    },
+    {
+      "original": "Truths of the Inward Facing Mind",
+      "proposedGerman": "Wahrheiten des nach innen gerichteten Geistes",
+      "gender": "f",
+      "number": "plural",
+      "properName": false,
+      "note": "Book title; descriptive title likely to recur as a named text."
+    },
+    {
+      "original": "Phandelver Pact",
+      "proposedGerman": "Phandelver-Pakt",
+      "gender": "masculine",
+      "number": "singular",
+      "properName": true,
+      "note": "Named historical agreement; keep as a proper name but hyphenate naturally in German."
+    },
+    {
+      "original": "Wave Echo Cave",
+      "proposedGerman": "Wave Echo Cave",
       "gender": "feminine",
       "number": "singular",
-      "proper_name": false,
-      "note": "Established D&D cosmology term; translation choice should remain stable because the English term is semantically loaded."
+      "properName": true,
+      "note": "Proper place name; do not translate unless a house style explicitly localizes setting names."
     },
     {
-      "english": "Underdark",
-      "german": "Unterreich",
+      "original": "Forge of Spells",
+      "proposedGerman": "Forge of Spells",
+      "gender": "feminine",
+      "number": "singular",
+      "properName": true,
+      "note": "Named forge/artifact location; should remain consistent as a title-like proper name."
+    },
+    {
+      "original": "Phandalin",
+      "proposedGerman": "Phandalin",
+      "gender": "feminine",
+      "number": "singular",
+      "properName": true,
+      "note": "Proper town name; no translation."
+    },
+    {
+      "original": "Redbrand's Hideout",
+      "proposedGerman": "Redbrand's Hideout",
       "gender": "neuter",
       "number": "singular",
-      "proper_name": false,
-      "note": "Standard fantasy setting term; should be handled consistently as a fixed locale name."
+      "properName": true,
+      "note": "Named location/faction hideout; keep untranslated to preserve entity identity."
     },
     {
-      "english": "gibbering mouthers",
-      "german": "schwatzende Massen",
-      "gender": "feminine",
-      "number": "plural",
-      "proper_name": false,
-      "note": "Monster name; the plural form and head noun choice are important for consistency, and a literal rendering may differ from established usage."
-    },
-    {
-      "english": "brain pool",
-      "german": "Gehirnpool",
-      "gender": "masculine",
+      "original": "Dwarvish",
+      "proposedGerman": "Zwergisch",
+      "gender": "neuter",
       "number": "singular",
-      "proper_name": false,
-      "note": "Setting-specific horror term; likely recurring in illithid-related text and should be rendered consistently."
+      "properName": false,
+      "note": "Language name in D&D context; choose a stable term for the language, not the people."
     },
     {
-      "english": "Common",
-      "german": "Gemeinsprache",
+      "original": "Aberration",
+      "proposedGerman": "Aberration",
       "gender": "feminine",
       "number": "singular",
-      "proper_name": false,
-      "note": "Rules/setting language term; keep consistent with any other language names in the adventure."
+      "properName": false,
+      "note": "Creature type/rules term. Keep fixed across the module; German gender may need confirmation in your terminology list."
     },
     {
-      "english": "saving throw",
-      "german": "Rettungswurf",
-      "gender": "masculine",
-      "number": "singular",
-      "proper_name": false,
-      "note": "Core D&D rules terminology; one of the most important consistency terms in the adventure."
-    },
-    {
-      "english": "round",
-      "german": "Runde",
+      "original": "spell scroll",
+      "proposedGerman": "Zauberschriftrolle",
       "gender": "feminine",
       "number": "singular",
-      "proper_name": false,
-      "note": "Rules timing term; should be used consistently in initiative/combat contexts."
+      "properName": false,
+      "note": "Core item type; should be translated consistently rather than word-for-word as 'Spell Scroll'."
     },
     {
-      "english": "turn",
-      "german": "Zug",
+      "original": "Tongues",
+      "proposedGerman": "Verständigung",
+      "gender": "feminine",
+      "number": "singular",
+      "properName": false,
+      "note": "Spell name; likely an established translation choice, but consistency is more important than literal meaning."
+    },
+    {
+      "original": "spellcasting ability",
+      "proposedGerman": "Zauberwirken-Attribut",
+      "gender": "neuter",
+      "number": "singular",
+      "properName": false,
+      "note": "Rules term; needs consistent rendering in German, especially in compound checks."
+    },
+    {
+      "original": "save DC",
+      "proposedGerman": "SG des Rettungswurfs",
       "gender": "masculine",
       "number": "singular",
-      "proper_name": false,
-      "note": "Rules timing term; important to distinguish from \"round\" in combat procedure text."
+      "properName": false,
+      "note": "Abbreviation-heavy rules term; ensure one fixed German form for all saving throw difficulty classes."
     },
     {
-      "english": "area J9",
-      "german": "Bereich J9",
+      "original": "attack bonus",
+      "proposedGerman": "Angriffsbonus",
       "gender": "masculine",
       "number": "singular",
-      "proper_name": false,
-      "note": "Map/reference label; translate the generic term consistently if other area labels appear elsewhere."
+      "properName": false,
+      "note": "Standard combat term; keep fixed."
     },
     {
-      "english": "Illithinoch",
-      "german": "Illithinoch",
-      "gender": null,
+      "original": "Intelligence (Arcana) check",
+      "proposedGerman": "Intelligenzprobe (Arkana)",
+      "gender": "feminine",
       "number": "singular",
-      "proper_name": true,
-      "note": "Proper place name; should remain untranslated."
+      "properName": false,
+      "note": "Ability check phrase; preserve the parenthetical skill structure consistently."
     },
     {
-      "english": "Gibbet Crossing",
-      "german": "Gibbet Crossing",
-      "gender": null,
+      "original": "Potion of Climbing",
+      "proposedGerman": "Trank des Kletterns",
+      "gender": "masculine",
       "number": "singular",
-      "proper_name": true,
-      "note": "Proper place name; keep untranslated unless the source specifically marks it as descriptive."
+      "properName": false,
+      "note": "Magic item name; use a stable German item-title format."
     },
     {
-      "english": "Talhundereth",
-      "german": "Talhundereth",
-      "gender": null,
+      "original": "Luminous Daylight",
+      "proposedGerman": "Licht des Tages",
+      "gender": "neuter",
       "number": "singular",
-      "proper_name": true,
-      "note": "Proper place name; should remain untranslated."
+      "properName": false,
+      "note": "Spell name; descriptive title and likely to recur, so choose one fixed translation."
     },
     {
-      "english": "Oshundo",
-      "german": "Oshundo",
-      "gender": null,
+      "original": "Gem of Brightness",
+      "proposedGerman": "Edelstein der Helligkeit",
+      "gender": "masculine",
       "number": "singular",
-      "proper_name": true,
-      "note": "Proper personal name; should remain untranslated."
+      "properName": false,
+      "note": "Magic item name; keep title structure consistent with other wondrous items."
     },
     {
-      "english": "Ilvaash",
-      "german": "Ilvaash",
-      "gender": null,
+      "original": "Wondrous item",
+      "proposedGerman": "Wundersamer Gegenstand",
+      "gender": "masculine",
       "number": "singular",
-      "proper_name": true,
-      "note": "Proper name of an entity/deity-like figure; should remain untranslated."
+      "properName": false,
+      "note": "Item rarity/type category; important for inventory blocks and rules consistency."
+    },
+    {
+      "original": "Thieves' Tools",
+      "proposedGerman": "Diebeswerkzeug",
+      "gender": "neuter",
+      "number": "singular",
+      "properName": false,
+      "note": "Standard tool set in D&D; commonly treated as a singular collective term in German."
+    },
+    {
+      "original": "spellbook",
+      "proposedGerman": "Zauberbuch",
+      "gender": "neuter",
+      "number": "singular",
+      "properName": false,
+      "note": "Rules item type; recurrence in spell-copying text makes consistency important."
+    },
+    {
+      "original": "command word",
+      "proposedGerman": "Kommandowort",
+      "gender": "neuter",
+      "number": "singular",
+      "properName": false,
+      "note": "Magic item activation term; translate consistently because it appears in item mechanics."
+    },
+    {
+      "original": "bonus action",
+      "proposedGerman": "Bonusaktion",
+      "gender": "feminine",
+      "number": "singular",
+      "properName": false,
+      "note": "Core action economy term; should not vary."
+    },
+    {
+      "original": "Strength (Athletics)",
+      "proposedGerman": "Stärke (Athletik)",
+      "gender": "feminine",
+      "number": "singular",
+      "properName": false,
+      "note": "Ability/skill pair used in checks; preserve the standard parenthetical format."
     }
   ]
 }
