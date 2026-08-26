@@ -216,3 +216,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+#local secrets
+/local_secret_do_not_commit/
+
+#local project files
+*.iml
+/.idea/misc.xml
+/.idea/modules.xml
+/tmp.py
+/.idea/vcs.xml
+/.idea/workspace.xml
