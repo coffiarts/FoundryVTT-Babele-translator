@@ -220,7 +220,7 @@ __marimo__/
 #local secrets
 /local_secret_do_not_commit/
 
-#local project files
+#local IntelliJ project files
 *.iml
 /.idea/misc.xml
 /.idea/modules.xml
@@ -231,7 +231,8 @@ __marimo__/
 #local input and output files
 /input/
 /terminology/
+/analyze/
 /output/
 
 #other local junk
-TODO.md
+/work/

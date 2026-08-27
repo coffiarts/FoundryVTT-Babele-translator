@@ -1,294 +1,144 @@
 import json
-import re
-import time
 from pathlib import Path
+from collections import Counter
 from openai import OpenAI
-
 
 # ------------------------------------------------------------
 # Configuration
 # ------------------------------------------------------------
-LLM_MODEL = "gpt-5.4-mini" #"gpt-5.6-luna"
 
-FILENAME = "dnd-phandelver-below.pbso-adventures.json"
+FILENAME = "dnd-phandelver-below.pbso-player-tables.json"
 
-
-# ------------------------------------------------------------
-# Translation instructions
-# ------------------------------------------------------------
+TRANSLATABLE_FIELDS = {
+    "text",
+    "name",
+    "caption",
+    "description"
+}
 
 TRANSLATION_INSTRUCTIONS = """
-You are a translator for a D&D 5e fantasy role-playing adventure.
+Translate every text to German.
 
-Translate the supplied JSON content into German.
+Return ONLY valid JSON.
 
-IMPORTANT:
-- The supplied input is a complete JSON document.
-- Preserve the complete JSON structure exactly.
-- Return a complete, valid JSON document.
-- Do not add or remove JSON objects, arrays, properties, or values.
-- Do not change property names.
-- Only translate translatable string values.
-- Preserve numbers, booleans, null values, and all non-translatable
-  structural elements exactly.
-- Preserve all JSON syntax and structure.
+Input format:
 
-Translate string values belonging to these properties:
-- "text"
-- "name"
-- "caption"
-- "description"
+[
+  {
+    "id": 123,
+    "text": "some text"
+  }
+]
 
-Do not translate other string values unless they are clearly
-translatable content.
+Output format:
 
-Use the terminology provided with the request as authoritative.
-Follow the specified translations, grammatical information,
-and notes in the terminology exactly.
+[
+  {
+    "id": 123,
+    "translation": "übersetzter Text"
+  }
+]
 
-Every <<<FOUNDRY_###>>> marker is an opaque protected placeholder.
-It is NOT translatable content and MUST be preserved exactly.
-
-Protected markers are mandatory structural elements of the output.
-
-For every protected marker in the input:
-- The exact same marker MUST appear in the output.
-- It MUST appear exactly once.
-- It MUST remain in the same position relative to the surrounding text.
-- It MUST be copied character-for-character.
-- NEVER omit a marker.
-- NEVER translate, rename, reconstruct, or replace a marker.
-- NEVER treat a marker as optional.
-
-A protected marker may be immediately followed by visible text such as
-a character name, creature name, place name, or other label. The visible
-text following the marker is normal translatable content, but the marker
-itself is NOT part of that content and MUST remain unchanged.
-
-For example, if the input contains:
-
-<<<FOUNDRY_004>>>{Illithinoch}
-
-the output MUST contain:
-
-<<<FOUNDRY_004>>>{Illithinoch}
-
-If the visible text is translated, only the visible text may change;
-the protected marker must remain completely unchanged.
-
-Do not attempt to recreate the original Foundry syntax yourself.
-Return every protected marker exactly as it appears in the input.
-
-NEVER interpret, translate, reconstruct, replace, or omit a protected
-marker.
-
-Every protected marker MUST be copied character-for-character.
-The number, identity, and order of all protected markers MUST remain
-unchanged.
-
-Proper names must remain untranslated unless the terminology
-explicitly specifies otherwise.
-
-Return only the translated JSON document.
+Rules:
+- Preserve every id unchanged.
+- Translate only the text.
+- Do not omit entries.
+- Do not add entries.
+- Return only JSON.
 """
 
-
-# ------------------------------------------------------------
-# Protect Foundry syntax
-# ------------------------------------------------------------
-
-def protect_foundry_syntax(
-        text,
-        start_index=0
-):
-    protected = {}
-
-    def replace(match):
-
-        placeholder = (
-            f"<<<FOUNDRY_"
-            f"{start_index + len(protected):03d}>>>"
-        )
-
-        protected[placeholder] = match.group(0)
-
-        return placeholder
-
-    # Protect Foundry @UUID[...] and @Embed[...] syntax.
-    text = re.sub(
-        r'@(UUID|Embed)\[[^\]]*\]',
-        replace,
-        text
-    )
-
-    # Protect Foundry inline rolls, checks, and saves.
-    text = re.sub(
-        r'\[\[[^\]]*\]\]',
-        replace,
-        text
-    )
-
-    return text, protected
+MAX_CHARS_PER_CHUNK = 10000
 
 
 # ------------------------------------------------------------
-# Restore Foundry syntax
+# Collect translatable nodes
 # ------------------------------------------------------------
 
-def restore_foundry_syntax(
-        text,
-        protected
-):
-    for placeholder, original in protected.items():
-        text = text.replace(
-            placeholder,
-            original
-        )
+def collect_translatable_nodes(value, nodes):
 
-    return text
+    if isinstance(value, dict):
 
+        for key, item in value.items():
 
-# ------------------------------------------------------------
-# Verify protected elements
-# ------------------------------------------------------------
+            if (
+                    key in TRANSLATABLE_FIELDS
+                    and isinstance(item, str)
+            ):
 
-def verify_protected_integrity(
-        translated_text,
-        protected
-):
-    print("\n=== PROTECTED ELEMENT INTEGRITY ===")
+                nodes.append({
+                    "id": len(nodes),
+                    "container": value,
+                    "key": key,
+                    "original": item
+                })
 
-    all_ok = True
+            elif isinstance(item, (dict, list)):
 
-    for placeholder, original in protected.items():
+                collect_translatable_nodes(
+                    item,
+                    nodes
+                )
 
-        count = translated_text.count(
-            original
-        )
+    elif isinstance(value, list):
 
-        if count == 1:
-            print(
-                f"{placeholder}: OK"
+        for item in value:
+
+            collect_translatable_nodes(
+                item,
+                nodes
             )
 
-        elif count == 0:
-            print(
-                f"{placeholder}: MISSING"
-            )
-            all_ok = False
 
-        else:
-            print(
-                f"{placeholder}: "
-                f"FOUND {count} TIMES"
-            )
-            all_ok = False
+# ------------------------------------------------------------
+# Simulated translation
+# ------------------------------------------------------------
 
-    return all_ok
+def simulate_translation(nodes):
+
+    translations = {}
+
+    for node in nodes:
+
+        translations[node["id"]] = (
+            node["original"]
+        )
+
+    return translations
 
 
 # ------------------------------------------------------------
-# Translate complete JSON
+# Reinsert translations
 # ------------------------------------------------------------
 
-def translate_json(
-        client,
-        protected_json,
-        terminology,
-        protected
+def reinsert_translations(
+        nodes,
+        translations
 ):
-    print("\n=== PROTECTED ELEMENTS ===")
 
-    for placeholder, original in protected.items():
-        print(
-            f"{placeholder} -> {original}"
+    for node in nodes:
+
+        node["container"][node["key"]] = (
+            translations[node["id"]]
         )
-
-    print(
-        f"\n=== COMPLETE PROTECTED JSON "
-        f"SENT TO LLM (using Model {LLM_MODEL}) ==="
-    )
-
-    print(
-        f"{len(protected_json):,} characters"
-    )
-
-    # Convert terminology database to JSON text.
-    terminology_json = json.dumps(
-        terminology,
-        ensure_ascii=False,
-        indent=2
-    )
-
-    # Add terminology as additional instructions.
-    instructions = (
-            TRANSLATION_INSTRUCTIONS
-            + "\n\n"
-            + "=== TERMINOLOGY DATABASE ===\n"
-            + terminology_json
-            + "\n\n"
-            + "=== END TERMINOLOGY DATABASE ===\n"
-    )
-
-    start = time.perf_counter()
-
-    response = client.responses.create(
-        model=LLM_MODEL,
-        instructions=instructions,
-        input=protected_json
-    )
-
-    end = time.perf_counter()
-
-    print(
-        f"\n=== API Call Duration "
-        f"(Translation): "
-        f"{end - start:.2f} Seconds ==="
-    )
-
-    translated_json = response.output_text
-
-    # Restore original Foundry syntax.
-    restored_json = restore_foundry_syntax(
-        translated_json,
-        protected
-    )
-
-    # Verify protected elements.
-    integrity_ok = verify_protected_integrity(
-        restored_json,
-        protected
-    )
-
-    if not integrity_ok:
-        print(f"Error in restored_json: {restored_json}")
-        raise ValueError(
-            "Protected Foundry elements were "
-            "missing or modified during translation."
-        )
-
-    # Verify that the model returned valid JSON.
-    try:
-        translated_data = json.loads(
-            restored_json
-        )
-    except json.JSONDecodeError as error:
-        print(
-            "\n=== INVALID TRANSLATED JSON ==="
-        )
-        print(
-            restored_json
-        )
-
-        raise ValueError(
-            "The translated output is not valid JSON."
-        ) from error
-
-    return translated_data
-
 
 # ------------------------------------------------------------
-# Initialize OpenAI API client
+# Load JSON
+# ------------------------------------------------------------
+
+input_path = (
+        Path("input")
+        / FILENAME
+)
+
+with input_path.open(
+        "r",
+        encoding="utf-8"
+) as file:
+
+    original_data = json.load(file)
+
+# ------------------------------------------------------------
+# Initialize LLM API client
 # ------------------------------------------------------------
 
 api_key = Path(
@@ -301,112 +151,344 @@ client = OpenAI(
     api_key=api_key
 )
 
-
 # ------------------------------------------------------------
-# Load input JSON
-# ------------------------------------------------------------
-
-input_path = Path(
-    "input"
-) / FILENAME
-
-with input_path.open(
-        "r",
-        encoding="utf-8"
-) as file:
-    data = json.load(file)
-
-
-# ------------------------------------------------------------
-# Serialize complete JSON
+# Deep copy for testing
 # ------------------------------------------------------------
 
-original_json = json.dumps(
-    data,
-    ensure_ascii=False,
-    indent=2
-)
-
-print(
-    f"\n=== USING LLM MODEL {LLM_MODEL} ==="
-)
-
-print(
-    f"\n=== ORIGINAL JSON ==="
-)
-print(
-    f"{len(original_json):,} characters"
-)
-
-
-# ------------------------------------------------------------
-# Protect Foundry syntax
-# ------------------------------------------------------------
-
-protected_json, protected = (
-    protect_foundry_syntax(
-        original_json
+working_data = json.loads(
+    json.dumps(
+        original_data,
+        ensure_ascii=False
     )
 )
 
-print(
-    f"\n=== PROTECTED JSON ==="
+
+# ------------------------------------------------------------
+# Collect nodes
+# ------------------------------------------------------------
+
+nodes = []
+
+collect_translatable_nodes(
+    working_data,
+    nodes
 )
+
+# ------------------------------------------------------------
+# Build chunks
+# ------------------------------------------------------------
+
+chunks = []
+current_chunk = []
+current_size = 0
+
+for node in nodes:
+
+    text_size = len(node["original"])
+
+    if (
+            current_chunk
+            and current_size + text_size > MAX_CHARS_PER_CHUNK
+    ):
+        chunks.append(current_chunk)
+        current_chunk = []
+        current_size = 0
+
+    current_chunk.append(node)
+    current_size += text_size
+
+if current_chunk:
+    chunks.append(current_chunk)
+
 print(
-    f"{len(protected_json):,} characters"
+    f"\n=== CHUNKS ===\n"
+    f"{len(chunks)}"
 )
-print(
-    f"{len(protected)} protected elements"
-)
+
+for i, chunk in enumerate(chunks):
+
+    chars = sum(
+        len(node["original"])
+        for node in chunk
+    )
+
+    print(
+        f"Chunk {i}: "
+        f"{len(chunk)} nodes, "
+        f"{chars:,} chars"
+    )
 
 
 # ------------------------------------------------------------
-# Load terminology database
+# Optional inspection
 # ------------------------------------------------------------
+
+# Summary of payload contents
+print(
+    f"\n=== TRANSLATABLE NODES ===\n"
+    f"{len(nodes)}"
+)
+
+translation_payload = []
+
+for node in nodes:
+
+    translation_payload.append({
+        "id": node["id"],
+        "field": node["key"],
+        "text": node["original"]
+    })
 
 with open(
-        "terminology/terminology.json",
-        "r",
+        "analyze/translation_payload.json",
+        "w",
         encoding="utf-8"
 ) as file:
-    terminology = json.load(file)
+
+    json.dump(
+        translation_payload,
+        file,
+        ensure_ascii=False,
+        indent=2
+    )
+
+payload_json = json.dumps(
+    translation_payload,
+    ensure_ascii=False
+)
+
+print(
+    f"\n=== PAYLOAD STATS ==="
+)
+
+print(
+    f"Total Payload char count: "
+    f"{len(payload_json):,}"
+)
+
+counter = Counter(
+    node["key"]
+    for node in nodes
+)
+
+print(counter)
+
+chars_per_field = {}
+
+for field in ["name", "description", "text", "caption"]:
+
+    chars_per_field[field] = sum(
+        len(node["original"])
+        for node in nodes
+        if node["key"] == field
+    )
+
+print(f"chars_per_field: {chars_per_field}")
+
+print(
+    f"\n=== FIRST 10 NODES DETAILS ==="
+)
+
+for node in nodes[:10]:
+
+    print(
+        f"\nID: {node['id']}"
+    )
+
+    print(
+        f"CONTAINER length: {len(node['container'])}"
+    )
+
+    print(
+        f"FIELD: {node['key']}"
+    )
+
+    print(
+        f"ORIGINAL [first <=100 of {len(node["original"])} chars]: {node["original"][:100]}"
+    )
 
 
 # ------------------------------------------------------------
-# Translate complete JSON in ONE API call
+# Simulate translation
 # ------------------------------------------------------------
 
-translated_data = translate_json(
-    client,
-    protected_json,
-    terminology,
-    protected
+translations = {}
+
+print(
+    f"\n=== PROCESSING {len(chunks)} CHUNKS (MAX SIZE: {MAX_CHARS_PER_CHUNK}) ==="
+)
+
+for chunk_index, chunk in enumerate(chunks):
+
+    print(
+        f"Processing chunk "
+        f"{chunk_index + 1}/{len(chunks)}"
+    )
+
+    # ----------------------------------------
+    # Build payload for this chunk
+    # ----------------------------------------
+
+    payload = []
+
+    for node in chunk:
+
+        payload.append({
+            "id": node["id"],
+            "text": node["original"]
+        })
+
+    payload_json = json.dumps(
+        payload,
+        ensure_ascii=False
+    )
+
+    print(
+        f"Chunk {chunk_index + 1}: "
+        f"{len(payload):,} entries, "
+        f"{len(payload_json):,} chars"
+    )
+
+    # ----------------------------------------
+    # Real translation test
+    # ----------------------------------------
+
+    response = client.responses.create(
+        model="gpt-5.4-mini",
+        instructions=TRANSLATION_INSTRUCTIONS,
+        input=json.dumps(
+            payload,
+            ensure_ascii=False
+        )
+    )
+
+    print(
+        f"Response length: "
+        f"{len(response.output_text):,}"
+    )
+
+    translated_payload = json.loads(
+        response.output_text
+    )
+
+    print(
+        f"Expected entries: {len(payload)}"
+    )
+
+    print(
+        f"Returned entries: {len(translated_payload)}"
+    )
+
+    chunk_translations = {}
+
+    for entry in translated_payload:
+
+        chunk_translations[
+            entry["id"]
+        ] = entry["translation"]
+
+    translations.update(
+        chunk_translations
+    )
+
+
+    # ----------------------------------------
+    # Merge into global translations
+    # ----------------------------------------
+
+    translations.update(
+        chunk_translations
+    )
+
+
+# ------------------------------------------------------------
+# Reinsert
+# ------------------------------------------------------------
+
+reinsert_translations(
+    nodes,
+    translations
 )
 
 
 # ------------------------------------------------------------
-# Serialize translated JSON
+# Final stats
 # ------------------------------------------------------------
 
-translated_json = json.dumps(
-    translated_data,
+print(
+    f"\n=== FINAL STATS ==="
+)
+
+total_chars = sum(
+    len(node["original"])
+    for node in nodes
+)
+
+print(
+    f"Total translatable chars: "
+    f"{total_chars:,}"
+)
+
+original_json = json.dumps(
+    original_data,
     ensure_ascii=False,
     indent=2
 )
 
+total_translatable_chars = sum(
+    len(node["original"])
+    for node in nodes
+)
+
+print(
+    f"Original JSON chars: {len(original_json):,}"
+)
+
+print(
+    f"Translatable chars: {total_translatable_chars:,}"
+)
+
+print(
+    f"Reduction: "
+    f"{100 * (1 - total_translatable_chars / len(original_json)):.1f}%"
+)
+
+print(
+    f"Total nodes to translate: "
+    f"{len(nodes):,}"
+)
+
+print(
+    f"Average chars per node: "
+    f"{total_translatable_chars / len(nodes):.1f}"
+)
+print("\n✅ REINJECTION COMPLETED")
 
 # ------------------------------------------------------------
-# Output
+# Save the results to output
 # ------------------------------------------------------------
 
-print(
-    "\n=== TRANSLATED JSON ==="
-)
+with open(
+        f"output/{FILENAME}",
+        "w",
+        encoding="utf-8"
+) as file:
 
-print(
-    f"{len(translated_json):,} characters"
-)
+    json.dump(
+        working_data,
+        file,
+        ensure_ascii=False,
+        indent=2
+    )
 
-print(
-    translated_json
-)
+print(f"\n✅ File has been written to: output/{FILENAME}")
+# print(
+#     "\n❌ FAILURE"
+# )
+#
+# raise ValueError(
+#     "Reinjected JSON differs "
+#     "from original JSON."
+# )
+
+
