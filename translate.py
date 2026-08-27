@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 from collections import Counter
 from openai import OpenAI
@@ -7,7 +8,7 @@ from openai import OpenAI
 # Configuration
 # ------------------------------------------------------------
 
-FILENAME = "dnd-phandelver-below.pbso-player-tables.json"
+FILENAME = "dnd-phandelver-below.pbso-items.json"
 
 TRANSLATABLE_FIELDS = {
     "text",
@@ -47,8 +48,13 @@ Rules:
 - Return only JSON.
 """
 
-MAX_CHARS_PER_CHUNK = 10000
+MAX_CHARS_PER_CHUNK = 30000
 
+# ------------------------------------------------------------
+# Global placeholder registry
+# ------------------------------------------------------------
+
+protected_elements = {}
 
 # ------------------------------------------------------------
 # Collect translatable nodes
@@ -89,21 +95,53 @@ def collect_translatable_nodes(value, nodes):
             )
 
 
-# ------------------------------------------------------------
-# Simulated translation
-# ------------------------------------------------------------
+# ------------------------------------------------------------------
+# Protect & Restore Foundry Syntax (aka "Protection by Placeholder")
+# ------------------------------------------------------------------
 
-def simulate_translation(nodes):
+def protect_foundry_syntax(text):
 
-    translations = {}
+    def replace(match):
 
-    for node in nodes:
-
-        translations[node["id"]] = (
-            node["original"]
+        placeholder = (
+            f"<<<FOUNDRY_{len(protected_elements):06d}>>>"
         )
 
-    return translations
+        protected_elements[
+            placeholder
+        ] = match.group(0)
+
+        return placeholder
+
+    # Protect Foundry @UUID[...] and @Embed[...] syntax
+    text = re.sub(
+        r'@(UUID|Embed|Compendium)\[[^\]]*\]',
+        replace,
+        text
+    )
+
+    # Protect inline rolls, checks, saves, etc.
+    text = re.sub(
+        r'\[\[[^\]]*\]\]',
+        replace,
+        text
+    )
+
+    return text
+
+
+def restore_foundry_syntax(
+        text,
+        protected
+):
+    for placeholder, original in protected.items():
+
+        text = text.replace(
+            placeholder,
+            original
+        )
+
+    return text
 
 
 # ------------------------------------------------------------
@@ -229,11 +267,11 @@ print(
     f"{len(nodes)}"
 )
 
-translation_payload = []
+complete_payload = []
 
 for node in nodes:
 
-    translation_payload.append({
+    complete_payload.append({
         "id": node["id"],
         "field": node["key"],
         "text": node["original"]
@@ -246,14 +284,14 @@ with open(
 ) as file:
 
     json.dump(
-        translation_payload,
+        complete_payload,
         file,
         ensure_ascii=False,
         indent=2
     )
 
-payload_json = json.dumps(
-    translation_payload,
+chunk_payload_json = json.dumps(
+    complete_payload,
     ensure_ascii=False
 )
 
@@ -263,7 +301,7 @@ print(
 
 print(
     f"Total Payload char count: "
-    f"{len(payload_json):,}"
+    f"{len(chunk_payload_json):,}"
 )
 
 counter = Counter(
@@ -309,7 +347,7 @@ for node in nodes[:10]:
 
 
 # ------------------------------------------------------------
-# Simulate translation
+# Translate the compendium (chunkwise)
 # ------------------------------------------------------------
 
 translations = {}
@@ -329,35 +367,41 @@ for chunk_index, chunk in enumerate(chunks):
     # Build payload for this chunk
     # ----------------------------------------
 
-    payload = []
+    chunk_payload = []
 
     for node in chunk:
 
-        payload.append({
+        protected_text = protect_foundry_syntax(
+            node["original"]
+        )
+
+        chunk_payload.append({
             "id": node["id"],
-            "text": node["original"]
+            "text": protected_text
         })
 
-    payload_json = json.dumps(
-        payload,
+
+    chunk_payload_json = json.dumps(
+        chunk_payload,
         ensure_ascii=False
     )
 
     print(
         f"Chunk {chunk_index + 1}: "
-        f"{len(payload):,} entries, "
-        f"{len(payload_json):,} chars"
+        f"{len(chunk_payload):,} entries, "
+        f"{len(chunk_payload_json):,} chars"
     )
 
+
     # ----------------------------------------
-    # Real translation test
+    # Translate the current chunk
     # ----------------------------------------
 
     response = client.responses.create(
         model="gpt-5.4-mini",
         instructions=TRANSLATION_INSTRUCTIONS,
         input=json.dumps(
-            payload,
+            chunk_payload,
             ensure_ascii=False
         )
     )
@@ -372,7 +416,7 @@ for chunk_index, chunk in enumerate(chunks):
     )
 
     print(
-        f"Expected entries: {len(payload)}"
+        f"Expected entries: {len(chunk_payload)}"
     )
 
     print(
@@ -383,9 +427,14 @@ for chunk_index, chunk in enumerate(chunks):
 
     for entry in translated_payload:
 
+        restored_text = restore_foundry_syntax(
+            entry["translation"],
+            protected_elements
+        )
+
         chunk_translations[
             entry["id"]
-        ] = entry["translation"]
+        ] = restored_text
 
     translations.update(
         chunk_translations
@@ -400,6 +449,16 @@ for chunk_index, chunk in enumerate(chunks):
         chunk_translations
     )
 
+print(
+    f"\n=== PROTECTED ELEMENTS "
+    f"({len(protected_elements)}) ==="
+)
+
+for placeholder, original in protected_elements.items():
+
+    print(
+        f"{placeholder} -> {original}"
+    )
 
 # ------------------------------------------------------------
 # Reinsert
