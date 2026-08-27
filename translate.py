@@ -145,6 +145,45 @@ def restore_foundry_syntax(
 
 
 # ------------------------------------------------------------
+# Verify placeholder integrity
+# ------------------------------------------------------------
+
+def verify_protected_integrity(
+        original_protected_text,
+        translated_text):
+
+    placeholders = set(
+        re.findall(
+            r'<<<FOUNDRY_\d{6}>>>',
+            original_protected_text
+        )
+    )
+
+    for placeholder in placeholders:
+
+        count = translated_text.count(
+            placeholder
+        )
+
+        if count != 1:
+
+            print(
+                f"\n❌ PLACEHOLDER ERROR: "
+                f"{placeholder}"
+            )
+
+            print(
+                f"Occurrences in translation: "
+                f"{count}"
+            )
+
+            raise ValueError(
+                f"Placeholder integrity failure: "
+                f"{placeholder}"
+            )
+
+
+# ------------------------------------------------------------
 # Reinsert translations
 # ------------------------------------------------------------
 
@@ -369,17 +408,22 @@ for chunk_index, chunk in enumerate(chunks):
 
     chunk_payload = []
 
+    protected_texts = {}
+
     for node in chunk:
 
         protected_text = protect_foundry_syntax(
             node["original"]
         )
 
+        protected_texts[
+            node["id"]
+        ] = protected_text
+
         chunk_payload.append({
             "id": node["id"],
             "text": protected_text
         })
-
 
     chunk_payload_json = json.dumps(
         chunk_payload,
@@ -426,6 +470,13 @@ for chunk_index, chunk in enumerate(chunks):
     chunk_translations = {}
 
     for entry in translated_payload:
+
+        verify_protected_integrity(
+            protected_texts[
+                entry["id"]
+            ],
+            entry["translation"]
+        )
 
         restored_text = restore_foundry_syntax(
             entry["translation"],
