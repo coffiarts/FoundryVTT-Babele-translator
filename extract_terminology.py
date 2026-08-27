@@ -11,6 +11,7 @@ LLM_MODEL = "gpt-5.4-mini" #"gpt-5.6-luna"
 
 FILENAME = "dnd-phandelver-below.pbso-adventures.json"
 
+MAX_CHARS_PER_CHUNK = 30000
 
 # ------------------------------------------------------------
 # Terminology instructions
@@ -121,16 +122,53 @@ print(
 
 
 # ------------------------------------------------------------
-# Build complete input text
+# Build chunks
 # ------------------------------------------------------------
 
-input_text = "\n\n".join(texts)
+chunks = []
+current_chunk = []
+current_size = 0
+
+for text in texts:
+
+    text_size = len(text)
+
+    if (
+            current_chunk
+            and current_size + text_size > MAX_CHARS_PER_CHUNK
+    ):
+        chunks.append(
+            "\n\n".join(current_chunk)
+        )
+
+        current_chunk = []
+        current_size = 0
+
+    current_chunk.append(text)
+    current_size += text_size
+
+if current_chunk:
+    chunks.append(
+        "\n\n".join(current_chunk)
+    )
 
 print(
-    f"=== COMPLETE TEXT FOR TERMINOLOGY "
-    f"ANALYSIS: {len(input_text):,} characters ==="
+    f"\n=== TERMINOLOGY CHUNKS ===\n"
+    f"{len(chunks)}"
 )
 
+for i, chunk in enumerate(chunks):
+
+    chars = sum(
+        len(node["original"])
+        for node in chunk
+    )
+
+    print(
+        f"Chunk {i}: "
+        f"{len(chunk)} nodes, "
+        f"{chars:,} chars"
+    )
 
 # ------------------------------------------------------------
 # Initialize OpenAI API client
@@ -151,86 +189,95 @@ client = OpenAI(
 # Extract terminology
 # ------------------------------------------------------------
 
+all_terms = []
 print(
-    f"\n=== EXTRACTING TERMINOLOGY (using LLM MODEL {LLM_MODEL}) ==="
+    f"\n=== EXTRACTING TERMINOLOGY "
+    f"(using LLM MODEL {LLM_MODEL}) ==="
 )
 
-start = time.perf_counter()
+print(
+    f"\n=== PROCESSING {len(chunks)} CHUNKS (MAX SIZE: {MAX_CHARS_PER_CHUNK}) ==="
+)
 
-terminology_response = client.responses.create(
-    model=LLM_MODEL,
-    instructions=TERMINOLOGY_INSTRUCTIONS,
-    input=input_text,
-    text={
-        "format": {
-            "type": "json_schema",
-            "name": "terminology",
-            "strict": True,
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "terms": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "original": {
-                                    "type": "string"
+for chunk_index, chunk_text in enumerate(chunks):
+
+    print(
+        f"Processing chunk {chunk_index + 1}/{len(chunks)} [{len(chunk_text)}]"
+    )
+
+    start = time.perf_counter()
+
+    terminology_response = client.responses.create(
+        model=LLM_MODEL,
+        instructions=TERMINOLOGY_INSTRUCTIONS,
+        input=chunk_text,
+        text={
+            "format": {
+                "type": "json_schema",
+                "name": "terminology",
+                "strict": True,
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "terms": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "original": {
+                                        "type": "string"
+                                    },
+                                    "proposedGerman": {
+                                        "type": "string"
+                                    },
+                                    "gender": {
+                                        "type": "string"
+                                    },
+                                    "number": {
+                                        "type": "string"
+                                    },
+                                    "properName": {
+                                        "type": "boolean"
+                                    },
+                                    "note": {
+                                        "type": "string"
+                                    }
                                 },
-                                "proposedGerman": {
-                                    "type": "string"
-                                },
-                                "gender": {
-                                    "type": "string"
-                                },
-                                "number": {
-                                    "type": "string"
-                                },
-                                "properName": {
-                                    "type": "boolean"
-                                },
-                                "note": {
-                                    "type": "string"
-                                }
-                            },
-                            "required": [
-                                "original",
-                                "proposedGerman",
-                                "gender",
-                                "number",
-                                "properName",
-                                "note"
-                            ],
-                            "additionalProperties": False
+                                "required": [
+                                    "original",
+                                    "proposedGerman",
+                                    "gender",
+                                    "number",
+                                    "properName",
+                                    "note"
+                                ],
+                                "additionalProperties": False
+                            }
                         }
-                    }
-                },
-                "required": [
-                    "terms"
-                ],
-                "additionalProperties": False
+                    },
+                    "required": [
+                        "terms"
+                    ],
+                    "additionalProperties": False
+                }
             }
         }
-    }
-)
+    )
 
-end = time.perf_counter()
+    end = time.perf_counter()
 
-print(
-    f"API duration: "
-    f"{end - start:.2f} seconds"
-)
+    print(
+        f"API duration: "
+        f"{end - start:.2f} seconds"
+    )
 
+    terminology = json.loads(
+        terminology_response.output_text
+    )
 
-# ------------------------------------------------------------
-# Parse terminology response
-# ------------------------------------------------------------
-
-terminology = json.loads(
-    terminology_response.output_text
-)
-
-all_terms = terminology["terms"]
+    all_terms.extend(
+        terminology["terms"]
+    )
 
 
 # ------------------------------------------------------------

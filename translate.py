@@ -1,5 +1,6 @@
 import json
 import re
+import time
 from pathlib import Path
 from collections import Counter
 from openai import OpenAI
@@ -398,8 +399,7 @@ print(
 for chunk_index, chunk in enumerate(chunks):
 
     print(
-        f"Processing chunk "
-        f"{chunk_index + 1}/{len(chunks)}"
+        f"Processing chunk {chunk_index + 1}/{len(chunks)} [{len(chunk["original"])}]"
     )
 
     # ----------------------------------------
@@ -441,6 +441,8 @@ for chunk_index, chunk in enumerate(chunks):
     # Translate the current chunk
     # ----------------------------------------
 
+    start = time.perf_counter()
+
     response = client.responses.create(
         model="gpt-5.4-mini",
         instructions=TRANSLATION_INSTRUCTIONS,
@@ -448,6 +450,13 @@ for chunk_index, chunk in enumerate(chunks):
             chunk_payload,
             ensure_ascii=False
         )
+    )
+
+    end = time.perf_counter()
+
+    print(
+        f"API duration: "
+        f"{end - start:.2f} seconds"
     )
 
     print(
