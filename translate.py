@@ -215,6 +215,29 @@ with input_path.open(
 
     original_data = json.load(file)
 
+with open(
+        f"terminology/{FILENAME}-terminology.json",
+        "r",
+        encoding="utf-8"
+) as file:
+
+    terminology = json.load(file)
+
+terminology_json = json.dumps(
+    terminology,
+    ensure_ascii=False,
+    indent=2
+)
+
+instructions = (
+        TRANSLATION_INSTRUCTIONS
+        + "\n\n"
+        + "=== TERMINOLOGY DATABASE ===\n"
+        + terminology_json
+        + "\n\n"
+        + "=== END TERMINOLOGY DATABASE ===\n"
+)
+
 # ------------------------------------------------------------
 # Initialize LLM API client
 # ------------------------------------------------------------
@@ -393,13 +416,13 @@ for node in nodes[:10]:
 translations = {}
 
 print(
-    f"\n=== PROCESSING {len(chunks)} CHUNKS (MAX SIZE: {MAX_CHARS_PER_CHUNK}) ==="
+    f"\n=== PROCESSING {len(chunks)} CHUNKS (MAX SIZE (excluding JSON overhead): {MAX_CHARS_PER_CHUNK}) ==="
 )
 
 for chunk_index, chunk in enumerate(chunks):
 
     print(
-        f"Processing chunk {chunk_index + 1}/{len(chunks)} [{len(chunk["original"])}]"
+        f"Processing chunk {chunk_index + 1}/{len(chunks)} [{len(chunk)} chars]"
     )
 
     # ----------------------------------------
@@ -445,7 +468,7 @@ for chunk_index, chunk in enumerate(chunks):
 
     response = client.responses.create(
         model="gpt-5.4-mini",
-        instructions=TRANSLATION_INSTRUCTIONS,
+        instructions=instructions,
         input=json.dumps(
             chunk_payload,
             ensure_ascii=False

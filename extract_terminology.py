@@ -9,7 +9,7 @@ from openai import OpenAI
 # ------------------------------------------------------------
 LLM_MODEL = "gpt-5.4-mini" #"gpt-5.6-luna"
 
-FILENAME = "dnd-phandelver-below.pbso-adventures.json"
+FILENAME = "dnd-phandelver-below.pbso-items.json"
 
 MAX_CHARS_PER_CHUNK = 30000
 
@@ -160,7 +160,7 @@ print(
 for i, chunk in enumerate(chunks):
 
     chars = sum(
-        len(node["original"])
+        len(chunk)
         for node in chunk
     )
 
@@ -196,13 +196,13 @@ print(
 )
 
 print(
-    f"\n=== PROCESSING {len(chunks)} CHUNKS (MAX SIZE: {MAX_CHARS_PER_CHUNK}) ==="
+    f"\n=== PROCESSING {len(chunks)} CHUNKS (MAX SIZE (excluding JSON overhead): {MAX_CHARS_PER_CHUNK}) ==="
 )
 
 for chunk_index, chunk_text in enumerate(chunks):
 
     print(
-        f"Processing chunk {chunk_index + 1}/{len(chunks)} [{len(chunk_text)}]"
+        f"Processing chunk {chunk_index + 1}/{len(chunks)} [{len(chunk_text)} chars]"
     )
 
     start = time.perf_counter()
@@ -332,7 +332,7 @@ print(
 # ------------------------------------------------------------
 
 output_path = Path(
-    "terminology/terminology.json"
+    f"terminology/{FILENAME}-terminology.json"
 )
 
 with output_path.open(
