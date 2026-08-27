@@ -8,8 +8,9 @@ from openai import OpenAI
 # ------------------------------------------------------------
 # Configuration
 # ------------------------------------------------------------
+LLM_MODEL = "gpt-5.4-mini" #"gpt-5.6-luna"
 
-FILENAME = "dnd-phandelver-below.pbso-items.json"
+FILENAME = "dnd-phandelver-below.pbso-adventures.json"
 
 
 # ------------------------------------------------------------
@@ -204,8 +205,8 @@ def translate_json(
         )
 
     print(
-        "\n=== COMPLETE PROTECTED JSON "
-        "SENT TO LLM ==="
+        f"\n=== COMPLETE PROTECTED JSON "
+        f"SENT TO LLM (using Model {LLM_MODEL}) ==="
     )
 
     print(
@@ -232,7 +233,7 @@ def translate_json(
     start = time.perf_counter()
 
     response = client.responses.create(
-        model="gpt-5.4-mini",
+        model=LLM_MODEL,
         instructions=instructions,
         input=protected_json
     )
@@ -260,6 +261,7 @@ def translate_json(
     )
 
     if not integrity_ok:
+        print(f"Error in restored_json: {restored_json}")
         raise ValueError(
             "Protected Foundry elements were "
             "missing or modified during translation."
@@ -323,6 +325,10 @@ original_json = json.dumps(
     data,
     ensure_ascii=False,
     indent=2
+)
+
+print(
+    f"\n=== USING LLM MODEL {LLM_MODEL} ==="
 )
 
 print(

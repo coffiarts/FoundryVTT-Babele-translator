@@ -7,8 +7,9 @@ from openai import OpenAI
 # ------------------------------------------------------------
 # Configuration
 # ------------------------------------------------------------
+LLM_MODEL = "gpt-5.4-mini" #"gpt-5.6-luna"
 
-FILENAME = "dnd-phandelver-below.pbso-items.json"
+FILENAME = "dnd-phandelver-below.pbso-adventures.json"
 
 
 # ------------------------------------------------------------
@@ -55,7 +56,6 @@ Use English for all metadata and notes.
 
 Return only valid JSON.
 """
-
 
 # ------------------------------------------------------------
 # Collect translatable texts
@@ -152,13 +152,13 @@ client = OpenAI(
 # ------------------------------------------------------------
 
 print(
-    "\n=== EXTRACTING TERMINOLOGY ==="
+    f"\n=== EXTRACTING TERMINOLOGY (using LLM MODEL {LLM_MODEL}) ==="
 )
 
 start = time.perf_counter()
 
 terminology_response = client.responses.create(
-    model="gpt-5.4-mini",
+    model=LLM_MODEL,
     instructions=TERMINOLOGY_INSTRUCTIONS,
     input=input_text,
     text={
