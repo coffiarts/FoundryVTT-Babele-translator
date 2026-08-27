@@ -224,7 +224,7 @@ __marimo__/
 *.iml
 /.idea/misc.xml
 /.idea/modules.xml
-/tmp.py
+/analyze_json_structure.py
 /.idea/vcs.xml
 /.idea/workspace.xml
 
