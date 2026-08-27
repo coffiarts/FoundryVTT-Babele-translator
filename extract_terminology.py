@@ -2,7 +2,18 @@ import json
 import time
 from pathlib import Path
 from openai import OpenAI
-from openai.types.responses import ResponseTextConfigParam
+
+
+# ------------------------------------------------------------
+# Configuration
+# ------------------------------------------------------------
+
+FILENAME = "dnd-phandelver-below.pbso-items.json"
+
+
+# ------------------------------------------------------------
+# Terminology instructions
+# ------------------------------------------------------------
 
 TERMINOLOGY_INSTRUCTIONS = """
 You are a terminology analyst for a German translation of a
@@ -45,81 +56,80 @@ Use English for all metadata and notes.
 Return only valid JSON.
 """
 
-MAX_CHARS_PER_CHUNK = 50000
+
+# ------------------------------------------------------------
+# Collect translatable texts
+# ------------------------------------------------------------
 
 def collect_translatable_texts(value):
     texts = []
 
     if isinstance(value, dict):
+
         for key, item in value.items():
-            if key in {"text", "name", "caption", "description"}:
+
+            if key in {
+                "text",
+                "name",
+                "caption",
+                "description"
+            }:
+
                 if isinstance(item, str):
                     texts.append(item)
+
             elif isinstance(item, (dict, list)):
-                texts.extend(collect_translatable_texts(item))
+                texts.extend(
+                    collect_translatable_texts(item)
+                )
 
     elif isinstance(value, list):
+
         for item in value:
-            texts.extend(collect_translatable_texts(item))
-
-    return texts
-
-
-def create_chunks(texts, max_chars=MAX_CHARS_PER_CHUNK):
-    chunks = []
-    current = []
-    current_length = 0
-
-    for text in texts:
-        text_length = len(text)
-
-        # Ein einzelnes Element ist bereits größer als das Limit.
-        # Nicht zerschneiden, sondern als eigenen Chunk übernehmen.
-        if text_length > max_chars:
-            if current:
-                chunks.append("\n\n".join(current))
-                current = []
-                current_length = 0
-
-            print(
-                f"WARNING: Single JSON element exceeds max_chars "
-                f"({text_length:,} > {max_chars:,} characters)"
+            texts.extend(
+                collect_translatable_texts(item)
             )
 
-            chunks.append(text)
-            continue
-
-        # Passt das Element noch in den aktuellen Chunk?
-        separator_length = 2 if current else 0
-
-        if current and current_length + separator_length + text_length > max_chars:
-            chunks.append("\n\n".join(current))
-            current = []
-            current_length = 0
-
-        current.append(text)
-        current_length += (2 if current_length > 0 else 0) + text_length
-
-    if current:
-        chunks.append("\n\n".join(current))
-
-    return chunks
+    return texts
 
 
 # ------------------------------------------------------------
 # Load input JSON
 # ------------------------------------------------------------
 
-with open("input/dnd-phandelver-below.pbso-items.json", "r", encoding="utf-8") as file:
+input_path = Path(
+    "input"
+) / FILENAME
+
+with input_path.open(
+        "r",
+        encoding="utf-8"
+) as file:
     data = json.load(file)
 
-all_texts = collect_translatable_texts(data)
 
-chunks = create_chunks(all_texts)
+# ------------------------------------------------------------
+# Collect translatable texts
+# ------------------------------------------------------------
 
-print(f"\n=== TERMINOLOGY CHUNKS: {len(chunks)} ===")
-for index, chunk in enumerate(chunks, start=1):
-    print(f"Chunk {index}: {len(chunk):,} characters")
+texts = collect_translatable_texts(data)
+
+print(
+    f"\n=== TRANSLATABLE TEXTS: "
+    f"{len(texts)} ==="
+)
+
+
+# ------------------------------------------------------------
+# Build complete input text
+# ------------------------------------------------------------
+
+input_text = "\n\n".join(texts)
+
+print(
+    f"=== COMPLETE TEXT FOR TERMINOLOGY "
+    f"ANALYSIS: {len(input_text):,} characters ==="
+)
 
 
 # ------------------------------------------------------------
@@ -128,93 +138,99 @@ for index, chunk in enumerate(chunks, start=1):
 
 api_key = Path(
     "local_secret_do_not_commit/openai_api_key.txt"
-).read_text(encoding="utf-8").strip()
+).read_text(
+    encoding="utf-8"
+).strip()
 
-client = OpenAI(api_key=api_key)
+client = OpenAI(
+    api_key=api_key
+)
 
 
 # ------------------------------------------------------------
-# Extract terminology candidates
+# Extract terminology
 # ------------------------------------------------------------
+
+print(
+    "\n=== EXTRACTING TERMINOLOGY ==="
+)
 
 start = time.perf_counter()
 
-all_terms = []
-
-for index, chunk in enumerate(chunks, start=1):
-
-    print(f"\n=== TERMINOLOGY CHUNK {index}/{len(chunks)} ===")
-
-    start = time.perf_counter()
-
-    terminology_response = client.responses.create(
-        model="gpt-5.4-mini",
-        instructions=TERMINOLOGY_INSTRUCTIONS,
-        input=chunk,
-        text={
-            "format": {
-                "type": "json_schema",
-                "name": "terminology",
-                "strict": True,
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "terms": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "original": {
-                                        "type": "string"
-                                    },
-                                    "proposedGerman": {
-                                        "type": "string"
-                                    },
-                                    "gender": {
-                                        "type": "string"
-                                    },
-                                    "number": {
-                                        "type": "string"
-                                    },
-                                    "properName": {
-                                        "type": "boolean"
-                                    },
-                                    "note": {
-                                        "type": "string"
-                                    }
+terminology_response = client.responses.create(
+    model="gpt-5.4-mini",
+    instructions=TERMINOLOGY_INSTRUCTIONS,
+    input=input_text,
+    text={
+        "format": {
+            "type": "json_schema",
+            "name": "terminology",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "terms": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "original": {
+                                    "type": "string"
                                 },
-                                "required": [
-                                    "original",
-                                    "proposedGerman",
-                                    "gender",
-                                    "number",
-                                    "properName",
-                                    "note"
-                                ],
-                                "additionalProperties": False
-                            }
+                                "proposedGerman": {
+                                    "type": "string"
+                                },
+                                "gender": {
+                                    "type": "string"
+                                },
+                                "number": {
+                                    "type": "string"
+                                },
+                                "properName": {
+                                    "type": "boolean"
+                                },
+                                "note": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "original",
+                                "proposedGerman",
+                                "gender",
+                                "number",
+                                "properName",
+                                "note"
+                            ],
+                            "additionalProperties": False
                         }
-                    },
-                    "required": ["terms"],
-                    "additionalProperties": False
-                }
+                    }
+                },
+                "required": [
+                    "terms"
+                ],
+                "additionalProperties": False
             }
         }
-    )
-
-    end = time.perf_counter()
-
-    print(
-        f"API duration: {end - start:.2f} seconds"
-    )
-
-    terminology = json.loads(terminology_response.output_text)
-
-    all_terms.extend(terminology["terms"])
-
-    terminology = {
-        "terms": all_terms
     }
+)
+
+end = time.perf_counter()
+
+print(
+    f"API duration: "
+    f"{end - start:.2f} seconds"
+)
+
+
+# ------------------------------------------------------------
+# Parse terminology response
+# ------------------------------------------------------------
+
+terminology = json.loads(
+    terminology_response.output_text
+)
+
+all_terms = terminology["terms"]
 
 
 # ------------------------------------------------------------
@@ -224,9 +240,21 @@ for index, chunk in enumerate(chunks, start=1):
 unique_terms = {}
 
 for term in all_terms:
+
     if "original" not in term:
-        print("\n=== INVALID TERMINOLOGY ENTRY ===")
-        print(json.dumps(term, ensure_ascii=False, indent=2))
+
+        print(
+            "\n=== INVALID TERMINOLOGY ENTRY ==="
+        )
+
+        print(
+            json.dumps(
+                term,
+                ensure_ascii=False,
+                indent=2
+            )
+        )
+
         continue
 
     original = term["original"]
@@ -234,20 +262,37 @@ for term in all_terms:
     if original not in unique_terms:
         unique_terms[original] = term
 
+
 terminology = {
-    "terms": list(unique_terms.values())
+    "terms": list(
+        unique_terms.values()
+    )
 }
+
+
+# ------------------------------------------------------------
+# Report result
+# ------------------------------------------------------------
+
+print(
+    f"\n=== TERMINOLOGY ENTRIES: "
+    f"{len(terminology['terms'])} ==="
+)
 
 
 # ------------------------------------------------------------
 # Save terminology
 # ------------------------------------------------------------
 
-with open(
-        "terminology/terminology.json",
+output_path = Path(
+    "terminology/terminology.json"
+)
+
+with output_path.open(
         "w",
         encoding="utf-8"
 ) as file:
+
     json.dump(
         terminology,
         file,
@@ -255,9 +300,21 @@ with open(
         indent=2
     )
 
+
+print(
+    f"Saved terminology to: {output_path}"
+)
+
+
+# ------------------------------------------------------------
+# Optional detailed output
+# ------------------------------------------------------------
+
 # print("\n=== TERMINOLOGY ===")
-# print(json.dumps(
-#     terminology,
-#     ensure_ascii=False,
-#     indent=2
-# ))
+# print(
+#     json.dumps(
+#         terminology,
+#         ensure_ascii=False,
+#         indent=2
+#     )
+# )
