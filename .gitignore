@@ -227,3 +227,11 @@ __marimo__/
 /tmp.py
 /.idea/vcs.xml
 /.idea/workspace.xml
+
+#local input and output files
+/input/
+/terminology/
+/output/
+
+#other local junk
+TODO.md

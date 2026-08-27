@@ -65,7 +65,28 @@ explicitly specifies otherwise.
 Return only the translated text.
 """
 
-def create_chunks(items, max_chars=50000):
+MAX_CHARS_PER_CHUNK = 50000
+
+
+def collect_translatable_texts(value):
+    texts = []
+
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if key in {"text", "name", "caption", "description"}:
+                if isinstance(item, str):
+                    texts.append(item)
+            elif isinstance(item, (dict, list)):
+                texts.extend(collect_translatable_texts(item))
+
+    elif isinstance(value, list):
+        for item in value:
+            texts.extend(collect_translatable_texts(item))
+
+    return texts
+
+
+def create_chunks(items, max_chars=MAX_CHARS_PER_CHUNK):
     chunks = []
     current_texts = []
     current_protected = {}
@@ -76,7 +97,11 @@ def create_chunks(items, max_chars=50000):
         protected = item["protected"]
         text_length = len(text)
 
-        if current_texts and current_length + text_length > max_chars:
+        separator_length = 2 if current_texts else 0
+
+        if current_texts and (
+                current_length + separator_length + text_length > max_chars
+        ):
             chunks.append({
                 "text": "\n\n".join(current_texts),
                 "protected": current_protected
@@ -88,7 +113,11 @@ def create_chunks(items, max_chars=50000):
 
         current_texts.append(text)
         current_protected.update(protected)
-        current_length += text_length
+
+        current_length += (
+                (2 if len(current_texts) > 1 else 0)
+                + text_length
+        )
 
     if current_texts:
         chunks.append({
@@ -128,8 +157,8 @@ def translate_text(client, text, terminology, protected):
     # The text has already been protected before chunking.
     protected_text = text
 
-    print("=== PROTECTED TEXT ===")
-    print(protected_text)
+    # print("=== PROTECTED TEXT ===")
+    # print(protected_text)
 
     print("\n=== PROTECTED ELEMENTS ===")
     for placeholder, original in protected.items():
@@ -138,8 +167,8 @@ def translate_text(client, text, terminology, protected):
     # Translate using the existing terminology database.
     start = time.perf_counter()
 
-    print("\n=== CHUNK SENT TO LLM ===")
-    print(protected_text)
+    print("\n=== CHUNK (PROTECTED TEXT) SENT TO LLM ===")
+    print(f"{len(protected_text)} characters")
 
     response = client.responses.create(
         model="gpt-5.4-mini",
@@ -187,14 +216,11 @@ client = OpenAI(api_key=api_key)
 # Load input text
 # ------------------------------------------------------------
 
-with open("input/test-entry.json", "r", encoding="utf-8") as file:
+with open("input/dnd-phandelver-below.pbso-items.json", "r", encoding="utf-8") as file:
     data = json.load(file)
 
-texts = [
-    entry["text"]
-    for entry in data.values()
-    if "text" in entry
-]
+texts = collect_translatable_texts(data)
+
 
 # ------------------------------------------------------------
 # Parse all chunks one by one
@@ -222,6 +248,7 @@ chunks = create_chunks(protected_chunks)
 print(f"\n=== CHUNKS: {len(chunks)} ===")
 for index, chunk in enumerate(chunks, start=1):
     print(f"Chunk {index}: {len(chunk['text'])} characters")
+    print(chunk)
 
 
 # ------------------------------------------------------------
@@ -262,4 +289,5 @@ for index, chunk in enumerate(chunks, start=1):
 translated_text = "\n\n".join(translated_chunks)
 
 print("\n=== TRANSLATION ===")
+print(f"{len(translated_text)} characters")
 print(translated_text)

@@ -45,6 +45,8 @@ Use English for all metadata and notes.
 Return only valid JSON.
 """
 
+MAX_CHARS_PER_CHUNK = 50000
+
 def collect_translatable_texts(value):
     texts = []
 
@@ -63,7 +65,7 @@ def collect_translatable_texts(value):
     return texts
 
 
-def create_chunks(texts, max_chars=50000):
+def create_chunks(texts, max_chars=MAX_CHARS_PER_CHUNK):
     chunks = []
     current = []
     current_length = 0
@@ -71,13 +73,32 @@ def create_chunks(texts, max_chars=50000):
     for text in texts:
         text_length = len(text)
 
-        if current and current_length + text_length > max_chars:
+        # Ein einzelnes Element ist bereits größer als das Limit.
+        # Nicht zerschneiden, sondern als eigenen Chunk übernehmen.
+        if text_length > max_chars:
+            if current:
+                chunks.append("\n\n".join(current))
+                current = []
+                current_length = 0
+
+            print(
+                f"WARNING: Single JSON element exceeds max_chars "
+                f"({text_length:,} > {max_chars:,} characters)"
+            )
+
+            chunks.append(text)
+            continue
+
+        # Passt das Element noch in den aktuellen Chunk?
+        separator_length = 2 if current else 0
+
+        if current and current_length + separator_length + text_length > max_chars:
             chunks.append("\n\n".join(current))
             current = []
             current_length = 0
 
         current.append(text)
-        current_length += text_length
+        current_length += (2 if current_length > 0 else 0) + text_length
 
     if current:
         chunks.append("\n\n".join(current))
@@ -234,9 +255,9 @@ with open(
         indent=2
     )
 
-print("\n=== TERMINOLOGY ===")
-print(json.dumps(
-    terminology,
-    ensure_ascii=False,
-    indent=2
-))
+# print("\n=== TERMINOLOGY ===")
+# print(json.dumps(
+#     terminology,
+#     ensure_ascii=False,
+#     indent=2
+# ))
