@@ -9,7 +9,7 @@ from openai import OpenAI
 # Configuration
 # ------------------------------------------------------------
 
-FILENAME = "dnd-phandelver-below.pbso-items.json"
+FILENAME = "dnd-phandelver-below.pbso-adventures.json"
 
 TRANSLATABLE_FIELDS = {
     "text",
@@ -216,7 +216,7 @@ with input_path.open(
     original_data = json.load(file)
 
 with open(
-        f"terminology/{FILENAME}-terminology.json",
+        f"terminology/terminology-{FILENAME}",
         "r",
         encoding="utf-8"
 ) as file:

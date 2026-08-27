@@ -332,7 +332,7 @@ print(
 # ------------------------------------------------------------
 
 output_path = Path(
-    f"terminology/{FILENAME}-terminology.json"
+    f"terminology/terminology-{FILENAME}"
 )
 
 with output_path.open(
