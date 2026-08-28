@@ -9,7 +9,7 @@ from openai import OpenAI
 # Configuration
 # ------------------------------------------------------------
 
-FILENAME = "dnd-phandelver-below.pbso-adventures.json"
+FILENAME = "dnd-phandelver-below.pbso-items.json"
 
 TRANSLATABLE_FIELDS = {
     "text",
@@ -47,6 +47,23 @@ Rules:
 - Do not omit entries.
 - Do not add entries.
 - Return only JSON.
+
+A placeholder always belongs to the label that follows it.
+
+When translating, the label may be translated and moved
+to a different position in the sentence if German grammar
+requires it.
+
+However, the placeholder must move together with the label.
+
+Input:
+They are loyal to <<<FOUNDRY_000001>>>{King Grol}.
+
+Correct output:
+Sie sind <<<FOUNDRY_000001>>>{König Grol} gegenüber loyal.
+
+Incorrect output:
+Sie sind König Grol gegenüber loyal.
 """
 
 MAX_CHARS_PER_CHUNK = 30000
@@ -178,6 +195,21 @@ def verify_protected_integrity(
                 f"{count}"
             )
 
+            print(
+                f"\nTranslated text (missing {placeholder}): "
+                f"{translated_text}"
+            )
+
+            print(
+                f"\nOriginal text (should contain {placeholder}): "
+                f"{original_protected_text}"
+            )
+
+            print(
+                f"\n=== PROTECTED ELEMENT ===\n"
+                f"{placeholder} -> {protected_elements[placeholder]}"
+            )
+
             raise ValueError(
                 f"Placeholder integrity failure: "
                 f"{placeholder}"
@@ -200,7 +232,7 @@ def reinsert_translations(
         )
 
 # ------------------------------------------------------------
-# Load JSON
+# Load JSON: Input file and (master) terminology file
 # ------------------------------------------------------------
 
 input_path = (
@@ -215,27 +247,28 @@ with input_path.open(
 
     original_data = json.load(file)
 
+master_terminology_filename = f"terminology/terminology-{FILENAME}"
+
 with open(
-        f"terminology/terminology-{FILENAME}",
+        master_terminology_filename,
         "r",
         encoding="utf-8"
 ) as file:
 
-    terminology = json.load(file)
+    master_terminology = json.load(file)
 
-terminology_json = json.dumps(
-    terminology,
+master_terminology_json = json.dumps(
+    master_terminology,
     ensure_ascii=False,
     indent=2
 )
 
-instructions = (
-        TRANSLATION_INSTRUCTIONS
-        + "\n\n"
-        + "=== TERMINOLOGY DATABASE ===\n"
-        + terminology_json
-        + "\n\n"
-        + "=== END TERMINOLOGY DATABASE ===\n"
+
+print(
+    f"\n=== MASTER TERMINOLOGY (derived from complete input file) ===\n"
+    f"source: {master_terminology_filename}\n"
+    f"term count: {len(master_terminology["terms"])}\n"
+    f"json chars: {len(master_terminology_json):,}"
 )
 
 # ------------------------------------------------------------
@@ -386,31 +419,31 @@ for field in ["name", "description", "text", "caption"]:
 
 print(f"chars_per_field: {chars_per_field}")
 
-print(
-    f"\n=== FIRST 10 NODES DETAILS ==="
-)
-
-for node in nodes[:10]:
-
-    print(
-        f"\nID: {node['id']}"
-    )
-
-    print(
-        f"CONTAINER length: {len(node['container'])}"
-    )
-
-    print(
-        f"FIELD: {node['key']}"
-    )
-
-    print(
-        f"ORIGINAL [first <=100 of {len(node["original"])} chars]: {node["original"][:100]}"
-    )
+# print(
+#     f"\n=== FIRST 10 NODES DETAILS ==="
+# )
+#
+# for node in nodes[:10]:
+#
+#     print(
+#         f"\nID: {node['id']}"
+#     )
+#
+#     print(
+#         f"CONTAINER length: {len(node['container'])}"
+#     )
+#
+#     print(
+#         f"FIELD: {node['key']}"
+#     )
+#
+#     print(
+#         f"ORIGINAL [first <=100 of {len(node["original"])} chars]: {node["original"][:100]}"
+#     )
 
 
 # ------------------------------------------------------------
-# Translate the compendium (chunkwise)
+# Translate the compendium (chunk-wise)
 # ------------------------------------------------------------
 
 translations = {}
@@ -421,9 +454,67 @@ print(
 
 for chunk_index, chunk in enumerate(chunks):
 
-    print(
-        f"Processing chunk {chunk_index + 1}/{len(chunks)} [{len(chunk)} chars]"
+    chunk_text = "\n".join(
+        node["original"]
+        for node in chunk
     )
+
+    print(
+        f"\nProcessing chunk {chunk_index + 1}/{len(chunks)} [{len(chunk_text)} chars]"
+    )
+
+    # ----------------------------------------------------------
+    # Build chunk-specific sub-terminology from master terminology
+    # ----------------------------------------------------------
+
+    chunk_text = "\n".join(
+        node["original"]
+        for node in chunk
+    )
+
+    chunk_text_lower = chunk_text.lower()
+
+    chunk_relevant_terms = [
+        term
+        for term in master_terminology["terms"]
+        if term["original"].lower() in chunk_text_lower
+    ]
+
+    print(
+        f"Chunk {chunk_index + 1}: "
+        f"{len(chunk_relevant_terms)} relevant terms"
+    )
+
+    chunk_relevant_terminology = {
+        "terms": chunk_relevant_terms
+    }
+
+
+    chunk_relevant_terminology_json = json.dumps(
+        chunk_relevant_terminology,
+        ensure_ascii=False,
+        indent=2
+    )
+
+    print(
+        f"Length of chunk-relevant terminology: "
+        f"terms: {len(chunk_relevant_terminology):,}, "
+        f"json chars: {len(chunk_relevant_terminology_json):,}"
+    )
+
+    chunk_instructions_with_terminology = (
+            TRANSLATION_INSTRUCTIONS
+            + "\n\n"
+            + "=== TERMINOLOGY DATABASE ===\n"
+            + chunk_relevant_terminology_json
+            + "\n\n"
+            + "=== END TERMINOLOGY DATABASE ===\n"
+    )
+
+    # print(
+    #     f"\n=== Instructions used in this chunk (with chunk-relevant terminology) ===\n"
+    #     f"{chunk_instructions_with_terminology}"
+    # )
 
     # ----------------------------------------
     # Build payload for this chunk
@@ -468,7 +559,7 @@ for chunk_index, chunk in enumerate(chunks):
 
     response = client.responses.create(
         model="gpt-5.4-mini",
-        instructions=instructions,
+        instructions=chunk_instructions_with_terminology,
         input=json.dumps(
             chunk_payload,
             ensure_ascii=False
@@ -486,6 +577,11 @@ for chunk_index, chunk in enumerate(chunks):
         f"Response length: "
         f"{len(response.output_text):,}"
     )
+
+    # print(
+    #     f"Response content: "
+    #     f"{response.output_text}"
+    # )
 
     translated_payload = json.loads(
         response.output_text
