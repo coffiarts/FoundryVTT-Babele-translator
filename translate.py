@@ -270,11 +270,34 @@ def verify_protected_integrity(
 # (used by all FATAL error cases to rescue as much processed data as possible)
 # ----------------------------------------------------------------------------
 
+def reinsert_translations(
+        nodes,
+        translations
+):
+
+    for node in nodes:
+
+        node["container"][node["key"]] = (
+            translations[node["id"]]
+        )
+
+
+# ------------------------------------------------------------
+# Function: Reinsert translations
+# ------------------------------------------------------------
+
+global_timer_start = time.perf_counter()
+
+# ------------------------------------------------------------
+# Load JSON: Input file and (master) terminology file
+# ------------------------------------------------------------
+
 def post_mortem_dump(
         title,
         details,
-        raw_response=None,
         response_metadata=None,
+        raw_response=None,
+        chunk_payload=None,
         translations=None,
         protected_elements=None,
         integrity_errors=None
@@ -354,6 +377,24 @@ def post_mortem_dump(
 
             file.write("\n\n")
 
+        if chunk_payload is not None:
+
+            file.write(
+                "====================================================\n"
+                "CHUNK PAYLOAD\n"
+                "====================================================\n\n"
+            )
+
+            file.write(
+                json.dumps(
+                    chunk_payload,
+                    indent=2,
+                    ensure_ascii=False
+                )
+            )
+
+            file.write("\n\n")
+
         if translations is not None:
 
             file.write(
@@ -397,28 +438,6 @@ def post_mortem_dump(
     print(
         f"{ERROR_FILENAME}"
     )
-
-
-# ------------------------------------------------------------
-# Function: Reinsert translations
-# ------------------------------------------------------------
-
-def reinsert_translations(
-        nodes,
-        translations
-):
-
-    for node in nodes:
-
-        node["container"][node["key"]] = (
-            translations[node["id"]]
-        )
-
-# ------------------------------------------------------------
-# Load JSON: Input file and (master) terminology file
-# ------------------------------------------------------------
-
-global_timer_start = time.perf_counter()
 
 input_path = (
         Path("input")
@@ -787,6 +806,7 @@ for chunk_index, chunk in enumerate(chunks):
                 f"{str(e)}"
             ),
             raw_response=response.output_text,
+            chunk_payload=chunk_payload,
             translations=translations,
             protected_elements=protected_elements,
             integrity_errors=integrity_errors
@@ -825,6 +845,7 @@ for chunk_index, chunk in enumerate(chunks):
             ),
             raw_response=response.output_text,
             response_metadata=response_metadata,
+            chunk_payload=chunk_payload,
             translations=translations,
             protected_elements=protected_elements,
             integrity_errors=integrity_errors
