@@ -10,6 +10,8 @@ from openai import OpenAI
 # ------------------------------------------------------------
 
 FILENAME = "adventures-test.json"
+MAX_CHARS_PER_CHUNK = 50000 # It may (unproven) help to scale this with the overall input size (larger input => larger batch size)
+
 ERROR_FILENAME = (
     f"errors/"
     f"{FILENAME}-errors.txt"
@@ -69,8 +71,6 @@ Sie sind <<<FOUNDRY_000001>>>{König Grol} gegenüber loyal.
 Incorrect output:
 Sie sind König Grol gegenüber loyal.
 """
-
-MAX_CHARS_PER_CHUNK = 10000
 
 # ------------------------------------------------------------
 # Function: Global placeholder registry
@@ -167,6 +167,23 @@ def restore_foundry_syntax(
 
 
 # ------------------------------------------------------------
+# Function: Extract Response Metadata
+# ------------------------------------------------------------
+
+def extract_response_metadata(
+        response
+):
+    # Debugging only
+    # print(type(response))
+    # print(dir(response))
+
+    return {
+        "status": response.status,
+        "incomplete_details": response.incomplete_details,
+        "truncation": response.truncation
+    }
+
+# ------------------------------------------------------------
 # Function: Verify placeholder integrity
 # ------------------------------------------------------------
 
@@ -256,6 +273,7 @@ def post_mortem_dump(
         title,
         details,
         raw_response=None,
+        response_metadata=None,
         translations=None,
         protected_elements=None,
         integrity_errors=None
@@ -282,6 +300,24 @@ def post_mortem_dump(
         file.write(
             f"{details}\n\n"
         )
+
+        if response_metadata is not None:
+
+            file.write(
+                "====================================================\n"
+                "RESPONSE METADATA\n"
+                "====================================================\n\n"
+            )
+
+            file.write(
+                json.dumps(
+                    response_metadata,
+                    indent=2,
+                    ensure_ascii=False
+                )
+            )
+
+            file.write("\n\n")
 
         if raw_response is not None:
 
@@ -349,13 +385,13 @@ def post_mortem_dump(
 
             file.write("\n\n")
 
-            print(
-                f"\n❌ POST-MORTEM DUMP WRITTEN"
-            )
+    print(
+        f"\n❌ POST-MORTEM DUMP WRITTEN"
+    )
 
-            print(
-                f"{ERROR_FILENAME}"
-            )
+    print(
+        f"{ERROR_FILENAME}"
+    )
 
 
 # ------------------------------------------------------------
@@ -708,6 +744,14 @@ for chunk_index, chunk in enumerate(chunks):
 
     chunk_timer_end = time.perf_counter()
 
+    # Store response info for potential later debugging or dumping
+    # (for tracing API response issues)
+    response_metadata = (
+        extract_response_metadata(
+            response
+        )
+    )
+
     print(
         f"Chunk {chunk_index + 1}/{len(chunks)} API duration: "
         f"{chunk_timer_end - chunk_timer_start:.2f} seconds"
@@ -812,6 +856,7 @@ for chunk_index, chunk in enumerate(chunks):
                     f"Returned entries: {returned_entries}"
                 ),
                 raw_response=response.output_text,
+                response_metadata=response_metadata,
                 translations=translations,
                 protected_elements=protected_elements,
                 integrity_errors=integrity_errors
