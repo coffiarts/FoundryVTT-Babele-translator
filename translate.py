@@ -72,6 +72,7 @@ Incorrect output:
 Sie sind König Grol gegenüber loyal.
 """
 
+
 # ------------------------------------------------------------
 # Function: Global placeholder registry
 # ------------------------------------------------------------
@@ -300,8 +301,12 @@ def post_mortem_dump(
         file.write(
             f"{details}\n\n"
         )
+        print(
+            f"Response metadata: {response_metadata}"
+        )
 
         if response_metadata is not None:
+
 
             file.write(
                 "====================================================\n"
@@ -809,67 +814,30 @@ for chunk_index, chunk in enumerate(chunks):
 
     if returned_entries != expected_entries:
 
-        # FATAL ERROR: Returned entries do not match expected entries- Immediate dump and abort.
+        # FATAL ERROR: Returned entries do not match expected entries -> Immediate dump and abort.
 
-        with open(
-                ERROR_FILENAME,
-                "w",
-                encoding="utf-8"
-        ) as file:
+        post_mortem_dump(
+            title="FATAL ERROR",
+            details=(
+                f"Chunk: {chunk_index + 1}\n"
+                f"Expected entries: {expected_entries}\n"
+                f"Returned entries: {returned_entries}"
+            ),
+            raw_response=response.output_text,
+            response_metadata=response_metadata,
+            translations=translations,
+            protected_elements=protected_elements,
+            integrity_errors=integrity_errors
+        )
 
-            file.write(
-                "====================================================\n"
-                "FATAL ERROR\n"
-                "====================================================\n\n"
-            )
-
-            file.write(
-                f"Chunk: "
-                f"{chunk_index + 1}\n"
-            )
-
-            file.write(
-                f"Expected entries: "
-                f"{expected_entries}\n"
-            )
-
-            file.write(
-                f"Returned entries: "
-                f"{returned_entries}\n\n"
-            )
-
-            file.write(
-                "====================================================\n"
-                "RAW RESPONSE OUTPUT\n"
-                "====================================================\n\n"
-            )
-
-            file.write(
-                response.output_text
-            )
-
-            post_mortem_dump(
-                title="FATAL ERROR",
-                details=(
-                    f"Chunk: {chunk_index + 1}\n"
-                    f"Expected entries: {expected_entries}\n"
-                    f"Returned entries: {returned_entries}"
-                ),
-                raw_response=response.output_text,
-                response_metadata=response_metadata,
-                translations=translations,
-                protected_elements=protected_elements,
-                integrity_errors=integrity_errors
-            )
-
-            raise RuntimeError(
-                f"❌ FATAL: Chunk "
-                f"{chunk_index + 1} "
-                f"returned "
-                f"{returned_entries} "
-                f"entries instead of "
-                f"{expected_entries}"
-            )
+        raise RuntimeError(
+            f"❌ FATAL: Chunk "
+            f"{chunk_index + 1} "
+            f"returned "
+            f"{returned_entries} "
+            f"entries instead of "
+            f"{expected_entries}"
+        )
 
     chunk_translations = {}
 
