@@ -9,7 +9,7 @@ from openai import OpenAI
 # Configuration
 # ------------------------------------------------------------
 
-FILENAME = "dnd-phandelver-below.pbso-items.json"
+FILENAME = "adventures-test.json"
 
 TRANSLATABLE_FIELDS = {
     "text",
@@ -66,16 +66,16 @@ Incorrect output:
 Sie sind König Grol gegenüber loyal.
 """
 
-MAX_CHARS_PER_CHUNK = 30000
+MAX_CHARS_PER_CHUNK = 50000
 
 # ------------------------------------------------------------
-# Global placeholder registry
+# Function: Global placeholder registry
 # ------------------------------------------------------------
 
 protected_elements = {}
 
 # ------------------------------------------------------------
-# Collect translatable nodes
+# Function: Collect translatable nodes
 # ------------------------------------------------------------
 
 def collect_translatable_nodes(value, nodes):
@@ -114,7 +114,7 @@ def collect_translatable_nodes(value, nodes):
 
 
 # ------------------------------------------------------------------
-# Protect & Restore Foundry Syntax (aka "Protection by Placeholder")
+# Function: Protect & Restore Foundry Syntax (aka "Protection by Placeholder")
 # ------------------------------------------------------------------
 
 def protect_foundry_syntax(text):
@@ -163,7 +163,7 @@ def restore_foundry_syntax(
 
 
 # ------------------------------------------------------------
-# Verify placeholder integrity
+# Function: Verify placeholder integrity
 # ------------------------------------------------------------
 
 def verify_protected_integrity(
@@ -210,14 +210,41 @@ def verify_protected_integrity(
                 f"{placeholder} -> {protected_elements[placeholder]}"
             )
 
-            raise ValueError(
-                f"Placeholder integrity failure: "
-                f"{placeholder}"
+            position = original_protected_text.find(
+                placeholder
             )
 
+            start = max(
+                0,
+                position - 200
+            )
+
+            end = min(
+                len(original_protected_text),
+                position + len(placeholder) + 200
+            )
+
+            return {
+                "placeholder": placeholder,
+                "count": count,
+                "translated_context": translated_text[
+                    max(0, position - 300):
+                    min(len(translated_text), position + 300)
+                ],
+                "original_context": original_protected_text[
+                    start:end
+                ]
+            }
+
+            # raise ValueError(
+            #     f"Placeholder integrity failure: "
+            #     f"{placeholder}"
+            # )
+
+    return None
 
 # ------------------------------------------------------------
-# Reinsert translations
+# Function: Reinsert translations
 # ------------------------------------------------------------
 
 def reinsert_translations(
@@ -235,6 +262,8 @@ def reinsert_translations(
 # Load JSON: Input file and (master) terminology file
 # ------------------------------------------------------------
 
+global_timer_start = time.perf_counter()
+
 input_path = (
         Path("input")
         / FILENAME
@@ -246,6 +275,11 @@ with input_path.open(
 ) as file:
 
     original_data = json.load(file)
+
+print(
+    f"\n=== PROCESSING FILE: {input_path} ===\n"
+    f"Batch Size: max. {MAX_CHARS_PER_CHUNK} chars (excluding instructions & terminology)"
+)
 
 master_terminology_filename = f"terminology/terminology-{FILENAME}"
 
@@ -335,8 +369,7 @@ if current_chunk:
     chunks.append(current_chunk)
 
 print(
-    f"\n=== CHUNKS ===\n"
-    f"{len(chunks)}"
+    f"\n=== CHUNKS SPLIT: {len(chunks)} ==="
 )
 
 for i, chunk in enumerate(chunks):
@@ -359,8 +392,7 @@ for i, chunk in enumerate(chunks):
 
 # Summary of payload contents
 print(
-    f"\n=== TRANSLATABLE NODES ===\n"
-    f"{len(nodes)}"
+    f"\n=== TRANSLATABLE NODES ===: {len(nodes)}\n"
 )
 
 complete_payload = []
@@ -448,11 +480,17 @@ print(f"chars_per_field: {chars_per_field}")
 
 translations = {}
 
+integrity_errors = []
+
 print(
-    f"\n=== PROCESSING {len(chunks)} CHUNKS (MAX SIZE (excluding JSON overhead): {MAX_CHARS_PER_CHUNK}) ==="
+    f"\n=== PROCESSING {len(chunks)} CHUNKS ==="
 )
 
 for chunk_index, chunk in enumerate(chunks):
+
+    # Only for debugging (stop-after-n-chunks switch)
+    # if (chunk_index > 2):
+    #     exit()
 
     chunk_text = "\n".join(
         node["original"]
@@ -460,7 +498,9 @@ for chunk_index, chunk in enumerate(chunks):
     )
 
     print(
-        f"\nProcessing chunk {chunk_index + 1}/{len(chunks)} [{len(chunk_text)} chars]"
+        f"\n"
+        f"Processing chunk {chunk_index + 1}/{len(chunks)} [{len(chunk_text)} chars]\n"
+        f"---------------------------------\n"
     )
 
     # ----------------------------------------------------------
@@ -480,26 +520,14 @@ for chunk_index, chunk in enumerate(chunks):
         if term["original"].lower() in chunk_text_lower
     ]
 
-    print(
-        f"Chunk {chunk_index + 1}: "
-        f"{len(chunk_relevant_terms)} relevant terms"
-    )
-
     chunk_relevant_terminology = {
         "terms": chunk_relevant_terms
     }
-
 
     chunk_relevant_terminology_json = json.dumps(
         chunk_relevant_terminology,
         ensure_ascii=False,
         indent=2
-    )
-
-    print(
-        f"Length of chunk-relevant terminology: "
-        f"terms: {len(chunk_relevant_terminology):,}, "
-        f"json chars: {len(chunk_relevant_terminology_json):,}"
     )
 
     chunk_instructions_with_terminology = (
@@ -510,11 +538,6 @@ for chunk_index, chunk in enumerate(chunks):
             + "\n\n"
             + "=== END TERMINOLOGY DATABASE ===\n"
     )
-
-    # print(
-    #     f"\n=== Instructions used in this chunk (with chunk-relevant terminology) ===\n"
-    #     f"{chunk_instructions_with_terminology}"
-    # )
 
     # ----------------------------------------
     # Build payload for this chunk
@@ -545,9 +568,9 @@ for chunk_index, chunk in enumerate(chunks):
     )
 
     print(
-        f"Chunk {chunk_index + 1}: "
-        f"{len(chunk_payload):,} entries, "
-        f"{len(chunk_payload_json):,} chars"
+        f"Terminology: {len(chunk_relevant_terminology["terms"]):,} terms, {len(chunk_relevant_terminology_json):,} json chars\n"
+        f"Content: {len(chunk_payload):,} entries, {len(chunk_payload_json):,} chars\n",
+        # f"Full instructions text (incl. terminology):\n{chunk_instructions_with_terminology}" # this may be LARGE - activate only for debugging!
     )
 
 
@@ -555,7 +578,7 @@ for chunk_index, chunk in enumerate(chunks):
     # Translate the current chunk
     # ----------------------------------------
 
-    start = time.perf_counter()
+    chunk_timer_start = time.perf_counter()
 
     response = client.responses.create(
         model="gpt-5.4-mini",
@@ -566,11 +589,11 @@ for chunk_index, chunk in enumerate(chunks):
         )
     )
 
-    end = time.perf_counter()
+    chunk_timer_end = time.perf_counter()
 
     print(
-        f"API duration: "
-        f"{end - start:.2f} seconds"
+        f"Chunk {chunk_index + 1}/{len(chunks)} API duration: "
+        f"{chunk_timer_end - chunk_timer_start:.2f} seconds"
     )
 
     print(
@@ -578,6 +601,7 @@ for chunk_index, chunk in enumerate(chunks):
         f"{len(response.output_text):,}"
     )
 
+    # Large! Activate for debugging only
     # print(
     #     f"Response content: "
     #     f"{response.output_text}"
@@ -599,12 +623,17 @@ for chunk_index, chunk in enumerate(chunks):
 
     for entry in translated_payload:
 
-        verify_protected_integrity(
+        error = verify_protected_integrity(
             protected_texts[
                 entry["id"]
             ],
             entry["translation"]
         )
+
+        if error:
+            integrity_errors.append(
+                error
+            )
 
         restored_text = restore_foundry_syntax(
             entry["translation"],
@@ -719,14 +748,104 @@ with open(
         indent=2
     )
 
-print(f"\n✅ File has been written to: output/{FILENAME}")
-# print(
-#     "\n❌ FAILURE"
-# )
-#
-# raise ValueError(
-#     "Reinjected JSON differs "
-#     "from original JSON."
-# )
+print(f"\n✅ Translated file written to: output/{FILENAME}")
 
+# ------------------------------------------------------------
+# Deal with collected INTEGRITY ERRORS
+# ------------------------------------------------------------
+if len(integrity_errors) > 0:
 
+    error_filename = (
+        f"translation-errors/"
+        f"{FILENAME}.integrity-errors.txt"
+    )
+
+    with open(
+            error_filename,
+            "w",
+            encoding="utf-8"
+    ) as file:
+
+        file.write(
+            f"=== INTEGRITY ERRORS ===\n"
+            f"{len(integrity_errors)}\n\n"
+        )
+
+        for index, error in enumerate(
+                integrity_errors,
+                start=1
+        ):
+
+            file.write(
+                "====================================================\n"
+            )
+
+            file.write(
+                f"ERROR {index} OF "
+                f"{len(integrity_errors)}\n"
+            )
+
+            file.write(
+                "====================================================\n\n"
+            )
+
+            file.write(
+                f"Placeholder:\n"
+                f"{error['placeholder']}\n\n"
+            )
+
+            file.write(
+                f"Original value:\n"
+                f"{protected_elements[error['placeholder']]}\n\n"
+            )
+
+            file.write(
+                f"Original context:\n"
+                f"{error['original_context']}\n\n"
+            )
+
+            file.write(
+                f"Translated context:\n"
+                f"{error['translated_context']}\n\n"
+            )
+
+    print(
+        f"\n❌ INTEGRITY ERRORS: {len(integrity_errors)}\n"
+        f"Integrity report written to: {error_filename}"
+    )
+
+    # for error in integrity_errors:
+    #
+    #     print("\n------------------")
+    #
+    #     print(
+    #         f"Placeholder: "
+    #         f"{error['placeholder']}"
+    #     )
+    #
+    #     print(
+    #         f"Original value: "
+    #         f"{protected_elements[error['placeholder']]}"
+    #     )
+    #
+    #     print(
+    #         f"Original context:\n"
+    #         f"{error['original_context']}"
+    #     )
+    #
+    #     print(
+    #         f"Translated context:\n"
+    #         f"{error['translated_context']}"
+    #     )
+
+else:
+    print(
+        f"\n✅ NO INTEGRITY ERRORS\n"
+    )
+
+global_timer_end = time.perf_counter()
+
+print(
+    f"\nTOTAL processing duration: "
+    f"{global_timer_end - global_timer_start:.2f} seconds"
+)

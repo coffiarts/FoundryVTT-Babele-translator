@@ -11,7 +11,7 @@ LLM_MODEL = "gpt-5.4-mini" #"gpt-5.6-luna"
 
 FILENAME = "dnd-phandelver-below.pbso-items.json"
 
-MAX_CHARS_PER_CHUNK = 30000
+MAX_CHARS_PER_CHUNK = 50000
 
 # ------------------------------------------------------------
 # Terminology instructions
