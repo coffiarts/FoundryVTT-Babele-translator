@@ -10,6 +10,10 @@ from openai import OpenAI
 # ------------------------------------------------------------
 
 FILENAME = "adventures-test.json"
+ERROR_FILENAME = (
+    f"errors/"
+    f"{FILENAME}-errors.txt"
+)
 
 TRANSLATABLE_FIELDS = {
     "text",
@@ -66,7 +70,7 @@ Incorrect output:
 Sie sind König Grol gegenüber loyal.
 """
 
-MAX_CHARS_PER_CHUNK = 50000
+MAX_CHARS_PER_CHUNK = 10000
 
 # ------------------------------------------------------------
 # Function: Global placeholder registry
@@ -242,6 +246,117 @@ def verify_protected_integrity(
             # )
 
     return None
+
+# ----------------------------------------------------------------------------
+# Function: Post Mortem Dump
+# (used by all FATAL error cases to rescue as much processed data as possible)
+# ----------------------------------------------------------------------------
+
+def post_mortem_dump(
+        title,
+        details,
+        raw_response=None,
+        translations=None,
+        protected_elements=None,
+        integrity_errors=None
+):
+
+    with open(
+            ERROR_FILENAME,
+            "w",
+            encoding="utf-8"
+    ) as file:
+
+        file.write(
+            "====================================================\n"
+        )
+
+        file.write(
+            f"{title}\n"
+        )
+
+        file.write(
+            "====================================================\n\n"
+        )
+
+        file.write(
+            f"{details}\n\n"
+        )
+
+        if raw_response is not None:
+
+            file.write(
+                "====================================================\n"
+                "RAW RESPONSE OUTPUT\n"
+                "====================================================\n\n"
+            )
+
+            file.write(
+                f"{raw_response}\n\n"
+            )
+
+        if integrity_errors is not None:
+
+            file.write(
+                "====================================================\n"
+                "COLLECTED INTEGRITY ERRORS\n"
+                "====================================================\n\n"
+            )
+
+            file.write(
+                json.dumps(
+                    integrity_errors,
+                    indent=2,
+                    ensure_ascii=False
+                )
+            )
+
+            file.write("\n\n")
+
+        if translations is not None:
+
+            file.write(
+                "====================================================\n"
+                "COMPLETED TRANSLATIONS\n"
+                "====================================================\n\n"
+            )
+
+            file.write(
+                json.dumps(
+                    translations,
+                    indent=2,
+                    ensure_ascii=False
+                )
+            )
+
+            file.write("\n\n")
+
+        if protected_elements is not None:
+
+            file.write(
+                "====================================================\n"
+                "PROTECTED ELEMENTS\n"
+                "====================================================\n\n"
+            )
+
+            file.write(
+                json.dumps(
+                    protected_elements,
+                    indent=2,
+                    ensure_ascii=False
+                )
+            )
+
+            file.write("\n\n")
+
+            print(
+                f"\n❌ POST-MORTEM DUMP WRITTEN"
+            )
+
+            print(
+                f"{ERROR_FILENAME}"
+            )
+
 
 # ------------------------------------------------------------
 # Function: Reinsert translations
@@ -547,6 +662,8 @@ for chunk_index, chunk in enumerate(chunks):
 
     protected_texts = {}
 
+    protected_texts.update("")
+
     for node in chunk:
 
         protected_text = protect_foundry_syntax(
@@ -607,17 +724,107 @@ for chunk_index, chunk in enumerate(chunks):
     #     f"{response.output_text}"
     # )
 
-    translated_payload = json.loads(
-        response.output_text
+    try:
+        translated_payload = json.loads(
+            response.output_text
+        )
+
+    except Exception as e:
+
+        post_mortem_dump(
+            title="FATAL ERROR",
+            details=(
+                f"{type(e).__name__}\n"
+                f"{str(e)}"
+            ),
+            raw_response=response.output_text,
+            translations=translations,
+            protected_elements=protected_elements,
+            integrity_errors=integrity_errors
+        )
+
+        raise
+
+    expected_entries = len(
+        chunk_payload
+    )
+
+    returned_entries = len(
+        translated_payload
     )
 
     print(
-        f"Expected entries: {len(chunk_payload)}"
+        f"Expected entries: "
+        f"{expected_entries}"
     )
 
     print(
-        f"Returned entries: {len(translated_payload)}"
+        f"Returned entries: "
+        f"{returned_entries}"
     )
+
+    if returned_entries != expected_entries:
+
+        # FATAL ERROR: Returned entries do not match expected entries- Immediate dump and abort.
+
+        with open(
+                ERROR_FILENAME,
+                "w",
+                encoding="utf-8"
+        ) as file:
+
+            file.write(
+                "====================================================\n"
+                "FATAL ERROR\n"
+                "====================================================\n\n"
+            )
+
+            file.write(
+                f"Chunk: "
+                f"{chunk_index + 1}\n"
+            )
+
+            file.write(
+                f"Expected entries: "
+                f"{expected_entries}\n"
+            )
+
+            file.write(
+                f"Returned entries: "
+                f"{returned_entries}\n\n"
+            )
+
+            file.write(
+                "====================================================\n"
+                "RAW RESPONSE OUTPUT\n"
+                "====================================================\n\n"
+            )
+
+            file.write(
+                response.output_text
+            )
+
+            post_mortem_dump(
+                title="FATAL ERROR",
+                details=(
+                    f"Chunk: {chunk_index + 1}\n"
+                    f"Expected entries: {expected_entries}\n"
+                    f"Returned entries: {returned_entries}"
+                ),
+                raw_response=response.output_text,
+                translations=translations,
+                protected_elements=protected_elements,
+                integrity_errors=integrity_errors
+            )
+
+            raise RuntimeError(
+                f"❌ FATAL: Chunk "
+                f"{chunk_index + 1} "
+                f"returned "
+                f"{returned_entries} "
+                f"entries instead of "
+                f"{expected_entries}"
+            )
 
     chunk_translations = {}
 
@@ -755,13 +962,8 @@ print(f"\n✅ Translated file written to: output/{FILENAME}")
 # ------------------------------------------------------------
 if len(integrity_errors) > 0:
 
-    error_filename = (
-        f"translation-errors/"
-        f"{FILENAME}.integrity-errors.txt"
-    )
-
     with open(
-            error_filename,
+            ERROR_FILENAME,
             "w",
             encoding="utf-8"
     ) as file:
@@ -811,7 +1013,7 @@ if len(integrity_errors) > 0:
 
     print(
         f"\n❌ INTEGRITY ERRORS: {len(integrity_errors)}\n"
-        f"Integrity report written to: {error_filename}"
+        f"Integrity report written to: {ERROR_FILENAME}"
     )
 
     # for error in integrity_errors:
