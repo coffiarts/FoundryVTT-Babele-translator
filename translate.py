@@ -208,8 +208,7 @@ def verify_protected_integrity(
         if count != 1:
 
             print(
-                f"\n❌ PLACEHOLDER ERROR: "
-                f"{placeholder}"
+                f"\n❌ PLACEHOLDER ERROR #{len(integrity_errors)+1}: {placeholder}"
             )
 
             print(
@@ -1049,30 +1048,6 @@ if len(integrity_errors) > 0:
         f"\n❌ INTEGRITY ERRORS: {len(integrity_errors)}\n"
         f"Integrity report written to: {ERROR_FILENAME}"
     )
-
-    # for error in integrity_errors:
-    #
-    #     print("\n------------------")
-    #
-    #     print(
-    #         f"Placeholder: "
-    #         f"{error['placeholder']}"
-    #     )
-    #
-    #     print(
-    #         f"Original value: "
-    #         f"{protected_elements[error['placeholder']]}"
-    #     )
-    #
-    #     print(
-    #         f"Original context:\n"
-    #         f"{error['original_context']}"
-    #     )
-    #
-    #     print(
-    #         f"Translated context:\n"
-    #         f"{error['translated_context']}"
-    #     )
 
 else:
     print(
