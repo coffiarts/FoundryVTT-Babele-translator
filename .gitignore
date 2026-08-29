@@ -217,9 +217,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-#local secrets
-/local_secret_do_not_commit/
-
 #local IntelliJ project files
 *.iml
 /.idea/misc.xml
@@ -229,10 +226,12 @@ __marimo__/
 /.idea/workspace.xml
 
 #local input and output files
+/local_secret_do_not_commit/
 /input/
 /terminology/
-/analyze/
 /output/
+/progress/
+/errors/
 
-#other local junk
+#temporary local junk
 /work/

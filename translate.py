@@ -18,16 +18,18 @@ TRANSLATABLE_FIELDS = {
 }
 
 INPUT_FOLDER_NAME = "input"
-PROCESS_FOLDER_NAME = "process"
+PROCESS_FOLDER_NAME = "progress"
 SECRETS_FOLDER_NAME = "local_secret_do_not_commit"
 ERRORS_FOLDER_NAME = "errors"
 
-NODES_FILE_NAME = "01-nodes.json"
+PROGRESS_FILE_NAME = "00-progress.json"
+TRANSLATABLES_FILE_NAME = "01-translatables.json"
 CHUNKS_FILE_NAME = "02-chunks.json"
 PROTECTED_ELEMENTS_FILE_NAME = "03-protected_elements.json"
-TRANSLATIONS_RAW_FILE_NAME = "04-translations_raw.json"
-TRANSLATIONS_REINJECTED_FILE_NAME = "05-translations-reinjected.json"
+TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME = "04-translations_with-placeholders.json"
+TRANSLATIONS_FINAL_FILE_NAME = "05-translations-final.json"
 POST_REVIEW_ITEMS_FILE_NAME = "06-post-review-items.json"
+
 ERRORS_FILE_NAME = "errors.json"
 APIKEY_FILE_NAME = "openai_api_key.txt"
 
@@ -42,11 +44,12 @@ PROCESS_SUBFOLDER_NAME = Path(PROCESS_FOLDER_NAME) / INPUT_FILE_NAME.removesuffi
 if not os.path.exists(PROCESS_SUBFOLDER_NAME):
     os.makedirs(PROCESS_SUBFOLDER_NAME)
 
-NODES_FILE = Path(PROCESS_SUBFOLDER_NAME) / NODES_FILE_NAME
+PROGRESS_FILE = Path(PROCESS_SUBFOLDER_NAME) / PROGRESS_FILE_NAME
+TRANSLATABLES_FILE = Path(PROCESS_SUBFOLDER_NAME) / TRANSLATABLES_FILE_NAME
 CHUNKS_FILE = Path(PROCESS_SUBFOLDER_NAME) / CHUNKS_FILE_NAME
 PROTECTED_ELEMENTS_FILE = Path(PROCESS_SUBFOLDER_NAME) / PROTECTED_ELEMENTS_FILE_NAME
-TRANSLATIONS_RAW_FILE = Path(PROCESS_SUBFOLDER_NAME) / TRANSLATIONS_RAW_FILE_NAME
-TRANSLATIONS_REINJECTED_FILE = Path(PROCESS_SUBFOLDER_NAME) / TRANSLATIONS_REINJECTED_FILE_NAME
+TRANSLATIONS_WITH_PLACEHOLDERS_FILE = Path(PROCESS_SUBFOLDER_NAME) / TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME
+TRANSLATIONS_FINAL_FILE = Path(PROCESS_SUBFOLDER_NAME) / TRANSLATIONS_FINAL_FILE_NAME
 POST_REVIEW_ITEMS_FILE = Path(PROCESS_SUBFOLDER_NAME) / POST_REVIEW_ITEMS_FILE_NAME
 
 ERRORS_FILE = Path(ERRORS_FOLDER_NAME) / ERRORS_FILE_NAME
@@ -54,29 +57,22 @@ APIKEY_FILE = Path(SECRETS_FOLDER_NAME) / APIKEY_FILE_NAME
 
 
 # ------------------------------------------------------------
-# Function: Load input file
+# Function: Load Babele input file
 # ------------------------------------------------------------
-def load_input():
+def load_babele_input():
     with INPUT_FILE.open(
             "r",
             encoding="utf-8"
     ) as file:
 
-        original_data = json.load(file)
+        babele_json = json.load(file)
 
-    # Deep copy for testing
-    working_data = json.loads(
-        json.dumps(
-            original_data,
-            ensure_ascii=False
-        )
-    )
-    return original_data, working_data
+    return babele_json
 
 # ------------------------------------------------------------
-# Function: Collect translatable nodes
+# Function: Import translatables
 # ------------------------------------------------------------
-def import_nodes(input, nodes, current_path):
+def import_translatables(input, translatables, current_path):
 
     if isinstance(input, dict):
 
@@ -87,17 +83,17 @@ def import_nodes(input, nodes, current_path):
                     and isinstance(item, str)
             ):
 
-                nodes.append({
-                    "id": len(nodes),
+                translatables.append({
+                    "id": len(translatables),
                     "path": current_path + [key],
                     "original": item
                 })
 
             elif isinstance(item, (dict, list)):
 
-                import_nodes(
+                import_translatables(
                     item,
-                    nodes,
+                    translatables,
                     current_path+ [key]
                 )
 
@@ -105,25 +101,25 @@ def import_nodes(input, nodes, current_path):
 
         for index, item in enumerate(input):
 
-            import_nodes(
+            import_translatables(
                 item,
-                nodes,
+                translatables,
                 current_path + [index]
             )
 
 # ------------------------------------------------------------
-# Function: Save nodes
+# Function: Save Translatables
 # ------------------------------------------------------------
-def save_nodes(nodes):
+def save_translatables(translatables):
 
     with open(
-            NODES_FILE,
+            TRANSLATABLES_FILE,
             "w",
             encoding="utf-8"
     ) as file:
 
         json.dump(
-            nodes,
+            translatables,
             file,
             ensure_ascii=False,
             indent=2
@@ -131,17 +127,63 @@ def save_nodes(nodes):
 
 
 # ------------------------------------------------------------
-# Function: Load nodes
+# Function: Load translatables
 # ------------------------------------------------------------
-def load_nodes():
+def load_translatables():
 
     with open(
-            NODES_FILE,
+            TRANSLATABLES_FILE,
             "r",
             encoding="utf-8"
     ) as file:
 
         return json.load(file)
+
+
+# ------------------------------------------------------------
+# Function: Get JSON element
+# ------------------------------------------------------------
+def get_json_element(
+        json_object,
+        path):
+
+    current = json_object
+
+    for element in path:
+        current = current[element]
+
+    return current
+
+
+# ------------------------------------------------------------
+# Function: Set JSON Element
+# ------------------------------------------------------------
+
+def set_json_element(
+        target_json_object,
+        path,
+        new_value):
+
+    current = target_json_object
+
+    for element in path[:-1]:
+        current = current[element]
+
+    current[path[-1]] = new_value
+
+
+# ------------------------------------------------------------
+# Function: Apply translations (all at once)
+# ------------------------------------------------------------
+def apply_translations(
+        babele_json,
+        translatables,
+        translations):
+
+    for id, translation in translations.items():
+        set_json_element(babele_json, translatables[id]["path"], translation)
+
+    # TODO - apply any "on-top"" translations (like translator's watermark etc.)
 
 
 # ------------------------------------------------------------
@@ -168,57 +210,77 @@ print(
 
 global_timer_start = time.perf_counter()
 
-print(f"\n=== LOAD INPUT FILE ===")
+print(f"\n=== LOAD INPUT FILE (Babele translation JSON exported from FoundryVTT) ===")
 
-original_data, working_data = load_input()
-original_chars_cnt = json.dumps(
-    original_data,
+babele_json = load_babele_input()
+babele_chars_cnt = json.dumps(
+    babele_json,
     ensure_ascii=False,
     indent=2
 )
 
-print(f"loaded: {len(original_chars_cnt)} chars from {INPUT_FILE} ===\n")
+print(f"loaded: {len(babele_chars_cnt)} chars from {INPUT_FILE} ===")
 
-print(f"\n=== IMPORT NODES ===")
+print(f"\n=== IMPORT TRANSLATABLES ===")
 
-nodes = []
-import_nodes(
-    input=working_data,
-    nodes=nodes,
+translatables = []
+import_translatables(
+    input=babele_json,
+    translatables=translatables,
     current_path=[]
 )
-nodes_imported_cnt = len(nodes)
+translatables_imported_cnt = len(translatables)
 
-print(f"imported: {nodes_imported_cnt} nodes\n")
-print(f"DEBUG - Content of first 10 nodes:"
-    f"\n{json.dumps(
-        nodes[:10],
-        ensure_ascii=False,
-        indent=2)}"
-)
+print(f"imported: {translatables_imported_cnt} translatables")
+# print(f"DEBUG - Content of first 10 translatables:"
+#     f"\n{json.dumps(
+#         translatables[:10],
+#         ensure_ascii=False,
+#         indent=2)}"
+# )
 
-print(f"\n=== SAVE NODES TO PROGRESS FOLDER ===")
+print(f"\n=== SAVE TRANSLATABLES TO PROGRESS FOLDER ===")
 
-save_nodes(nodes)
-loaded_nodes = load_nodes()
-loaded_nodes_cnt = len(loaded_nodes)
+save_translatables(translatables)
+loaded_translatables = load_translatables()
+loaded_translatables_cnt = len(loaded_translatables)
 
-print(f"DEBUG - loaded {loaded_nodes_cnt} nodes. Expected: {nodes_imported_cnt}")
+print(f"loaded {loaded_translatables_cnt} translatables. Expected: {translatables_imported_cnt}")
 print(
-    f"DEBUG - first node identical: "
-    f"{nodes[0] == loaded_nodes[0]}"
+    f"DEBUG - first translatable identical: "
+    f"{translatables[0] == loaded_translatables[0]}"
 )
 print(
-    f"DEBUG - last node identical: "
-    f"{nodes[-1] == loaded_nodes[-1]}"
+    f"DEBUG - last translatable identical: "
+    f"{translatables[-1] == loaded_translatables[-1]}"
 )
 
+print(f"\n=== APPLY TRANSLATIONS ===")
+
+apply_translations(
+    babele_json,
+    loaded_translatables,
+    {
+        0: "[FIRST TRANSLATED]",
+        1: "[LAST TRANSLATED]"
+    } # just a mock-up for now
+)
+print(
+    f"DEBUG - Result of FIRST translation at Babele path: {loaded_translatables[0]["path"]}"
+    f"\n=> {get_json_element(babele_json, loaded_translatables[0]["path"])}"
+    f"\nDEBUG - Result of LAST translation at Babele path: {loaded_translatables[1]["path"]}"
+    f"\n=> {get_json_element(babele_json, loaded_translatables[1]["path"])}"
+)
+# print(f"DEBUG - Final translation:"
+#     f"\n{json.dumps(
+#         babele_json,
+#         ensure_ascii=False,
+#         indent=2)}"
+# )
 
 # ------------------------------------------------------------
 # Stop global timer
 # ------------------------------------------------------------
 
 global_timer_end = time.perf_counter()
-
-print(f"\n=== TOTAL processing duration: {global_timer_end - global_timer_start:.2f} seconds ==="
-)
+print(f"\n=== TOTAL processing duration: {global_timer_end - global_timer_start:.2f} seconds ===")
