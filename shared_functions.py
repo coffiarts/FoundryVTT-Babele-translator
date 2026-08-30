@@ -20,7 +20,7 @@ def load_json_input(input_file):
         ensure_ascii=False,
         indent=2
     )
-    print(f"Loaded {len(data)} elements from {input_file} with {len(chars_cnt)} chars")
+    print(f"Loaded {len(data)} top-level elements from {input_file} with {len(chars_cnt)} chars")
     return data
 
 
@@ -127,7 +127,7 @@ def build_batches(translatables):
     # After loop is complete, don't forget to close and send off the last open batch
     batches.append(current_batch)
 
-    print(f"Built: {len(batches)} Batches from {len(translatables)} Translatables")
+    print(f"Built {len(batches)} Batches from {len(translatables)} Translatables")
 
     return batches
 

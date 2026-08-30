@@ -53,29 +53,15 @@ print(f"Extracted translatables: {len(translatables)}")
 
 
 # ---------------------------------------------------
-# BUILD BATCHES
-# ---------------------------------------------------
-
-print(f"\n=== BUILD BATCHES ===")
-
-batches = build_batches(translatables)
-
-print(
-    f"DEBUG - First 10 batches: "
-    f"{json.dumps(
-    batches[:10],
-    indent=2,
-    ensure_ascii=False)}"
-)
-
-
-# ---------------------------------------------------
 # SAVE TRANSLATABLES TO PROGRESS FOLDER
 # ---------------------------------------------------
 
 print(f"\n=== SAVE TRANSLATABLES TO PROGRESS FOLDER ===")
 
-save_json_output(translatables, TRANSLATABLES_FILE)
+save_json_output(
+    translatables,
+    TRANSLATABLES_FILE
+)
 loaded_translatables = load_json_input(TRANSLATABLES_FILE)
 
 print(f"Expected: {len(translatables)}")
@@ -88,7 +74,52 @@ print(f"Expected: {len(translatables)}")
 #     f"{translatables[-1] == loaded_translatables[-1]}"
 # )
 
+
+# ---------------------------------------------------
+# BUILD BATCHES
+# ---------------------------------------------------
+
+print(f"\n=== BUILD BATCHES ===")
+
+batches = build_batches(translatables)
+
+# print(
+#     f"DEBUG - First 10 batches: "
+#     f"{json.dumps(
+#     batches[:10],
+#     indent=2,
+#     ensure_ascii=False)}"
+# )
+
+
+# ---------------------------------------------------
+# SAVE BATCHES TO PROGRESS FOLDER
+# ---------------------------------------------------
+
+print(f"\n=== SAVE BATCHES TO PROGRESS FOLDER ===")
+
+save_json_output(
+    batches,
+    BATCHES_FILE
+)
+
+loaded_batches = load_batches()
+print(f"Expected: {len(batches)}")
+print(
+    f"DEBUG - first batch identical: "
+    f"{batches[0] == loaded_batches[0]}"
+)
+
+print(
+    f"DEBUG - last batch identical: "
+    f"{batches[-1] == loaded_batches[-1]}"
+)
+
+# ---------------------------------------------------
+# TRANSLATE
 # just a mock-up for now
+# ---------------------------------------------------
+
 translations = {
     0: "[FIRST TRANSLATED]",
     1: "[LAST TRANSLATED]"
