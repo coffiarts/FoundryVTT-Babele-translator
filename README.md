@@ -1,24 +1,18 @@
 # FoundryVTT-Babele-translator
 
 ## Workflow
-babele_data<br/>
-↓<br/>
-extract_translatables_from_babele()<br/>
-↓<br/>
+(reflected by tracking files in process-info)<br/>
+
 01-translatables.json<br/>
 ↓<br/>
-build_batches()<br/>
+02-translatables-with-placeholders.json<br/>
 ↓<br/>
-02-batches.json<br/>
+03-batches.json<br/>
 ↓<br/>
-translate_batches()<br/>
+04-placeholders.json<br/>
 ↓<br/>
-04-translations-with-placeholders.json<br/>
+05-translations-with-placeholders.json<br/>
 ↓<br/>
-restore_placeholders()<br/>
+06-translations-final.json<br/>
 ↓<br/>
-05-translations-final.json<br/>
-↓<br/>
-apply_translations()<br/>
-↓<br/>
-output.json<br/>
+07-post-review-items.json<br/>
