@@ -82,6 +82,17 @@ print(f"Expected: {len(translatables)}")
 #     f"{translatables[-1] == loaded_translatables[-1]}"
 # )
 
+# ---------------------------------------------------
+# REPLACE PROTECTED ELEMENTS (PLACEHOLDERS)
+# ---------------------------------------------------
+
+print(f"\n=== REPLACE PROTECTED ELEMENTS (PLACEHOLDERS) ===")
+
+translatables_with_placeholders, placeholders = replace_placeholders(
+    translatables
+)
+
+# TODO - Test: translatables_with_placeholders, placeholders
 
 # ---------------------------------------------------
 # BUILD BATCHES
@@ -93,7 +104,7 @@ progress_info = load_json_input(PROGRESS_INFO_FILE)
 
 try:
 
-    batches = build_batches(translatables)
+    batches = build_batches(translatables_with_placeholders)
 
     # Update ProgressInfo (batches will be saved later)
     progress_info["batches"] = batches

@@ -233,9 +233,9 @@ def load_translatables(batch_ids = None, translatable_ids = None):
         return id_filtered_translatables
 
 
-# ------------------------------------------------------------
-# Function: Recursively extract Translatables from Babele input data
-# ------------------------------------------------------------
+# --------------------------------------------------------------
+# Function: Recursively extract Translatables from Babele input
+# --------------------------------------------------------------
 def extract_translatables_from_babele(input, translatables, current_path):
 
     if isinstance(input, dict):
@@ -270,6 +270,40 @@ def extract_translatables_from_babele(input, translatables, current_path):
                 translatables,
                 current_path + [index]
             )
+
+
+# ------------------------------------------------------------
+# Function: Replace Placeholders (recursively!)
+# - Scans all translatables for occurrences of Foundry-specific, non-translatable syntax
+# - Replaces them with numbered placeholders of pattern <<<FOUNDRY_nnnnnn>>>
+# - Returns the result(translatables_with_placeholders), plus the list of generated placeholders
+# ------------------------------------------------------------
+def replace_placeholders(translatables):
+
+    for translatable in translatables:
+
+        protected_texts = {}
+
+        # TODO - non-runnable WIP
+        for translatable in translatables:
+
+            protected_text = replace_placeholders(
+                translatable["original"]
+            )
+
+            protected_texts[
+                translatable["id"]
+            ] = protected_text
+
+            chunk_payload.append({
+                "id": translatable["id"],
+                "text": protected_text
+            })
+
+        chunk_payload_json = json.dumps(
+            chunk_payload,
+            ensure_ascii=False
+        )
 
 
 
