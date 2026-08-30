@@ -19,28 +19,20 @@ print(
 
 global_timer_start = time.perf_counter()
 
-print(f"\n=== LOAD INPUT FILE (Babele translation JSON exported from FoundryVTT) ===")
+print(f"\n=== LOAD INPUT FILE (Babele JSON exported from FoundryVTT) ===")
 
-babele_json = load_json_input(INPUT_FILE)
-babele_chars_cnt = json.dumps(
-    babele_json,
-    ensure_ascii=False,
-    indent=2
-)
+babele_data = load_json_input(INPUT_FILE)
 
-print(f"loaded: {len(babele_chars_cnt)} chars from {INPUT_FILE} ===")
-
-print(f"\n=== IMPORT TRANSLATABLES ===")
+print(f"\n=== EXTRACT TRANSLATABLES ===")
 
 translatables = []
+# Recursively fill translatables with matching nodes in babele_data
 extract_translatables_from_babele(
-    input=babele_json,
+    input=babele_data,
     translatables=translatables,
     current_path=[]
 )
-translatables_imported_cnt = len(translatables)
-
-print(f"extracted: {translatables_imported_cnt} translatables")
+print(f"Extracted translatables: {len(translatables)}")
 # print(f"DEBUG - Content of first 10 translatables:"
 #     f"\n{json.dumps(
 #         translatables[:10],
@@ -53,26 +45,31 @@ print(f"\n=== SAVE TRANSLATABLES TO PROGRESS FOLDER ===")
 save_json_output(translatables, TRANSLATABLES_FILE)
 loaded_translatables = load_json_input(TRANSLATABLES_FILE)
 
-print(f"loaded {len(loaded_translatables)} translatables. Expected: {translatables_imported_cnt}")
-print(
-    f"DEBUG - first translatable identical: "
-    f"{translatables[0] == loaded_translatables[0]}"
-)
-print(
-    f"DEBUG - last translatable identical: "
-    f"{translatables[-1] == loaded_translatables[-1]}"
-)
+print(f"Expected: {len(translatables)}")
+# print(
+#     f"DEBUG - first translatable identical: "
+#     f"{translatables[0] == loaded_translatables[0]}"
+# )
+# print(
+#     f"DEBUG - last translatable identical: "
+#     f"{translatables[-1] == loaded_translatables[-1]}"
+# )
+
+# just a mock-up for now
+translations = {
+    0: "[FIRST TRANSLATED]",
+    1: "[LAST TRANSLATED]"
+}
 
 print(f"\n=== APPLY TRANSLATIONS ===")
 
 apply_translations(
-    babele_json,
+    babele_data,
     loaded_translatables,
-    {
-        0: "[FIRST TRANSLATED]",
-        1: "[LAST TRANSLATED]"
-    } # just a mock-up for now
+    translations
 )
+print(f"{len(translations)} translations applied to original Babele data.")
+
 # print(
 #     f"DEBUG - Result of FIRST translation at Babele path: {loaded_translatables[0]["path"]}"
 #     f"\n=> {get_json_element(babele_json, loaded_translatables[0]["path"])}"
@@ -87,7 +84,7 @@ apply_translations(
 # )
 
 print(f"\n=== SAVE FINAL Babele FIILE ===")
-save_json_output(babele_json, OUTPUT_FILE)
+save_json_output(babele_data, OUTPUT_FILE)
 
 
 # ------------------------------------------------------------

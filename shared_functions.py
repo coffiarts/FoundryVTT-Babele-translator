@@ -15,9 +15,12 @@ def load_json_input(input_file):
 
         data = json.load(file)
 
-
-    print(f"Loaded {len(data)} elements from {input_file}")
-
+    chars_cnt = json.dumps(
+        data,
+        ensure_ascii=False,
+        indent=2
+    )
+    print(f"Loaded {len(data)} elements from {input_file} with {len(chars_cnt)} chars")
     return data
 
 
@@ -75,7 +78,7 @@ def set_json_element(
 
 
 # ------------------------------------------------------------
-# Function: Extract Translatables from Babele input data
+# Function: Recursively extract Translatables from Babele input data
 # ------------------------------------------------------------
 def extract_translatables_from_babele(input, translatables, current_path):
 
@@ -111,6 +114,7 @@ def extract_translatables_from_babele(input, translatables, current_path):
                 translatables,
                 current_path + [index]
             )
+
 
 
 # ------------------------------------------------------------
