@@ -5,6 +5,7 @@ from shared_functions import *
 # This controls the main process of translating a Babele input file:
 # - import from Babele file
 # - extract translatables
+# - build batches for processing
 # - translate (using an external LLM)
 # - validate
 # - export to a new Babele file
@@ -19,9 +20,19 @@ print(
 
 global_timer_start = time.perf_counter()
 
-print(f"\n=== LOAD INPUT FILE (Babele JSON exported from FoundryVTT) ===")
+
+# ---------------------------------------------------
+# IMPORT INPUT FILE
+# ---------------------------------------------------
+
+print(f"\n=== IMPORT INPUT FILE (JSON exported from FoundryVTT) ===")
 
 babele_data = load_json_input(INPUT_FILE)
+
+
+# ---------------------------------------------------
+# EXTRACT TRANSLATABLES
+# ---------------------------------------------------
 
 print(f"\n=== EXTRACT TRANSLATABLES ===")
 
@@ -39,6 +50,28 @@ print(f"Extracted translatables: {len(translatables)}")
 #         ensure_ascii=False,
 #         indent=2)}"
 # )
+
+
+# ---------------------------------------------------
+# BUILD BATCHES
+# ---------------------------------------------------
+
+print(f"\n=== BUILD BATCHES ===")
+
+batches = build_batches(translatables)
+
+print(
+    f"DEBUG - First 10 batches: "
+    f"{json.dumps(
+    batches[:10],
+    indent=2,
+    ensure_ascii=False)}"
+)
+
+
+# ---------------------------------------------------
+# SAVE TRANSLATABLES TO PROGRESS FOLDER
+# ---------------------------------------------------
 
 print(f"\n=== SAVE TRANSLATABLES TO PROGRESS FOLDER ===")
 
@@ -61,7 +94,12 @@ translations = {
     1: "[LAST TRANSLATED]"
 }
 
-print(f"\n=== APPLY TRANSLATIONS ===")
+
+# ---------------------------------------------------
+# APPLY TRANSLATIONS TO Babele
+# ---------------------------------------------------
+
+print(f"\n=== APPLY TRANSLATIONS TO Babele ===")
 
 apply_translations(
     babele_data,
@@ -82,6 +120,11 @@ print(f"{len(translations)} translations applied to original Babele data.")
 #         ensure_ascii=False,
 #         indent=2)}"
 # )
+
+
+# ---------------------------------------------------
+# SAVE FINAL Babele FIILE
+# ---------------------------------------------------
 
 print(f"\n=== SAVE FINAL Babele FIILE ===")
 save_json_output(babele_data, OUTPUT_FILE)

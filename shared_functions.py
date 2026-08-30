@@ -2,9 +2,9 @@ from config import *
 import json
 from openai import OpenAI
 
+
 # ------------------------------------------------------------
-# Function: Load data (as list) from JSON input_file (path)
-# Return it as data
+# Function: Load and return data (as list) from JSON input_file (path)
 # ------------------------------------------------------------
 def load_json_input(input_file):
 
@@ -75,6 +75,124 @@ def set_json_element(
         current = current[element]
 
     current[path[-1]] = new_value
+
+
+# ------------------------------------------------------------
+# Function: Build and return Batches
+# Traverse all Translatables and bundle them into Batches,
+# keeping their total text length within preconfigured MAX_BATCH_SIZE
+# ------------------------------------------------------------
+def build_batches(translatables):
+
+    batches = []
+
+    current_batch = None
+
+    for translatable in translatables:
+
+        text_size = len(translatable["original"])
+
+        # No Translatable must exceed the Batch size limit by itself, this requires an abort.
+        if text_size > MAX_BATCH_SIZE:
+            raise ValueError(
+                f"Translatable {translatable['id']} "
+                f"contains {text_size} chars and exceeds "
+                f"MAX_BATCH_SIZE={MAX_BATCH_SIZE}"
+                f"\nProposed solution: Increase MAX_BATCH_SIZE in config.py and resume process."
+                # TODO: Handle Fatal Error properly in master workflow:
+                #  - update 0-progress.json
+                #  - persist Batches already created in BATCHES_FILE
+                #  - optional: post-mortem dump
+            )
+
+        if (
+                current_batch is not None
+                and current_batch["char_count"] + text_size > MAX_BATCH_SIZE
+        ):
+            # Batch is full: Close and send it to the list
+            batches.append(current_batch)
+            current_batch = None
+            char_count = 0
+
+        if current_batch is None:
+            current_batch = {
+                "id": len(batches),
+                "translatable_ids": [],
+                "char_count": 0
+            }
+
+        current_batch["translatable_ids"].append(translatable["id"])
+        current_batch["char_count"] += text_size
+
+    # After loop is complete, don't forget to close and send off the last open batch
+    batches.append(current_batch)
+
+    print(f"Built: {len(batches)} Batches from {len(translatables)} Translatables")
+
+    return batches
+
+
+# ------------------------------------------------------------
+# Function: Load and return Batches from the
+# preconfigured Batches JSON file (BATCHES_FILE)
+# Optional: Filter the result by passing a set if batch_ids like {4} or {1, 5, 13}
+# ------------------------------------------------------------
+def load_batches(batch_ids = None):
+
+    batches = load_json_input(BATCHES_FILE)
+
+    if batch_ids is None:
+        return batches
+
+    else:
+        filtered_batches = []
+
+        for batch in batches:
+
+            if batch["batch_id"] in batch_ids:
+                filtered_batches.append(batch)
+
+        return filtered_batches
+
+
+# ------------------------------------------------------------
+# Function: Load and return Translatables
+# from the preconfigured Translatables JSON file (TRANSLATABLES_FILE)
+# Optional: Filter the result by passing one or both of
+# - a set if batch_ids like {4} or {1, 5, 13}
+# - a set if translatable_ids like 4} or {1, 5, 13}
+# ------------------------------------------------------------
+def load_translatables(batch_ids = None, translatable_ids = None):
+
+    translatables = load_json_input(TRANSLATABLES_FILE)
+
+    if batch_ids is None and translatable_ids is None:
+        return translatables
+
+    else:
+        batch_filtered_translatables = []
+
+        if batch_ids is None:
+            batch_filtered_translatables = translatables
+
+        else:
+            for translatable in translatables:
+
+                if translatable["batch_id"] in batch_ids:
+                    batch_filtered_translatables.append(translatable)
+
+        id_filtered_translatables = []
+
+        if translatable_ids is None:
+            id_filtered_translatables = batch_filtered_translatables
+
+        else:
+            for translatable in batch_filtered_translatables:
+
+                if translatable["id"] in translatable_ids:
+                    id_filtered_translatables.append(translatable)
+
+        return id_filtered_translatables
 
 
 # ------------------------------------------------------------
