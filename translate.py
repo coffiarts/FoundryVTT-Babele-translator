@@ -9,7 +9,7 @@ from openai import OpenAI
 # ------------------------------------------------------------
 
 INPUT_FILE_NAME = "test-input.json"
-MAX_CHARS_PER_CHUNK = 50000 # It may (unproven) help to scale this with the overall input size (larger input => larger batch size)
+MAX_BATCH_SIZE = 50000 # It may (unproven) help to scale this with the overall input size (larger input => larger batch size)
 TRANSLATABLE_FIELDS = {
     "text",
     "name",
@@ -25,7 +25,7 @@ OUTPUT_FOLDER_NAME = "output"
 
 PROGRESS_FILE_NAME = "00-progress.json"
 TRANSLATABLES_FILE_NAME = "01-translatables.json"
-CHUNKS_FILE_NAME = "02-chunks.json"
+BATCHES_FILE_NAME = "02-batches.json"
 PROTECTED_ELEMENTS_FILE_NAME = "03-protected_elements.json"
 TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME = "04-translations_with-placeholders.json"
 TRANSLATIONS_FINAL_FILE_NAME = "05-translations-final.json"
@@ -48,7 +48,7 @@ if not os.path.exists(PROCESS_SUBFOLDER_NAME):
 
 PROGRESS_FILE = Path(PROCESS_SUBFOLDER_NAME) / PROGRESS_FILE_NAME
 TRANSLATABLES_FILE = Path(PROCESS_SUBFOLDER_NAME) / TRANSLATABLES_FILE_NAME
-CHUNKS_FILE = Path(PROCESS_SUBFOLDER_NAME) / CHUNKS_FILE_NAME
+BATCHES_FILE = Path(PROCESS_SUBFOLDER_NAME) / BATCHES_FILE_NAME
 PROTECTED_ELEMENTS_FILE = Path(PROCESS_SUBFOLDER_NAME) / PROTECTED_ELEMENTS_FILE_NAME
 TRANSLATIONS_WITH_PLACEHOLDERS_FILE = Path(PROCESS_SUBFOLDER_NAME) / TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME
 TRANSLATIONS_FINAL_FILE = Path(PROCESS_SUBFOLDER_NAME) / TRANSLATIONS_FINAL_FILE_NAME
@@ -231,7 +231,7 @@ def save_babele_output(babele_json):
 
 print(
     f"\n=== PROCESSING FILE: {INPUT_FILE} ===\n"
-    f"Batch Size: max. {MAX_CHARS_PER_CHUNK} chars (excluding instructions & terminology)"
+    f"Batch Size: max. {MAX_BATCH_SIZE} chars (excluding instructions & terminology)"
 )
 
 global_timer_start = time.perf_counter()
