@@ -21,6 +21,7 @@ INPUT_FOLDER_NAME = "input"
 PROCESS_FOLDER_NAME = "progress"
 SECRETS_FOLDER_NAME = "local_secret_do_not_commit"
 ERRORS_FOLDER_NAME = "errors"
+OUTPUT_FOLDER_NAME = "output"
 
 PROGRESS_FILE_NAME = "00-progress.json"
 TRANSLATABLES_FILE_NAME = "01-translatables.json"
@@ -38,6 +39,7 @@ APIKEY_FILE_NAME = "openai_api_key.txt"
 # Preprocess configuration (do not edit anything from here on)!
 # ------------------------------------------------------------
 INPUT_FILE = Path(INPUT_FOLDER_NAME) / INPUT_FILE_NAME
+OUTPUT_FILE = Path(OUTPUT_FOLDER_NAME) / INPUT_FILE_NAME
 
 # create specific progress subfolder for current input (if necessary)
 PROCESS_SUBFOLDER_NAME = Path(PROCESS_FOLDER_NAME) / INPUT_FILE_NAME.removesuffix(".json")
@@ -141,6 +143,20 @@ def load_translatables():
 
 
 # ------------------------------------------------------------
+# Function: Initialize API client
+# ------------------------------------------------------------
+def init_api_client():
+
+    api_key = APIKEY_FILE.read_text(
+        encoding="utf-8"
+    ).strip()
+    client = OpenAI(
+        api_key=api_key
+    )
+    return client
+
+
+# ------------------------------------------------------------
 # Function: Get JSON element
 # ------------------------------------------------------------
 def get_json_element(
@@ -186,18 +202,28 @@ def apply_translations(
     # TODO - apply any "on-top"" translations (like translator's watermark etc.)
 
 
-# ------------------------------------------------------------
-# Function: Initialize LLM API client
-# ------------------------------------------------------------
-def init_api_client():
+# ----------------------------------------------------------------------------------
+# Save Babele output
+# This is the final export step that produces a ready-to-use Babele translation file
+# ----------------------------------------------------------------------------------
+def save_babele_output(babele_json):
 
-    api_key = APIKEY_FILE.read_text(
-        encoding="utf-8"
-    ).strip()
-    client = OpenAI(
-        api_key=api_key
+    json_string = json.dumps(
+        babele_json,
+        ensure_ascii=False,
+        indent=2
     )
-    return client
+
+    with open(
+            OUTPUT_FILE,
+            "w",
+            encoding="utf-8"
+    ) as file:
+
+        file.write(json_string)
+
+    print(f"Translated file written to: {OUTPUT_FILE} with {len(json_string)} chars")
+
 
 # ------------------------------------------------------------
 # MAIN ;-)
@@ -243,9 +269,8 @@ print(f"\n=== SAVE TRANSLATABLES TO PROGRESS FOLDER ===")
 
 save_translatables(translatables)
 loaded_translatables = load_translatables()
-loaded_translatables_cnt = len(loaded_translatables)
 
-print(f"loaded {loaded_translatables_cnt} translatables. Expected: {translatables_imported_cnt}")
+print(f"loaded {len(loaded_translatables)} translatables. Expected: {translatables_imported_cnt}")
 print(
     f"DEBUG - first translatable identical: "
     f"{translatables[0] == loaded_translatables[0]}"
@@ -265,18 +290,22 @@ apply_translations(
         1: "[LAST TRANSLATED]"
     } # just a mock-up for now
 )
-print(
-    f"DEBUG - Result of FIRST translation at Babele path: {loaded_translatables[0]["path"]}"
-    f"\n=> {get_json_element(babele_json, loaded_translatables[0]["path"])}"
-    f"\nDEBUG - Result of LAST translation at Babele path: {loaded_translatables[1]["path"]}"
-    f"\n=> {get_json_element(babele_json, loaded_translatables[1]["path"])}"
-)
+# print(
+#     f"DEBUG - Result of FIRST translation at Babele path: {loaded_translatables[0]["path"]}"
+#     f"\n=> {get_json_element(babele_json, loaded_translatables[0]["path"])}"
+#     f"\nDEBUG - Result of LAST translation at Babele path: {loaded_translatables[1]["path"]}"
+#     f"\n=> {get_json_element(babele_json, loaded_translatables[1]["path"])}"
+# )
 # print(f"DEBUG - Final translation:"
 #     f"\n{json.dumps(
 #         babele_json,
 #         ensure_ascii=False,
 #         indent=2)}"
 # )
+
+print(f"\n=== SAVE FINAL Babele FIILE ===")
+save_babele_output(babele_json)
+
 
 # ------------------------------------------------------------
 # Stop global timer
