@@ -1,6 +1,7 @@
 from config import *
 import json
 from openai import OpenAI
+import re
 
 
 # ------------------------------------------------------------
@@ -15,11 +16,8 @@ def load_json_input(input_file):
 
         data = json.load(file)
 
-    chars_cnt = json.dumps(
-        data,
-        ensure_ascii=False,
-        indent=2
-    )
+    chars_cnt = stringify_json(data)
+
     print(f"Loaded {len(data)} top-level elements from {input_file} with {len(chars_cnt)} chars")
     return data
 
@@ -29,11 +27,7 @@ def load_json_input(input_file):
 # ----------------------------------------------------------------------------------
 def save_json_output(data, output_file):
 
-    json_string = json.dumps(
-        data,
-        ensure_ascii=False,
-        indent=2
-    )
+    json_string = stringify_json(data)
 
     with open(
             output_file,
@@ -77,6 +71,43 @@ def set_json_element(
     current[path[-1]] = new_value
 
 
+# ----------------------------------------------------------------------------------
+# Convert data (list, dict) to formatted JSON string
+# Recommended to use instead of vanilla json.dumps
+# It applies useful cosmetics like condensing numeric elements in lists to single lines
+# ----------------------------------------------------------------------------------
+def stringify_json(data):
+    json_string = (json.dumps(
+        data,
+        ensure_ascii=False,
+        indent=2
+    ))
+
+    json_string = re.sub(r'\n +([0-9-\]])', r' \1', json_string)
+    return json_string
+
+
+# ------------------------------------------------------------
+# Function: Init Progress
+# ------------------------------------------------------------
+def init_progress():
+
+    # TODO - Implement check/switch NEW_RUN vs. RESUME
+    # For now, this is just the NEW_RUN case
+    progress_info = {
+        "config": {
+            "input_file": str(INPUT_FILE),
+            "max_batch_size": MAX_BATCH_SIZE,
+            "translatable_fields": list(TRANSLATABLE_FIELDS),
+        },
+        "batches": []
+    }
+
+    save_json_output(data=progress_info, output_file=PROGRESS_INFO_FILE)
+
+    print(f"New Progress Info is now tracked by file {PROGRESS_INFO_FILE}")
+
+
 # ------------------------------------------------------------
 # Function: Build and return Batches
 # Traverse all Translatables and bundle them into Batches,
@@ -86,7 +117,16 @@ def build_batches(translatables):
 
     batches = []
 
-    current_batch = None
+    def create_empty_batch():
+        return {
+            "id": len(batches),
+            "translatable_ids": [],
+            "char_count": 0
+        }
+
+    current_batch = create_empty_batch()
+
+    error = None
 
     for translatable in translatables:
 
@@ -94,32 +134,21 @@ def build_batches(translatables):
 
         # No Translatable must exceed the Batch size limit by itself, this requires an abort.
         if text_size > MAX_BATCH_SIZE:
-            raise ValueError(
-                f"Translatable {translatable['id']} "
-                f"contains {text_size} chars and exceeds "
-                f"MAX_BATCH_SIZE={MAX_BATCH_SIZE}"
+            error = (
+                f"Translatable {translatable['id']} " +
+                f"contains {text_size} chars and exceeds " +
+                f"MAX_BATCH_SIZE={MAX_BATCH_SIZE}" +
                 f"\nProposed solution: Increase MAX_BATCH_SIZE in config.py and resume process."
-                # TODO: Handle Fatal Error properly in master workflow:
-                #  - update 0-progress.json
-                #  - persist Batches already created in BATCHES_FILE
-                #  - optional: post-mortem dump
             )
 
-        if (
-                current_batch is not None
-                and current_batch["char_count"] + text_size > MAX_BATCH_SIZE
-        ):
+            current_batch["status"] = "failed"
+            current_batch["error"] = error
+            break
+
+        if current_batch["char_count"] + text_size > MAX_BATCH_SIZE:
             # Batch is full: Close and send it to the list
             batches.append(current_batch)
-            current_batch = None
-            char_count = 0
-
-        if current_batch is None:
-            current_batch = {
-                "id": len(batches),
-                "translatable_ids": [],
-                "char_count": 0
-            }
+            current_batch = create_empty_batch()
 
         current_batch["translatable_ids"].append(translatable["id"])
         current_batch["char_count"] += text_size
@@ -127,9 +156,18 @@ def build_batches(translatables):
     # After loop is complete, don't forget to close and send off the last open batch
     batches.append(current_batch)
 
-    print(f"Built {len(batches)} Batches from {len(translatables)} Translatables")
+    if error is not None:
 
-    return batches
+        raise ValueError({
+            "error": error,
+            "batches": batches
+        })
+
+    else:
+
+        print(f"Built {len(batches)} Batches from {len(translatables)} Translatables")
+
+        return batches
 
 
 # ------------------------------------------------------------

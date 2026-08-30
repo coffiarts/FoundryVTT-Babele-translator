@@ -22,6 +22,17 @@ global_timer_start = time.perf_counter()
 
 
 # ---------------------------------------------------
+# INITIALIZE PROGRESS
+# ---------------------------------------------------
+
+print(f"\n=== INITIALIZE PROGRESS ===")
+
+init_progress()
+progress = load_json_input(PROGRESS_INFO_FILE)
+print(f"Run config parameters: {progress["config"]}")
+
+
+# ---------------------------------------------------
 # IMPORT INPUT FILE
 # ---------------------------------------------------
 
@@ -45,10 +56,7 @@ extract_translatables_from_babele(
 )
 print(f"Extracted translatables: {len(translatables)}")
 # print(f"DEBUG - Content of first 10 translatables:"
-#     f"\n{json.dumps(
-#         translatables[:10],
-#         ensure_ascii=False,
-#         indent=2)}"
+#     f"\n{stringify_json(translatables[:10])}"
 # )
 
 
@@ -81,14 +89,37 @@ print(f"Expected: {len(translatables)}")
 
 print(f"\n=== BUILD BATCHES ===")
 
-batches = build_batches(translatables)
+progress_info = load_json_input(PROGRESS_INFO_FILE)
+
+try:
+
+    batches = build_batches(translatables)
+
+    # Update ProgressInfo (batches will be saved later)
+    progress_info["batches"] = batches
+    save_json_output(data=progress_info, output_file=PROGRESS_INFO_FILE)
+
+except ValueError as e:
+
+    details = e.args[0]
+
+    # Update ProgressInfo to register error
+    progress_info["batches"] = details["batches"]
+    save_json_output(data=progress_info, output_file=PROGRESS_INFO_FILE)
+
+    # Also persist all hitherto known Batches in BATCHES_FILE right away (before aborting)
+    # But we do not want to store the last failed batch here, so we pop it off first
+    details["batches"].pop()
+    save_json_output(data=details["batches"], output_file=BATCHES_FILE)
+
+    # TODO: (optional): post-mortem dump
+
+    raise
+
 
 # print(
 #     f"DEBUG - First 10 batches: "
-#     f"{json.dumps(
-#     batches[:10],
-#     indent=2,
-#     ensure_ascii=False)}"
+#     f"{stringify_json(batches[:10])}"
 # )
 
 
@@ -146,10 +177,7 @@ print(f"{len(translations)} translations applied to original Babele data.")
 #     f"\n=> {get_json_element(babele_json, loaded_translatables[1]["path"])}"
 # )
 # print(f"DEBUG - Final translation:"
-#     f"\n{json.dumps(
-#         babele_json,
-#         ensure_ascii=False,
-#         indent=2)}"
+#     f"\n{stringify_json(babele_data)}"
 # )
 
 
