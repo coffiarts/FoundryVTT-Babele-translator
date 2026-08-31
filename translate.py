@@ -1,5 +1,6 @@
 import time
 from shared_functions import *
+from unit_tests import *
 
 # -------------------------------------------------------------------------------------------------------
 # This controls the main process of translating a Babele input file:
@@ -60,10 +61,7 @@ print(f"Extracted translatables: {len(translatables)}")
 # -------
 # Tests:
 # -------
-# print(f"DEBUG - Content of first 10 translatables:"
-#     f"\n{stringify_json(translatables[:10])}"
-# )
-
+test_extract_translatables_from_babele(translatables)
 
 # ---------------------------------------------------
 # SAVE TRANSLATABLES TO PROGRESS FOLDER
@@ -81,21 +79,7 @@ loaded_translatables = load_json_input(TRANSLATABLES_FILE)
 # -------
 # Tests:
 # -------
-print(f"UNIT TEST - Expected: {len(translatables)}")
-color = test_result_color(len(translatables) == len(loaded_translatables))
-print(
-    f"UNIT TEST - Translatables count identical: "
-    f"{color}{len(translatables) == len(loaded_translatables)}{RESET}"
-)
-# print(
-#     f"DEBUG - first translatable identical: "
-#     f"{translatables[0] == loaded_translatables[0]}"
-# )
-# print(
-#     f"DEBUG - last translatable identical: "
-#     f"{translatables[-1] == loaded_translatables[-1]}"
-# )
-
+test_save_translatables(translatables, loaded_translatables)
 
 # -----------------------------------------------------------------
 # CREATE TRANSLATABLES WITH PLACEHOLDERS
@@ -110,27 +94,7 @@ translatables_with_placeholders, placeholders = protect_with_placeholders(
 # ==================
 # Tests:
 # ==================
-# all_text = "\n".join(
-#     translatable["original"]
-#     for translatable in translatables_with_placeholders
-# )
-
-# print(
-#     f"DEBUG - All Placeholders:\n"
-#     f"{to_prettified_json(placeholders)}"
-# )
-# print(
-#     f"DEBUG - All Translatables with PLaceholders:\n"
-#     f"{to_prettified_json([
-#         translatable
-#         for translatable in translatables_with_placeholders
-#         if any(
-#             placeholder in translatable["original"]
-#             for placeholder in placeholders
-#         )
-#     ])}"
-# )
-
+test_create_translatables_with_placeholders(translatables_with_placeholders)
 
 # ---------------------------------------------------
 # SAVE TRANSLATABLES WITH PLACEHOLDERS
@@ -151,21 +115,7 @@ save_json_output(
 # -------
 # Tests:
 # -------
-loaded_translatables_with_placeholders = load_translatables(with_placeholders=True)
-print(f"UNIT TEST - Expected: {len(translatables)}")
-color = test_result_color(len(translatables) == len(loaded_translatables_with_placeholders))
-print(
-    f"UNIT TEST - Translatables with Placeholders count identical: "
-    f"{color}{len(translatables) == len(loaded_translatables_with_placeholders)}{RESET}"
-)
-loaded_placeholders = load_placeholders()
-print(f"UNIT TEST - Expected: {len(placeholders)}")
-color = test_result_color(len(placeholders) == len(loaded_placeholders))
-print(
-    f"UNIT TEST - Placeholder count identical: "
-    f"{color}{len(placeholders) == len(loaded_placeholders)}{RESET}"
-)
-
+test_save_translatables_with_placeholders(translatables, placeholders)
 
 # ---------------------------------------------------
 # BUILD BATCHES
@@ -203,6 +153,7 @@ except ValueError as e:
 # -------
 # Tests:
 # -------
+
 # print(
 #     f"DEBUG - First 10 batches: "
 #     f"{stringify_json(batches[:10])}"
@@ -220,27 +171,11 @@ save_json_output(
     BATCHES_FILE
 )
 
-loaded_batches = load_batches()
 
 # -------
 # Tests:
 # -------
-print(f"UNIT TEST - Expected: {len(batches)}")
-color = test_result_color(len(batches) == len(loaded_batches))
-print(
-    f"UNIT TEST - Batches count identical: "
-    f"{color}{len(batches) == len(loaded_batches)}{RESET}"
-)
-# print(
-#     f"DEBUG - first batch identical: "
-#     f"{batches[0] == loaded_batches[0]}"
-# )
-#
-# print(
-#     f"DEBUG - last batch identical: "
-#     f"{batches[-1] == loaded_batches[-1]}"
-# )
-
+test_save_batches(batches)
 
 # ---------------------------------------------------
 # TRANSLATE
@@ -269,6 +204,7 @@ print(f"{len(translations)} translations applied to original Babele data.")
 # -------
 # Tests:
 # -------
+
 # print(
 #     f"DEBUG - Result of FIRST translation at Babele path: {loaded_translatables[0]["path"]}"
 #     f"\n=> {get_json_element(babele_json, loaded_translatables[0]["path"])}"
@@ -294,3 +230,6 @@ save_json_output(babele_data, OUTPUT_FILE)
 
 global_timer_end = time.perf_counter()
 print(f"\n=== TOTAL processing duration: {global_timer_end - global_timer_start:.2f} seconds ===")
+
+print(f"\n{GREEN}=== PROCESS COMPLETED SUCCESSFULLY ==={RESET}")
+
