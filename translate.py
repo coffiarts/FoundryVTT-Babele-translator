@@ -33,16 +33,30 @@ except ValueError as e:
 global_timer_start = time.perf_counter()
 
 if run_mode == NEW_RUN:
-    cleanup_progress_files()
 
     # ---------------------------------------------------
-    # INITIALIZE PROGRESS
+    # Case 1: INITIALIZE PROGRESS
     # ---------------------------------------------------
-
     print(f"\n=== INITIALIZE PROGRESS ===")
-    init_progress_info()
+    cleanup_progress_files()
+    progress_info = init_progress_info()
 
-progress_info = load_json_input(PROGRESS_INFO_FILE)
+else:
+
+    # ---------------------------------------------------
+    # Case 2: RESUME PROGRESS
+    # ---------------------------------------------------
+    try:
+
+        progress_info, pickup_batch = validate_progress_info()
+        starting_text = load_first_translatable_for_batch(pickup_batch)["original"][:100]
+        print(f"Resuming from Batch with id={pickup_batch["id"]} [{pickup_batch["status"]}] - starting with: \"{starting_text} ...\"")
+
+    except ValueError as e:
+
+        print(f"{RED}{e.args[0]}{RESET}")
+        exit()
+
 
 
 # ---------------------------------------------------
@@ -93,10 +107,10 @@ loaded_translatables = load_json_input(TRANSLATABLES_FILE)
 test_save_translatables(translatables, loaded_translatables)
 
 # -----------------------------------------------------------------
-# CREATE TRANSLATABLES WITH PLACEHOLDERS
+# PROTECT TRANSLATABLES WITH PLACEHOLDERS
 # -----------------------------------------------------------------
 
-print(f"\n=== CREATE TRANSLATABLES WITH PLACEHOLDERS (PROTECT FOUNDRY ELEMENTS) ===")
+print(f"\n=== PROTECT TRANSLATABLES WITH PLACEHOLDERS (MASK FOUNDRY ELEMENTS) ===")
 
 translatables_with_placeholders, placeholders = protect_with_placeholders(
     translatables
@@ -189,7 +203,32 @@ save_json_output(
 test_save_batches(batches)
 
 # ---------------------------------------------------
-# TRANSLATE
+# START BATCH PROCESSING LOOP
+# just a placeholder for now
+# ---------------------------------------------------
+
+# ---------------------------------------------------
+# SET BATCH STATUS TO "PROCESSING"
+# just a placeholder for now
+# ---------------------------------------------------
+
+# ---------------------------------------------------
+# IDENTIFY BATCH-RELATED TERMINOLOGY
+# just a placeholder for now
+# ---------------------------------------------------
+
+# ---------------------------------------------------
+# ASSEMBLE BATCH PAYLOAD
+# just a placeholder for now
+# ---------------------------------------------------
+
+# ---------------------------------------------------
+# PREPARE TRANSLATION REQUEST
+# just a placeholder for now
+# ---------------------------------------------------
+
+# ---------------------------------------------------
+# TRANSLATE BATCH
 # just a mock-up for now
 # ---------------------------------------------------
 
@@ -198,9 +237,43 @@ translations = {
     1: "[LAST TRANSLATED]"
 }
 
+# ---------------------------------------------------
+# SAVE TRANSLATIONS (STILL WITH PLACEHOLDERS)
+# just a placeholder for now
+# ---------------------------------------------------
 
 # ---------------------------------------------------
-# APPLY TRANSLATIONS TO Babele
+# PLACEHOLDER INTEGRITY CHECK => IDENTIFY POST-REVIEW ITEMS
+# just a placeholder for now
+# ---------------------------------------------------
+
+# ---------------------------------------------------
+# SAVE POST-REVIEW ITEMS
+# just a placeholder for now
+# ---------------------------------------------------
+
+# ---------------------------------------------------
+# REPLACE PLACEHOLDERS
+# just a placeholder for now
+# ---------------------------------------------------
+
+# ---------------------------------------------------
+# SAVE FINAL TRANSLATIONS TO PROGRESS FOLDER
+# just a placeholder for now
+# ---------------------------------------------------
+
+# ---------------------------------------------------
+# SET BATCH STATUS TO COMPLETED
+# just a placeholder for now
+# ---------------------------------------------------
+
+# ---------------------------------------------------
+# END BATCH LOOP
+# just a placeholder for now
+# ---------------------------------------------------
+
+# ---------------------------------------------------
+# COMBINE AND APPLY TRANSLATIONS TO Babele FILE
 # ---------------------------------------------------
 
 print(f"\n=== APPLY TRANSLATIONS TO Babele ===")

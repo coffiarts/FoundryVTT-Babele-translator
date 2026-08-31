@@ -109,9 +109,13 @@ def to_multiline_text(dictionary):
 
 
 # ------------------------------------------------------------
-# Function: Init Progress
+# Function: Init Progress Info
+# Used by Run Mode = NEW_RUN
+# Returns a freshly created Progress Info
 # ------------------------------------------------------------
 def init_progress_info():
+
+    print("Creating new Progress Info ...")
 
     current_config = get_resume_relevant_config()
 
@@ -122,10 +126,62 @@ def init_progress_info():
 
     save_json_output(data=progress_info, output_file=PROGRESS_INFO_FILE)
 
-    print(f"New Progress Info is now tracked by file {PROGRESS_INFO_FILE}")
+    print(f"... Done. New Progress Info is now tracked by file {PROGRESS_INFO_FILE}")
+
+    return progress_info
 
 
 # ------------------------------------------------------------
+# Function: Validate Progress
+# Used by Run Mode = RESUME
+# Returns (if valid):
+# - the existing Progress Info
+# - the Batch to restart from (pickup_batch)
+# (if invalid): an Error is thrown.
+# ------------------------------------------------------------
+def validate_progress_info():
+
+    print("Validating existing Progress Info ...")
+
+    progress_info = load_json_input(PROGRESS_INFO_FILE)
+
+    # Check for proper state changes:
+    completed_phase = True
+
+    pickup_batch = None
+
+    for batch in progress_info["batches"]:
+
+        if completed_phase:
+
+            if batch["status"] != COMPLETED:
+                completed_phase = False
+
+        else:
+
+            if pickup_batch is None:
+                pickup_batch = batch
+
+            if batch["status"] == COMPLETED:
+                raise ValueError(
+                    "Corrupt ProgressInfo: "
+                    f"COMPLETED batch id: (id={batch["id"]}) found after non-COMPLETED batch."
+                )
+
+    if completed_phase:
+
+        raise ValueError(
+            "Nothing to resume: "
+            f"Picking up this process is not necessary. All {len(progress_info["batches"])} Batches already marked as {COMPLETED}."
+        )
+
+    else:
+
+        print("... valid.")
+        return progress_info, pickup_batch
+
+
+#------------------------------------------------------------
 # Function: Build and return Batches
 # Traverse all Translatables (with placeholders) and bundle them into Batches,
 # keeping their total text length within preconfigured MAX_BATCH_SIZE
@@ -260,6 +316,22 @@ def load_translatables(
                     id_filtered_translatables.append(translatable)
 
         return id_filtered_translatables
+
+
+# ------------------------------------------------------------
+# Function: Load fist Translatable for Batch
+# ------------------------------------------------------------
+def load_first_translatable_for_batch(batch):
+    first_translatable_id = (
+        batch["translatable_ids"][0]
+    )
+
+    first_translatable = load_translatables(
+        translatable_ids={first_translatable_id},
+        with_placeholders=True
+    )[0]
+
+    return first_translatable
 
 
 # ------------------------------------------------------------
