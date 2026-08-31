@@ -336,6 +336,31 @@ def protect_with_placeholders(translatables):
     return translatables_with_placeholders, placeholders
 
 
+# ------------------------------------------------------------
+# Function: Find Patterns
+# Utility for matching against multiple patterns at one.
+# Runs a RegEx check of <text> against all elements in <patterns>
+# Returns all matches, plus the matching extract from text withing +/- <leading_trailing_chars> chars boundary
+# ------------------------------------------------------------
+def find_patterns(text, patterns, leading_trailing_chars = 100):
+
+    matches = {}
+
+    for pattern in patterns:
+
+        match = re.search(pattern, text)
+
+        if match:
+
+            start = max(0, match.pos - leading_trailing_chars)
+            end = min(len(text), match.pos + len(match.group(0)))
+
+            fragment = text[start : end]
+
+            matches[pattern] = fragment
+
+    return matches
+
 
 # ------------------------------------------------------------
 # Function: Initialize API client
@@ -365,13 +390,3 @@ def apply_translations(
     # TODO - apply any "on-top"" translations (like translator's watermark etc.)
 
 
-# ------------------------------------------------------------
-# Function: Test Result Color
-# Utility used for formatting console outpur based on check results.
-# Returns GREEN if passed parameter is True, otherwise RED
-# ------------------------------------------------------------
-def test_result_color(result):
-    if result is True:
-        return GREEN
-    else:
-        return RED
