@@ -14,24 +14,37 @@ from unit_tests import *
 # The input file to process, plus any other relevant parameters can be configured in config.py
 # -------------------------------------------------------------------------------------------------------
 
-print(
-    f"\n=== PROCESSING FILE: {INPUT_FILE} ===\n"
-    f"Batch Size: max. {MAX_BATCH_SIZE} chars (excluding instructions & terminology)"
-)
+print(f"\n=== PROCESSING FILE: {INPUT_FILE} ===")
+
+print(f"\n=== CONFIGURATION ===")
+print(f"{to_multiline_text(get_resume_relevant_config())}")
+
+
+try:
+
+    run_mode = determine_run_mode()
+    print(f"Run mode: {run_mode}")
+
+except ValueError as e:
+
+    print(f"{RED}{e.args[0]}{RESET}")
+    exit()
 
 global_timer_start = time.perf_counter()
 
+if run_mode == NEW_RUN:
+    cleanup_progress_files()
 
-# ---------------------------------------------------
-# INITIALIZE PROGRESS
-# ---------------------------------------------------
+    # ---------------------------------------------------
+    # INITIALIZE PROGRESS
+    # ---------------------------------------------------
 
-print(f"\n=== INITIALIZE PROGRESS ===")
+    print(f"\n=== INITIALIZE PROGRESS ===")
+    init_progress_info()
 
-init_progress()
-progress = load_json_input(PROGRESS_INFO_FILE)
+progress_info = load_json_input(PROGRESS_INFO_FILE)
 
-print(f"Run config parameters: {progress["config"]}")
+print(f"Run config parameters: {progress_info["config"]}")
 
 
 # ---------------------------------------------------
@@ -122,8 +135,6 @@ test_save_translatables_with_placeholders(translatables, placeholders)
 # ---------------------------------------------------
 
 print(f"\n=== BUILD BATCHES ===")
-
-progress_info = load_json_input(PROGRESS_INFO_FILE)
 
 try:
 

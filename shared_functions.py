@@ -87,20 +87,36 @@ def to_prettified_json(data):
     return json_string
 
 
+# ----------------------------------------------------------------------------------
+# Convert a dict or list to multiline lines of pattern:
+# "<key/index>: <value>\n"
+# Typically used for logging enumerables to console
+# ----------------------------------------------------------------------------------
+def to_multiline_text(dictionary):
+
+    text = ""
+
+    if type(dictionary) == dict:
+        for key, value in dictionary.items():
+            text += f"{key}: {value}\n"
+
+    if type(dictionary) == list:
+        for index, value in enumerate(dictionary):
+            text += f"{index}: {value}\n"
+
+    return text
+
+
+
 # ------------------------------------------------------------
 # Function: Init Progress
 # ------------------------------------------------------------
-def init_progress():
+def init_progress_info():
 
-    # TODO - Implement check/switch NEW_RUN vs. RESUME
-    # For now, this is just the NEW_RUN case
+    current_config = get_resume_relevant_config()
+
     progress_info = {
-        "config": {
-            "input_file": str(INPUT_FILE),
-            "max_batch_size": MAX_BATCH_SIZE,
-            "translatable_fields": list(TRANSLATABLE_FIELDS),
-            "foundry_syntax_patterns": list(FOUNDRY_SYNTAX_PATTERNS)
-        },
+        "config": current_config,
         "batches": []
     }
 
@@ -389,3 +405,85 @@ def apply_translations(
 
     # TODO - apply any "on-top"" translations (like translator's watermark etc.)
 
+
+# ------------------------------------------------------------
+# Function: Get Resume-relevant config
+# Delivers the current snapshot of all config parameters that
+# need to remain stable between incremental process runs.
+# The function's output serves for checking whether a Resume is allowed to start.
+# ------------------------------------------------------------
+def get_resume_relevant_config():
+
+    return {
+        "max_batch_size": MAX_BATCH_SIZE,
+        "translatable_fields": sorted(TRANSLATABLE_FIELDS),
+        "foundry_syntax_patterns": sorted(FOUNDRY_SYNTAX_PATTERNS)
+    }
+
+
+# ------------------------------------------------------------
+# Function: Determine run mode
+# Delivers the current snapshot of all config parameters that
+# need to remain stable between incremental process runs.
+# The function's output serves for checking whether a Resume is allowed to start.
+# ------------------------------------------------------------
+def determine_run_mode():
+
+    if not PROGRESS_INFO_FILE.exists():
+        return NEW_RUN
+
+    progress_info = load_json_input(
+        PROGRESS_INFO_FILE
+    )
+
+    current_config = get_resume_relevant_config()
+
+    if progress_info["config"] != current_config:
+
+        raise ValueError(
+            f"CONFIGURATION MISMATCH\n"
+            f"======================\n"
+            f"At least one essential parameter in config.py "
+            f"has changed since the last attempt to run this process.\n"
+            f"The following parameters are not allowed to change when resuming a process for the same input file.\n"
+            f"(File to be processed: {INPUT_FILE})\n\n"
+            
+            f"Current configuration:\n"
+            f"----------------------\n"
+            f"{to_multiline_text(current_config)}\n\n"
+            
+            f"Configuration values expected from last attempt:\n"
+            f"------------------------------------------------\n"
+            f"{to_multiline_text(progress_info['config'])}\n\n"
+            
+            f"Please either adjust config.py accordingly and retry, "
+            f"or delete file {PROGRESS_INFO_FILE} to start a fresh process (discarding all intermediary results)."
+        )
+
+    return RESUME
+
+
+# ------------------------------------------------------------
+# Function: Cleanup progress files
+# ------------------------------------------------------------
+def cleanup_progress_files():
+
+    print("Cleaning up progress files from previous runs (if any) ...")
+
+    for file in [
+        PROGRESS_INFO_FILE,
+        TRANSLATABLES_FILE,
+        TRANSLATABLES_WITH_PLACEHOLDERS_FILE,
+        PLACEHOLDERS_FILE,
+        BATCHES_FILE,
+        TRANSLATIONS_WITH_PLACEHOLDERS_FILE,
+        TRANSLATIONS_FINAL_FILE,
+        POST_REVIEW_ITEMS_FILE
+    ]:
+
+        if file.exists():
+            file.unlink()
+
+            print(f"... Deleted: {file}")
+
+    print("Done.")
