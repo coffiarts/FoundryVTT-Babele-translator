@@ -16,7 +16,7 @@ def load_json_input(input_file):
 
         data = json.load(file)
 
-    chars_cnt = stringify_json(data)
+    chars_cnt = to_prettified_json(data)
 
     print(f"Loaded {len(data)} top-level elements from {input_file} with {len(chars_cnt)} chars")
     return data
@@ -27,7 +27,7 @@ def load_json_input(input_file):
 # ----------------------------------------------------------------------------------
 def save_json_output(data, output_file):
 
-    json_string = stringify_json(data)
+    json_string = to_prettified_json(data)
 
     with open(
             output_file,
@@ -76,7 +76,7 @@ def set_json_element(
 # Recommended to use instead of vanilla json.dumps
 # It applies useful cosmetics like condensing numeric elements in lists to single lines
 # ----------------------------------------------------------------------------------
-def stringify_json(data):
+def to_prettified_json(data):
     json_string = (json.dumps(
         data,
         ensure_ascii=False,
@@ -196,13 +196,24 @@ def load_batches(batch_ids = None):
 # ------------------------------------------------------------
 # Function: Load and return Translatables
 # from the preconfigured Translatables JSON file (TRANSLATABLES_FILE)
-# Optional: Filter the result by passing one or both of
-# - a set if batch_ids like {4} or {1, 5, 13}
-# - a set if translatable_ids like 4} or {1, 5, 13}
+# Optional:
+# - use with_placeholders = True to return Translatables with Placeholders instead if original Translatables
+# - Filter the result by passing one or both of
+#   - a set if batch_ids like {4} or {1, 5, 13}
+#   - a set if translatable_ids like 4} or {1, 5, 13}
 # ------------------------------------------------------------
-def load_translatables(batch_ids = None, translatable_ids = None):
+def load_translatables(
+        batch_ids = None,
+        translatable_ids = None,
+        with_placeholders = False):
 
-    translatables = load_json_input(TRANSLATABLES_FILE)
+    source_file = (
+        TRANSLATABLES_FILE
+        if not with_placeholders
+        else TRANSLATABLES_WITH_PLACEHOLDERS_FILE
+    )
+
+    translatables = load_json_input(source_file)
 
     if batch_ids is None and translatable_ids is None:
         return translatables
@@ -273,37 +284,52 @@ def extract_translatables_from_babele(input, translatables, current_path):
 
 
 # ------------------------------------------------------------
-# Function: Replace Placeholders (recursively!)
-# - Scans all translatables for occurrences of Foundry-specific, non-translatable syntax
+# Function: Protect with Placeholders
+# - Scans all passed text for occurrences of Foundry-specific, non-translatable syntax
 # - Replaces them with numbered placeholders of pattern <<<FOUNDRY_nnnnnn>>>
-# - Returns the result(translatables_with_placeholders), plus the list of generated placeholders
+# - Returns the result (texts_with_placeholders), plus the list of generated placeholders
 # ------------------------------------------------------------
-def replace_placeholders(translatables):
+def protect_with_placeholders(translatables):
+
+    placeholders = {}
+    translatables_with_placeholders = []
+
+    def create_and_register_placeholder(match):
+
+        placeholder_name = (
+            f"<<<FOUNDRY_{len(placeholders):06d}>>>"
+        )
+
+        placeholders[
+            placeholder_name
+        ] = match.group(0)
+
+        return placeholder_name
 
     for translatable in translatables:
 
-        protected_texts = {}
+        # copy orignal translatable
+        translatable_to_protect = translatable.copy()
 
-        # TODO - non-runnable WIP
-        for translatable in translatables:
-
-            protected_text = replace_placeholders(
-                translatable["original"]
-            )
-
-            protected_texts[
-                translatable["id"]
-            ] = protected_text
-
-            chunk_payload.append({
-                "id": translatable["id"],
-                "text": protected_text
-            })
-
-        chunk_payload_json = json.dumps(
-            chunk_payload,
-            ensure_ascii=False
+        # Protect Foundry @UUID[...] and @Embed[...] syntax
+        translatable_to_protect["original"] = re.sub(
+            r'@(UUID|Embed|Compendium)\[[^\]]*\]',
+            create_and_register_placeholder,
+            translatable_to_protect["original"]
         )
+
+        # Protect inline rolls, checks, saves, etc.
+        translatable_to_protect["original"] = re.sub(
+            r'\[\[[^\]]*\]\]',
+            create_and_register_placeholder,
+            translatable_to_protect["original"]
+        )
+
+        translatables_with_placeholders.append(translatable_to_protect)
+
+    print(f"Extracted {len(placeholders)} new protective placeholders from {len(translatables)} translatables")
+
+    return translatables_with_placeholders, placeholders
 
 
 

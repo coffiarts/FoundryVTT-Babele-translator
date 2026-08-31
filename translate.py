@@ -82,17 +82,47 @@ print(f"Expected: {len(translatables)}")
 #     f"{translatables[-1] == loaded_translatables[-1]}"
 # )
 
-# ---------------------------------------------------
-# REPLACE PROTECTED ELEMENTS (PLACEHOLDERS)
-# ---------------------------------------------------
+# -----------------------------------------------------------------
+# CREATE TRANSLATABLES WITH PLACEHOLDERS
+# -----------------------------------------------------------------
 
-print(f"\n=== REPLACE PROTECTED ELEMENTS (PLACEHOLDERS) ===")
+print(f"\n=== CREATE TRANSLATABLES WITH PLACEHOLDERS (PROTECT FOUNDRY ELEMENTS) ===")
 
-translatables_with_placeholders, placeholders = replace_placeholders(
+translatables_with_placeholders, placeholders = protect_with_placeholders(
     translatables
 )
 
-# TODO - Test: translatables_with_placeholders, placeholders
+# print(
+#     f"DEBUG - All Placeholders:\n"
+#     f"{to_prettified_json(placeholders)}"
+# )
+# print(
+#     f"DEBUG - All Translatables with PLaceholders:\n"
+#     f"{to_prettified_json([
+#         translatable
+#         for translatable in translatables_with_placeholders
+#         if any(
+#             placeholder in translatable["original"]
+#             for placeholder in placeholders
+#         )
+#     ])}"
+# )
+
+# ---------------------------------------------------
+# SAVE TRANSLATABLES WITH PLACEHOLDERS
+# ---------------------------------------------------
+
+print(f"\n=== SAVE TRANSLATABLES WITH PLACEHOLDERS TO PROGRESS FOLDER ===")
+
+save_json_output(
+    translatables_with_placeholders,
+    TRANSLATABLES_WITH_PLACEHOLDERS_FILE
+)
+
+loaded_translatables_with_placeholders = load_translatables(with_placeholders=True)
+
+print(f"Expected: {len(translatables)}")
+
 
 # ---------------------------------------------------
 # BUILD BATCHES
@@ -127,7 +157,6 @@ except ValueError as e:
 
     raise
 
-
 # print(
 #     f"DEBUG - First 10 batches: "
 #     f"{stringify_json(batches[:10])}"
@@ -147,15 +176,15 @@ save_json_output(
 
 loaded_batches = load_batches()
 print(f"Expected: {len(batches)}")
-print(
-    f"DEBUG - first batch identical: "
-    f"{batches[0] == loaded_batches[0]}"
-)
-
-print(
-    f"DEBUG - last batch identical: "
-    f"{batches[-1] == loaded_batches[-1]}"
-)
+# print(
+#     f"DEBUG - first batch identical: "
+#     f"{batches[0] == loaded_batches[0]}"
+# )
+#
+# print(
+#     f"DEBUG - last batch identical: "
+#     f"{batches[-1] == loaded_batches[-1]}"
+# )
 
 # ---------------------------------------------------
 # TRANSLATE
