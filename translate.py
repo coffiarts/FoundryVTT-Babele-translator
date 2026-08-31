@@ -110,6 +110,11 @@ translatables_with_placeholders, placeholders = protect_with_placeholders(
 # ==================
 # Tests:
 # ==================
+# all_text = "\n".join(
+#     translatable["original"]
+#     for translatable in translatables_with_placeholders
+# )
+
 # print(
 #     f"DEBUG - All Placeholders:\n"
 #     f"{to_prettified_json(placeholders)}"

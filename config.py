@@ -14,6 +14,11 @@ TRANSLATABLE_FIELDS = {
     "description"
 }
 
+FOUNDRY_SYNTAX_PATTERNS = {
+    r'@(UUID|Embed|Compendium)\[[^\]]*\]',
+    r'\[\[[^\]]*\]\]'
+}
+
 INPUT_FOLDER_NAME = "input"
 PROGRESS_INFO_FOLDER_NAME = "progress-info"
 SECRETS_FOLDER_NAME = "local_secret_do_not_commit"

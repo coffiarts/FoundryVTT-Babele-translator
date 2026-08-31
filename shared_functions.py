@@ -99,6 +99,7 @@ def init_progress():
             "input_file": str(INPUT_FILE),
             "max_batch_size": MAX_BATCH_SIZE,
             "translatable_fields": list(TRANSLATABLE_FIELDS),
+            "foundry_syntax_patterns": list(FOUNDRY_SYNTAX_PATTERNS)
         },
         "batches": []
     }
@@ -320,19 +321,13 @@ def protect_with_placeholders(translatables):
         # copy orignal translatable
         translatable_to_protect = translatable.copy()
 
-        # Protect Foundry @UUID[...] and @Embed[...] syntax
-        translatable_to_protect["original"] = re.sub(
-            r'@(UUID|Embed|Compendium)\[[^\]]*\]',
-            create_and_register_placeholder,
-            translatable_to_protect["original"]
-        )
+        for pattern in FOUNDRY_SYNTAX_PATTERNS:
 
-        # Protect inline rolls, checks, saves, etc.
-        translatable_to_protect["original"] = re.sub(
-            r'\[\[[^\]]*\]\]',
-            create_and_register_placeholder,
-            translatable_to_protect["original"]
-        )
+            translatable_to_protect["original"] = re.sub(
+                pattern,
+                create_and_register_placeholder,
+                translatable_to_protect["original"]
+            )
 
         translatables_with_placeholders.append(translatable_to_protect)
 
@@ -370,6 +365,11 @@ def apply_translations(
     # TODO - apply any "on-top"" translations (like translator's watermark etc.)
 
 
+# ------------------------------------------------------------
+# Function: Test Result Color
+# Utility used for formatting console outpur based on check results.
+# Returns GREEN if passed parameter is True, otherwise RED
+# ------------------------------------------------------------
 def test_result_color(result):
     if result is True:
         return GREEN
