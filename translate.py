@@ -44,8 +44,6 @@ if run_mode == NEW_RUN:
 
 progress_info = load_json_input(PROGRESS_INFO_FILE)
 
-print(f"Run config parameters: {progress_info["config"]}")
-
 
 # ---------------------------------------------------
 # IMPORT INPUT FILE
@@ -152,14 +150,16 @@ except ValueError as e:
     progress_info["batches"] = details["batches"]
     save_json_output(data=progress_info, output_file=PROGRESS_INFO_FILE)
 
-    # Also persist all hitherto known Batches in BATCHES_FILE right away (before aborting)
+    # Also persist all hitherto known
+    # Batches in BATCHES_FILE right away (before aborting)
     # But we do not want to store the last failed batch here, so we pop it off first
     details["batches"].pop()
     save_json_output(data=details["batches"], output_file=BATCHES_FILE)
 
     # TODO: (optional): post-mortem dump
 
-    raise
+    print(f"{RED}{details["error"]}{RESET}")
+    exit()
 
 # -------
 # Tests:

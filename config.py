@@ -61,13 +61,26 @@ POST_REVIEW_ITEMS_FILE = Path(PROGRESS_INFO_SUBFOLDER_NAME) / POST_REVIEW_ITEMS_
 ERRORS_FILE = Path(ERRORS_FOLDER_NAME) / ERRORS_FILE_NAME
 APIKEY_FILE = Path(SECRETS_FOLDER_NAME) / APIKEY_FILE_NAME
 
-# Constants
+# ------------------------------------------------------------
+# String Constants
+# ------------------------------------------------------------
+
+# Run Mode
+NEW_RUN = "NEW_RUN"
+RESUME = "RESUME"
+
+# Batch Status
+UNPROCESSED = "UNPROCESSED"
+PROCESSING = "PROCESSING"
+FAILED = "FAILED"
+COMPLETED = "COMPLETED"
+
+# Test Result
+PASSED = "PASSED" # FAILED can be reused from above
+
+# Colors
 RED    = "\033[31m"
 GREEN  = "\033[32m"
 YELLOW = "\033[33m"
 BLUE   = "\033[34m"
 RESET  = "\033[0m"
-PASSED = "PASSED"
-FAILED = "FAILED"
-NEW_RUN = "NEW_RUN"
-RESUME = "RESUME"

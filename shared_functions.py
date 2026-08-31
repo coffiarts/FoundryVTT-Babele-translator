@@ -18,7 +18,7 @@ def load_json_input(input_file):
 
     chars_cnt = to_prettified_json(data)
 
-    print(f"Loaded {len(data)} top-level elements from {input_file} with {len(chars_cnt)} chars")
+    # print(f"Loaded {len(data)} top-level elements from {input_file} with {len(chars_cnt)} chars")
     return data
 
 
@@ -138,7 +138,8 @@ def build_batches(translatables_with_placeholders):
         return {
             "id": len(batches),
             "translatable_ids": [],
-            "char_count": 0
+            "char_count": 0,
+            "status": UNPROCESSED
         }
 
     current_batch = create_empty_batch()
@@ -158,7 +159,7 @@ def build_batches(translatables_with_placeholders):
                 f"\nProposed solution: Increase MAX_BATCH_SIZE in config.py and resume process."
             )
 
-            current_batch["status"] = "failed"
+            current_batch["status"] = FAILED
             current_batch["error"] = error
             break
 
