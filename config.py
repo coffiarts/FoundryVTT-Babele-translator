@@ -23,8 +23,8 @@ OUTPUT_FOLDER_NAME = "output"
 PROGRESS_INFO_FILE_NAME = "00-progress-info.json"
 TRANSLATABLES_FILE_NAME = "01-translatables.json"
 TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME = "02-translatables-with-placeholders.json"
-BATCHES_FILE_NAME = "03-batches.json"
-PLACEHOLDERS_FILE_NAME = "04-placeholders.json"
+PLACEHOLDERS_FILE_NAME = "03-placeholders.json"
+BATCHES_FILE_NAME = "04-batches.json"
 TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME = "05-translations-with-placeholders.json"
 TRANSLATIONS_FINAL_FILE_NAME = "06-translations-final.json"
 POST_REVIEW_ITEMS_FILE_NAME = "07-post-review-items.json"
@@ -56,4 +56,9 @@ POST_REVIEW_ITEMS_FILE = Path(PROGRESS_INFO_SUBFOLDER_NAME) / POST_REVIEW_ITEMS_
 ERRORS_FILE = Path(ERRORS_FOLDER_NAME) / ERRORS_FILE_NAME
 APIKEY_FILE = Path(SECRETS_FOLDER_NAME) / APIKEY_FILE_NAME
 
+RED    = "\033[31m"
+GREEN  = "\033[32m"
+YELLOW = "\033[33m"
+BLUE   = "\033[34m"
+RESET  = "\033[0m"
 

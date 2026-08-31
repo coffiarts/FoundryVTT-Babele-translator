@@ -29,6 +29,7 @@ print(f"\n=== INITIALIZE PROGRESS ===")
 
 init_progress()
 progress = load_json_input(PROGRESS_INFO_FILE)
+
 print(f"Run config parameters: {progress["config"]}")
 
 
@@ -55,6 +56,10 @@ extract_translatables_from_babele(
     current_path=[]
 )
 print(f"Extracted translatables: {len(translatables)}")
+
+# -------
+# Tests:
+# -------
 # print(f"DEBUG - Content of first 10 translatables:"
 #     f"\n{stringify_json(translatables[:10])}"
 # )
@@ -70,9 +75,18 @@ save_json_output(
     translatables,
     TRANSLATABLES_FILE
 )
+
 loaded_translatables = load_json_input(TRANSLATABLES_FILE)
 
-print(f"Expected: {len(translatables)}")
+# -------
+# Tests:
+# -------
+print(f"UNIT TEST - Expected: {len(translatables)}")
+color = test_result_color(len(translatables) == len(loaded_translatables))
+print(
+    f"UNIT TEST - Translatables count identical: "
+    f"{color}{len(translatables) == len(loaded_translatables)}{RESET}"
+)
 # print(
 #     f"DEBUG - first translatable identical: "
 #     f"{translatables[0] == loaded_translatables[0]}"
@@ -81,6 +95,7 @@ print(f"Expected: {len(translatables)}")
 #     f"DEBUG - last translatable identical: "
 #     f"{translatables[-1] == loaded_translatables[-1]}"
 # )
+
 
 # -----------------------------------------------------------------
 # CREATE TRANSLATABLES WITH PLACEHOLDERS
@@ -92,6 +107,9 @@ translatables_with_placeholders, placeholders = protect_with_placeholders(
     translatables
 )
 
+# ==================
+# Tests:
+# ==================
 # print(
 #     f"DEBUG - All Placeholders:\n"
 #     f"{to_prettified_json(placeholders)}"
@@ -108,6 +126,7 @@ translatables_with_placeholders, placeholders = protect_with_placeholders(
 #     ])}"
 # )
 
+
 # ---------------------------------------------------
 # SAVE TRANSLATABLES WITH PLACEHOLDERS
 # ---------------------------------------------------
@@ -119,9 +138,28 @@ save_json_output(
     TRANSLATABLES_WITH_PLACEHOLDERS_FILE
 )
 
-loaded_translatables_with_placeholders = load_translatables(with_placeholders=True)
+save_json_output(
+    placeholders,
+    PLACEHOLDERS_FILE
+)
 
-print(f"Expected: {len(translatables)}")
+# -------
+# Tests:
+# -------
+loaded_translatables_with_placeholders = load_translatables(with_placeholders=True)
+print(f"UNIT TEST - Expected: {len(translatables)}")
+color = test_result_color(len(translatables) == len(loaded_translatables_with_placeholders))
+print(
+    f"UNIT TEST - Translatables with Placeholders count identical: "
+    f"{color}{len(translatables) == len(loaded_translatables_with_placeholders)}{RESET}"
+)
+loaded_placeholders = load_placeholders()
+print(f"UNIT TEST - Expected: {len(placeholders)}")
+color = test_result_color(len(placeholders) == len(loaded_placeholders))
+print(
+    f"UNIT TEST - Placeholder count identical: "
+    f"{color}{len(placeholders) == len(loaded_placeholders)}{RESET}"
+)
 
 
 # ---------------------------------------------------
@@ -157,6 +195,9 @@ except ValueError as e:
 
     raise
 
+# -------
+# Tests:
+# -------
 # print(
 #     f"DEBUG - First 10 batches: "
 #     f"{stringify_json(batches[:10])}"
@@ -175,7 +216,16 @@ save_json_output(
 )
 
 loaded_batches = load_batches()
-print(f"Expected: {len(batches)}")
+
+# -------
+# Tests:
+# -------
+print(f"UNIT TEST - Expected: {len(batches)}")
+color = test_result_color(len(batches) == len(loaded_batches))
+print(
+    f"UNIT TEST - Batches count identical: "
+    f"{color}{len(batches) == len(loaded_batches)}{RESET}"
+)
 # print(
 #     f"DEBUG - first batch identical: "
 #     f"{batches[0] == loaded_batches[0]}"
@@ -185,6 +235,7 @@ print(f"Expected: {len(batches)}")
 #     f"DEBUG - last batch identical: "
 #     f"{batches[-1] == loaded_batches[-1]}"
 # )
+
 
 # ---------------------------------------------------
 # TRANSLATE
@@ -210,6 +261,9 @@ apply_translations(
 )
 print(f"{len(translations)} translations applied to original Babele data.")
 
+# -------
+# Tests:
+# -------
 # print(
 #     f"DEBUG - Result of FIRST translation at Babele path: {loaded_translatables[0]["path"]}"
 #     f"\n=> {get_json_element(babele_json, loaded_translatables[0]["path"])}"

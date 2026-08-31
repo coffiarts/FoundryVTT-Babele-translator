@@ -110,10 +110,10 @@ def init_progress():
 
 # ------------------------------------------------------------
 # Function: Build and return Batches
-# Traverse all Translatables and bundle them into Batches,
+# Traverse all Translatables (with placeholders) and bundle them into Batches,
 # keeping their total text length within preconfigured MAX_BATCH_SIZE
 # ------------------------------------------------------------
-def build_batches(translatables):
+def build_batches(translatables_with_placeholders):
 
     batches = []
 
@@ -128,7 +128,7 @@ def build_batches(translatables):
 
     error = None
 
-    for translatable in translatables:
+    for translatable in translatables_with_placeholders:
 
         text_size = len(translatable["original"])
 
@@ -165,7 +165,7 @@ def build_batches(translatables):
 
     else:
 
-        print(f"Built {len(batches)} Batches from {len(translatables)} Translatables")
+        print(f"Built {len(batches)} Batches from {len(translatables_with_placeholders)} Translatables")
 
         return batches
 
@@ -242,6 +242,15 @@ def load_translatables(
                     id_filtered_translatables.append(translatable)
 
         return id_filtered_translatables
+
+
+# ------------------------------------------------------------
+# Function: Load and return Placeholders
+# from the preconfigured Placeholders JSON file (PLACEHOLDERS_FILE)
+# ------------------------------------------------------------
+def load_placeholders():
+
+    return load_json_input(PLACEHOLDERS_FILE)
 
 
 # --------------------------------------------------------------
@@ -361,4 +370,8 @@ def apply_translations(
     # TODO - apply any "on-top"" translations (like translator's watermark etc.)
 
 
-
+def test_result_color(result):
+    if result is True:
+        return GREEN
+    else:
+        return RED
