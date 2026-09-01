@@ -6,12 +6,17 @@ from unit_tests import *
 # This controls the main process of translating a Babele input file:
 # - import from Babele file
 # - extract translatables
+# - protect translatables by replacing Foundry specific syntax with placeholders
 # - build batches for processing
 # - translate (using an external LLM)
 # - validate
+# - restore Foundry specific syntax from placeholders
+# - reassemble
 # - export to a new Babele file
 #
-# The input file to process, plus any other relevant parameters can be configured in config.py
+# The input file to process, plus any other relevant parameters are configured in config.py
+#
+# Processing is automatically be resumed after aborts, given that some crucial config params haven't been changed
 # -------------------------------------------------------------------------------------------------------
 
 print(f"\n=== PROCESSING FILE: {INPUT_FILE} ===")
@@ -49,7 +54,7 @@ else:
     try:
 
         progress_info, pickup_batch = validate_progress_info()
-        starting_text = load_first_translatable_for_batch(pickup_batch)["original"][:100]
+        starting_text = load_translatables_for_batch(pickup_batch, limit=1)[0]["original"][:100]
         print(f"Resuming from Batch with id={pickup_batch["id"]} [{pickup_batch["status"]}] - starting with: \"{starting_text} ...\"")
 
     except ValueError as e:
@@ -203,73 +208,93 @@ save_json_output(
 test_save_batches(batches)
 
 # ---------------------------------------------------
-# START BATCH PROCESSING LOOP
-# just a placeholder for now
+# BEGIN BATCH PROCESSING LOOP ...
 # ---------------------------------------------------
+for batch in batches:
+
+    batch["status"] = PROCESSING
+
+    # ---------------------------------------------------
+    # IDENTIFY BATCH-RELATED TERMINOLOGY
+    # just a placeholder for now
+    # ---------------------------------------------------
+
+    # postponed
+
+    # ---------------------------------------------------
+    # ASSEMBLE BATCH PAYLOAD
+    # ---------------------------------------------------
+
+    batch_payload = []
+
+    batch_translatables = load_translatables_for_batch(
+        batch,
+        with_placeholders=True
+    )
+
+    # ---------------------------------------------------
+    # BEGIN TRANSLATABLES LOOP ...
+    # ---------------------------------------------------
+    for translatable in batch_translatables:
+
+        batch_payload.append({
+            "id": translatable["id"],
+            "text": translatable["original"]
+        })
+
+
+    # ---------------------------------------------------
+    # ... END OF TRANSLATABLES LOOP
+    # ---------------------------------------------------
+
+
+    # ---------------------------------------------------
+    # PREPARE TRANSLATION REQUEST
+    # just a placeholder for now
+    # ---------------------------------------------------
+
+    # ---------------------------------------------------
+    # TRANSLATE BATCH
+    # just a mock-up for now
+    # ---------------------------------------------------
+
+    translations = {
+        0: "[FIRST TRANSLATED]",
+        1: "[LAST TRANSLATED]"
+    }
+
+    # ---------------------------------------------------
+    # SAVE TRANSLATIONS (STILL WITH PLACEHOLDERS)
+    # just a placeholder for now
+    # ---------------------------------------------------
+
+    # ---------------------------------------------------
+    # PLACEHOLDER INTEGRITY CHECK => IDENTIFY POST-REVIEW ITEMS
+    # just a placeholder for now
+    # ---------------------------------------------------
+
+    # ---------------------------------------------------
+    # SAVE POST-REVIEW ITEMS
+    # just a placeholder for now
+    # ---------------------------------------------------
+
+    # ---------------------------------------------------
+    # REPLACE PLACEHOLDERS
+    # just a placeholder for now
+    # ---------------------------------------------------
+
+    # ---------------------------------------------------
+    # SAVE FINAL TRANSLATIONS TO PROGRESS FOLDER
+    # just a placeholder for now
+    # ---------------------------------------------------
+
+    # ---------------------------------------------------
+    # SET BATCH STATUS TO COMPLETED
+    # just a placeholder for now
+    # ---------------------------------------------------
 
 # ---------------------------------------------------
-# SET BATCH STATUS TO "PROCESSING"
-# just a placeholder for now
-# ---------------------------------------------------
-
-# ---------------------------------------------------
-# IDENTIFY BATCH-RELATED TERMINOLOGY
-# just a placeholder for now
-# ---------------------------------------------------
-
-# ---------------------------------------------------
-# ASSEMBLE BATCH PAYLOAD
-# just a placeholder for now
-# ---------------------------------------------------
-
-# ---------------------------------------------------
-# PREPARE TRANSLATION REQUEST
-# just a placeholder for now
-# ---------------------------------------------------
-
-# ---------------------------------------------------
-# TRANSLATE BATCH
-# just a mock-up for now
-# ---------------------------------------------------
-
-translations = {
-    0: "[FIRST TRANSLATED]",
-    1: "[LAST TRANSLATED]"
-}
-
-# ---------------------------------------------------
-# SAVE TRANSLATIONS (STILL WITH PLACEHOLDERS)
-# just a placeholder for now
-# ---------------------------------------------------
-
-# ---------------------------------------------------
-# PLACEHOLDER INTEGRITY CHECK => IDENTIFY POST-REVIEW ITEMS
-# just a placeholder for now
-# ---------------------------------------------------
-
-# ---------------------------------------------------
-# SAVE POST-REVIEW ITEMS
-# just a placeholder for now
-# ---------------------------------------------------
-
-# ---------------------------------------------------
-# REPLACE PLACEHOLDERS
-# just a placeholder for now
-# ---------------------------------------------------
-
-# ---------------------------------------------------
-# SAVE FINAL TRANSLATIONS TO PROGRESS FOLDER
-# just a placeholder for now
-# ---------------------------------------------------
-
-# ---------------------------------------------------
-# SET BATCH STATUS TO COMPLETED
-# just a placeholder for now
-# ---------------------------------------------------
-
-# ---------------------------------------------------
-# END BATCH LOOP
-# just a placeholder for now
+# ... END OF BATCH PROCESSING LOOP
 # ---------------------------------------------------
 
 # ---------------------------------------------------

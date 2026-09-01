@@ -157,6 +157,9 @@ def validate_progress_info():
             if batch["status"] != COMPLETED:
                 completed_phase = False
 
+                if pickup_batch is None:
+                    pickup_batch = batch
+
         else:
 
             if pickup_batch is None:
@@ -277,7 +280,6 @@ def load_batches(batch_ids = None):
 #   - a set if translatable_ids like 4} or {1, 5, 13}
 # ------------------------------------------------------------
 def load_translatables(
-        batch_ids = None,
         translatable_ids = None,
         with_placeholders = False):
 
@@ -289,49 +291,49 @@ def load_translatables(
 
     translatables = load_json_input(source_file)
 
-    if batch_ids is None and translatable_ids is None:
+    if translatable_ids is None:
         return translatables
 
     else:
-        batch_filtered_translatables = []
+        filtered_translatables = []
 
-        if batch_ids is None:
-            batch_filtered_translatables = translatables
+        for translatable in translatables:
 
-        else:
-            for translatable in translatables:
+            if translatable["id"] in translatable_ids:
+                filtered_translatables.append(translatable)
 
-                if translatable["batch_id"] in batch_ids:
-                    batch_filtered_translatables.append(translatable)
-
-        id_filtered_translatables = []
-
-        if translatable_ids is None:
-            id_filtered_translatables = batch_filtered_translatables
-
-        else:
-            for translatable in batch_filtered_translatables:
-
-                if translatable["id"] in translatable_ids:
-                    id_filtered_translatables.append(translatable)
-
-        return id_filtered_translatables
+    return filtered_translatables
 
 
 # ------------------------------------------------------------
 # Function: Load fist Translatable for Batch
+# Optional parameters:
+# - with_placeholders (True/False): Return placeholders-protected versions (default) or those without placeholders
+# - limit: Limit list returned to the leading n elements
 # ------------------------------------------------------------
-def load_first_translatable_for_batch(batch):
-    first_translatable_id = (
-        batch["translatable_ids"][0]
-    )
+def load_translatables_for_batch(
+        batch,
+        with_placeholders = True,
+        limit = None):
 
-    first_translatable = load_translatables(
-        translatable_ids={first_translatable_id},
-        with_placeholders=True
-    )[0]
+    translatables = []
 
-    return first_translatable
+    if limit is not None and type(limit) == int and limit > 0:
+        translatable_ids = (
+            batch["translatable_ids"][:limit]
+        )
+
+        # Load limited list
+        translatables = load_translatables(translatable_ids, with_placeholders)
+
+    else:
+
+        # load'em all (for this batch)
+        translatables = load_translatables(
+            batch["translatable_ids"],
+            with_placeholders=with_placeholders)
+
+    return translatables
 
 
 # ------------------------------------------------------------

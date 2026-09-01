@@ -224,6 +224,7 @@ __marimo__/
 /analyze_json_structure.py
 /.idea/vcs.xml
 /.idea/workspace.xml
+/.idea/.gitignore
 
 #local input and output files
 /local_secret_do_not_commit/
@@ -235,3 +236,4 @@ __marimo__/
 
 #temporary local junk
 /work/
+sync.ffs_db
