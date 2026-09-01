@@ -133,6 +133,16 @@ def test_save_batches(batches):
     # )
 
 
+def test_assemble_batch_payload(batch, batch_translatables):
+
+    result = check_result(len(batch_translatables) == len(batch["translatable_ids"]))
+    print(
+        f"UNIT TEST - Translatables count in Batch identical to Loaded ({len(batch["translatable_ids"])} == {len(batch_translatables)}): "
+        f"{result["color"]}{result["status"]}{RESET}"
+    )
+    if result["status"] == FAILED:
+        exit("Terminated with Unit Test Failure!")
+
 
 
 

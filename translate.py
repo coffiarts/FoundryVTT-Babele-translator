@@ -19,7 +19,10 @@ from unit_tests import *
 # Processing is automatically be resumed after aborts, given that some crucial config params haven't been changed
 # -------------------------------------------------------------------------------------------------------
 
-print(f"\n=== PROCESSING FILE: {INPUT_FILE} ===")
+print("\n")
+print(f"===========================================================")
+print(f"=== PROCESSING FILE: {INPUT_FILE}")
+print(f"===========================================================")
 
 print(f"\n=== CONFIGURATION ===")
 print(f"{to_multiline_text(get_resume_relevant_config())}")
@@ -53,9 +56,9 @@ else:
     # ---------------------------------------------------
     try:
 
-        progress_info, pickup_batch = validate_progress_info()
-        starting_text = load_translatables_for_batch(pickup_batch, limit=1)[0]["original"][:100]
-        print(f"Resuming from Batch with id={pickup_batch["id"]} [{pickup_batch["status"]}] - starting with: \"{starting_text} ...\"")
+        progress_info, resume_batch = validate_progress_info()
+        starting_text = load_translatables_for_batch(resume_batch, limit=1)[0]["original"][:100]
+        print(f"Resuming from Batch with id={resume_batch["id"]} [{resume_batch["status"]}] - starting with: \"{starting_text} ...\"")
 
     except ValueError as e:
 
@@ -201,7 +204,6 @@ save_json_output(
     BATCHES_FILE
 )
 
-
 # -------
 # Tests:
 # -------
@@ -210,7 +212,21 @@ test_save_batches(batches)
 # ---------------------------------------------------
 # BEGIN BATCH PROCESSING LOOP ...
 # ---------------------------------------------------
+
+print(f"\n=== BEGIN BATCH PROCESSING LOOP ... ===")
+
+
 for batch in batches:
+
+    # In RUN_MODE = RESUME, skip all Batches until current batch is the resume_batch
+    if resume_batch is not None:
+
+        if batch != resume_batch:
+            continue
+
+        else:
+            resume_batch = None
+
 
     batch["status"] = PROCESSING
 
@@ -221,16 +237,28 @@ for batch in batches:
 
     # postponed
 
+
     # ---------------------------------------------------
     # ASSEMBLE BATCH PAYLOAD
     # ---------------------------------------------------
 
+    print(f"\n=== ASSEMBLE BATCH PAYLOAD ===")
+
     batch_payload = []
 
-    batch_translatables = load_translatables_for_batch(
+    batch_translatables = (
+        load_translatables_for_batch(
         batch,
         with_placeholders=True
-    )
+    ))
+
+    print(f"Batch {batch['id']}: {len(batch_translatables)} translatables loaded.")
+
+    # -------
+    # Tests:
+    # -------
+    test_assemble_batch_payload(batch, batch_translatables)
+
 
     # ---------------------------------------------------
     # BEGIN TRANSLATABLES LOOP ...
@@ -241,6 +269,9 @@ for batch in batches:
             "id": translatable["id"],
             "text": translatable["original"]
         })
+
+    batch_payload_chars = count_chars_in_text_list(batch_payload, "text")
+    print(f"Batch {batch['id']}: Payload assembled wth {batch_payload_chars} chars")
 
 
     # ---------------------------------------------------

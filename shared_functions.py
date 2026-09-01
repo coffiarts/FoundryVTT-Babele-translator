@@ -148,7 +148,7 @@ def validate_progress_info():
     # Check for proper state changes:
     completed_phase = True
 
-    pickup_batch = None
+    resume_batch = None
 
     for batch in progress_info["batches"]:
 
@@ -157,13 +157,13 @@ def validate_progress_info():
             if batch["status"] != COMPLETED:
                 completed_phase = False
 
-                if pickup_batch is None:
-                    pickup_batch = batch
+                if resume_batch is None:
+                    resume_batch = batch
 
         else:
 
-            if pickup_batch is None:
-                pickup_batch = batch
+            if resume_batch is None:
+                resume_batch = batch
 
             if batch["status"] == COMPLETED:
                 raise ValueError(
@@ -181,7 +181,7 @@ def validate_progress_info():
     else:
 
         print("... valid.")
-        return progress_info, pickup_batch
+        return progress_info, resume_batch
 
 
 #------------------------------------------------------------
@@ -562,3 +562,17 @@ def cleanup_progress_files():
             print(f"... Deleted: {file}")
 
     print("Done.")
+
+
+# ------------------------------------------------------------
+# Function: Count chars in Text List <list>
+# Loop through list, extract each element's text node named <node_name>,
+# and sum up all nodes' text length
+# ------------------------------------------------------------
+def count_chars_in_text_list(list, node_name) -> int:
+    return len("\n".join(
+        item[node_name]
+        for item in list
+    ))
+
+
