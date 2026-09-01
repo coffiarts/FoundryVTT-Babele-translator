@@ -11,7 +11,7 @@ INPUT_FILE_NAME = "test-input.json"
 # See also: get_resume_relevant_config()
 # ------------------------------------------------------------
 
-MAX_BATCH_SIZE = 50000
+MAX_BATCH_SIZE = 1000
 
 TRANSLATABLE_FIELDS = {
     "text",
@@ -27,8 +27,10 @@ FOUNDRY_SYNTAX_PATTERNS = {
 
 
 # ------------------------------------------------------------
-# Translation Instructions
+# Translation Parameters
 # ------------------------------------------------------------
+
+LLM_MODEL = "gpt-5.4-mini"
 
 TRANSLATION_INSTRUCTIONS = """
 Translate every text to German.

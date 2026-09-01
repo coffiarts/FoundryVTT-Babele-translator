@@ -1,5 +1,4 @@
 import time
-from shared_functions import *
 from unit_tests import *
 
 # -------------------------------------------------------------------------------------------------------
@@ -35,7 +34,7 @@ try:
 
 except ValueError as e:
 
-    print(f"{RED}{e.args[0]}{RESET}")
+    print(f"{RED}❌ {e.args[0]}{RESET}")
     exit()
 
 global_timer_start = time.perf_counter()
@@ -62,7 +61,7 @@ else:
 
     except ValueError as e:
 
-        print(f"{RED}{e.args[0]}{RESET}")
+        print(f"{RED}❌ {e.args[0]}{RESET}")
         exit()
 
 
@@ -180,7 +179,7 @@ except ValueError as e:
 
     # TODO: (optional): post-mortem dump
 
-    print(f"{RED}{details["error"]}{RESET}")
+    print(f"{RED}❌ {details["error"]}{RESET}")
     exit()
 
 # -------
@@ -215,11 +214,16 @@ test_save_batches(batches)
 
 print(f"\n=== BEGIN BATCH PROCESSING LOOP ... ===")
 
+translations_with_placeholders = {}
+
+integrity_errors = []
+
+translations_final = {}
 
 for batch in batches:
 
     # In RUN_MODE = RESUME, skip all Batches until current batch is the resume_batch
-    if resume_batch is not None:
+    if run_mode == RESUME:
 
         if batch != resume_batch:
             continue
@@ -235,7 +239,16 @@ for batch in batches:
     # just a placeholder for now
     # ---------------------------------------------------
 
-    # postponed
+    batch_specific_terminology = "" # postponed, still empty
+
+    instructions = (
+            TRANSLATION_INSTRUCTIONS
+            + "\n\n"
+            + "=== TERMINOLOGY DATABASE ===\n"
+            + batch_specific_terminology
+            + "\n\n"
+            + "=== END TERMINOLOGY DATABASE ===\n"
+    )
 
 
     # ---------------------------------------------------
@@ -252,7 +265,7 @@ for batch in batches:
         with_placeholders=True
     ))
 
-    print(f"Batch {batch['id']}: {len(batch_translatables)} translatables loaded.")
+    print(f"Batch {batch['id'] + 1}/{len(batches)}: {len(batch_translatables)} translatables loaded.")
 
     # -------
     # Tests:
@@ -271,28 +284,74 @@ for batch in batches:
         })
 
     batch_payload_chars = total_char_count(batch_payload, "text")
-    print(f"Batch {batch['id']}: Payload assembled wth {batch_payload_chars} chars")
-
+    print(f"Batch {batch["id"] + 1}/{len(batches)}: Payload assembled wth {batch_payload_chars} chars")
 
     # ---------------------------------------------------
     # ... END OF TRANSLATABLES LOOP
     # ---------------------------------------------------
 
+    # ---------------------------------------------------
+    # PREPARE API REQUEST
+    # ---------------------------------------------------
 
-    # ---------------------------------------------------
-    # PREPARE TRANSLATION REQUEST
-    # just a placeholder for now
-    # ---------------------------------------------------
+    api_key = Path(
+        "local_secret_do_not_commit/openai_api_key.txt"
+    ).read_text(
+        encoding="utf-8"
+    ).strip()
+
+    client = OpenAI(
+        api_key=api_key
+    )
+
 
     # ---------------------------------------------------
     # TRANSLATE BATCH
-    # just a mock-up for now
     # ---------------------------------------------------
 
-    translations = {
-        0: "[FIRST TRANSLATED]",
-        1: "[LAST TRANSLATED]"
-    }
+    print(f"\n=== TRANSLATE BATCH {batch['id'] + 1}/{len(batches)} ===")
+
+    api_timer_start = time.perf_counter()
+
+    response = client.responses.create(
+        model = LLM_MODEL,
+        instructions = instructions,
+        input = json.dumps(
+            batch_payload,
+            ensure_ascii=False
+        )
+    )
+
+    try:
+
+        translated_payload = json.loads(
+            response.output_text
+        )
+
+    except Exception as e:
+
+        post_mortem_dump(
+            title = "FATAL ERROR",
+            details = (
+                f"{type(e).__name__}\n"
+                f"{str(e)}"
+            ),
+            response_metadata = None,
+            raw_response = response.output_text,
+            batch_payload = batch_payload,
+            translations_with_placeholders = translations_with_placeholders,
+            integrity_errors = integrity_errors
+        )
+
+        raise
+
+
+    api_timer_end = time.perf_counter()
+
+    print(
+        f"Batch {batch["id"] + 1}/{len(batches)} API duration: "
+        f"{api_timer_end - api_timer_start:.2f} seconds"
+    )
 
     # ---------------------------------------------------
     # SAVE TRANSLATIONS (STILL WITH PLACEHOLDERS)
@@ -313,6 +372,13 @@ for batch in batches:
     # REPLACE PLACEHOLDERS
     # just a placeholder for now
     # ---------------------------------------------------
+
+    # mockup!
+    translations_final = {
+        0: "[FIRST TRANSLATED]",
+        1: "[LAST TRANSLATED]"
+    }
+
 
     # ---------------------------------------------------
     # SAVE FINAL TRANSLATIONS TO PROGRESS FOLDER
@@ -337,9 +403,9 @@ print(f"\n=== APPLY TRANSLATIONS TO Babele ===")
 apply_translations(
     babele_data,
     loaded_translatables,
-    translations
+    translations_final
 )
-print(f"{len(translations)} translations applied to original Babele data.")
+print(f"{len(translations_final)} translations applied to original Babele data.")
 
 # -------
 # Tests:

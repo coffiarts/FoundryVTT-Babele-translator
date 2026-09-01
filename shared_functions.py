@@ -473,9 +473,9 @@ def init_api_client():
 def apply_translations(
         babele_json,
         translatables,
-        translations):
+        translations_final):
 
-    for id, translation in translations.items():
+    for id, translation in translations_final.items():
         set_json_element(babele_json, translatables[id]["path"], translation)
 
     # TODO - apply any "on-top"" translations (like translator's watermark etc.)
@@ -575,4 +575,143 @@ def total_char_count(list, node_name) -> int:
         for item in list
     ))
 
+
+# ------------------------------------------------------------
+# Function: Post-Mortem Dump
+# Created after unexpected error during the LLM API Call
+# ------------------------------------------------------------
+def post_mortem_dump(
+        title,
+        details,
+        response_metadata=None,
+        raw_response=None,
+        batch_payload=None,
+        translations_with_placeholders=None,
+        integrity_errors=None
+):
+
+    with open(
+            ERRORS_FILE,
+            "w",
+            encoding="utf-8"
+    ) as file:
+
+        file.write(
+            "====================================================\n"
+        )
+
+        file.write(
+            f"{title}\n"
+        )
+
+        file.write(
+            "====================================================\n\n"
+        )
+
+        file.write(
+            f"{details}\n\n"
+        )
+        print(
+            f"Response metadata: {response_metadata}"
+        )
+
+        if response_metadata is not None:
+
+
+            file.write(
+                "====================================================\n"
+                "RESPONSE METADATA\n"
+                "====================================================\n\n"
+            )
+
+            file.write(
+                json.dumps(
+                    response_metadata,
+                    indent=2,
+                    ensure_ascii=False
+                )
+            )
+
+            file.write("\n\n")
+
+        if raw_response is not None:
+
+
+            file.write(
+                "====================================================\n"
+                "RAW RESPONSE METADATA\n"
+                "====================================================\n\n"
+            )
+
+            file.write(
+                json.dumps(
+                    raw_response,
+                    indent=2,
+                    ensure_ascii=False
+                )
+            )
+
+            file.write("\n\n")
+
+        if batch_payload is not None:
+
+            file.write(
+                "====================================================\n"
+                "BATCH PAYLOAD\n"
+                "====================================================\n\n"
+            )
+
+            file.write(
+                json.dumps(
+                    batch_payload,
+                    indent=2,
+                    ensure_ascii=False
+                )
+            )
+
+            file.write("\n\n")
+
+        if translations_with_placeholders is not None:
+
+            file.write(
+                "====================================================\n"
+                "COMPLETED TRANSLATIONS (still with Placeholders)\n"
+                "====================================================\n\n"
+            )
+
+            file.write(
+                json.dumps(
+                    translations_with_placeholders,
+                    indent=2,
+                    ensure_ascii=False
+                )
+            )
+
+            file.write("\n\n")
+
+        if integrity_errors is not None:
+
+            file.write(
+                "====================================================\n"
+                "COLLECTED INTEGRITY ERRORS\n"
+                "====================================================\n\n"
+            )
+
+            file.write(
+                json.dumps(
+                    integrity_errors,
+                    indent=2,
+                    ensure_ascii=False
+                )
+            )
+
+            file.write("\n\n")
+
+    print(
+        f"\n❌{RED}POST-MORTEM DUMP WRITTEN TO:{RESET}"
+    )
+
+    print(
+        f"{RED}{ERRORS_FILE}{RESET}"
+    )
 
