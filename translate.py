@@ -270,7 +270,7 @@ for batch in batches:
             "text": translatable["original"]
         })
 
-    batch_payload_chars = count_chars_in_text_list(batch_payload, "text")
+    batch_payload_chars = total_char_count(batch_payload, "text")
     print(f"Batch {batch['id']}: Payload assembled wth {batch_payload_chars} chars")
 
 

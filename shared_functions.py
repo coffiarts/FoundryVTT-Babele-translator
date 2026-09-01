@@ -565,11 +565,11 @@ def cleanup_progress_files():
 
 
 # ------------------------------------------------------------
-# Function: Count chars in Text List <list>
-# Loop through list, extract each element's text node named <node_name>,
-# and sum up all nodes' text length
+# Function: Total Char Count
+# Calculate the sum of all chars in text list <list>
+# by extracting each element's text node identified <node_name>
 # ------------------------------------------------------------
-def count_chars_in_text_list(list, node_name) -> int:
+def total_char_count(list, node_name) -> int:
     return len("\n".join(
         item[node_name]
         for item in list
