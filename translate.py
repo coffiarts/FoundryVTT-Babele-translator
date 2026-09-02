@@ -23,6 +23,11 @@ print(f"===========================================================")
 print(f"=== PROCESSING FILE: {INPUT_FILE}")
 print(f"===========================================================")
 
+if MOCK_API_CALL:
+    print(f"\n{YELLOW}=== MOCK MODE IS ON ===")
+    print(f"API Calls to the remote LLM are only simulated!")
+    print(f"For real processing change parameter MOCK_API_CALL to False in config.py{RESET}")
+
 print(f"\n=== CONFIGURATION ===")
 print(f"{to_multiline_text(get_resume_relevant_config())}")
 
@@ -30,7 +35,7 @@ print(f"{to_multiline_text(get_resume_relevant_config())}")
 try:
 
     run_mode = determine_run_mode()
-    print(f"Run mode: {run_mode}")
+    print(f"{YELLOW}Run mode: {run_mode}{RESET}")
 
 except ValueError as e:
 
@@ -111,7 +116,7 @@ loaded_translatables = load_json_input(TRANSLATABLES_FILE)
 # -------
 # Tests:
 # -------
-test_save_translatables(translatables, loaded_translatables)
+test_save_to_file(translatables, loaded_translatables)
 
 # -----------------------------------------------------------------
 # PROTECT TRANSLATABLES WITH PLACEHOLDERS
@@ -147,7 +152,10 @@ save_json_output(
 # -------
 # Tests:
 # -------
-test_save_translatables_with_placeholders(translatables, placeholders)
+loaded_translatables_with_placeholders = load_translatables(with_placeholders=True)
+test_save_to_file(translatables_with_placeholders, loaded_translatables_with_placeholders)
+loaded_placeholders = load_placeholders()
+test_save_to_file(placeholders, loaded_placeholders)
 
 # ---------------------------------------------------
 # BUILD BATCHES
@@ -158,6 +166,11 @@ print(f"\n=== BUILD BATCHES ===")
 try:
 
     batches = build_batches(translatables_with_placeholders)
+
+    # IMPORTANT: In Resume mode, we need to preserve any batch status from the preceeding run
+    if run_mode == RESUME:
+        for batch in batches:
+            batch["status"] = progress_info["batches"][batch["id"]]["status"]
 
     # Update ProgressInfo (batches will be saved later)
     progress_info["batches"] = batches
@@ -176,8 +189,6 @@ except ValueError as e:
     # But we do not want to store the last failed batch here, so we pop it off first
     details["batches"].pop()
     save_json_output(data=details["batches"], output_file=BATCHES_FILE)
-
-    # TODO: (optional): post-mortem dump
 
     print(f"{RED}❌ {details["error"]}{RESET}")
     exit()
@@ -206,7 +217,8 @@ save_json_output(
 # -------
 # Tests:
 # -------
-test_save_batches(batches)
+loaded_batches = load_batches()
+test_save_to_file(batches, loaded_batches)
 
 # ---------------------------------------------------
 # BEGIN BATCH PROCESSING LOOP ...
@@ -218,28 +230,29 @@ translations_with_placeholders = {}
 
 integrity_errors = []
 
-translations_final = {}
-
 for batch in batches:
 
     # In RUN_MODE = RESUME, skip all Batches until current batch is the resume_batch
     if run_mode == RESUME:
 
-        if batch != resume_batch:
+        if resume_batch is not None and batch != resume_batch:
+
+            # If we're skipping already processed batches, we need to collect their existing translations, otherwise they'll get lost on file rewrite
+            translations_with_placeholders.append(load_translations_for_batch(batch, with_placeholders=True))
+            translations_final.append(load_translations_for_batch(batch))
+
+            print(f"\n{GREEN}=== BATCH {batch['id'] + 1}/{len(batches)} SKIPPED (already completed) ==={RESET}")
             continue
 
         else:
+
             resume_batch = None
 
-
-    batch["status"] = PROCESSING
-
     # ---------------------------------------------------
-    # IDENTIFY BATCH-RELATED TERMINOLOGY
-    # just a placeholder for now
+    # ENRICH INSTRUCTIONS WITH TERMINOLOGY
     # ---------------------------------------------------
 
-    batch_specific_terminology = "" # postponed, still empty
+    batch_specific_terminology = "" # postponed, just a placeholder for now
 
     instructions = (
             TRANSLATION_INSTRUCTIONS
@@ -294,69 +307,98 @@ for batch in batches:
     # PREPARE API REQUEST
     # ---------------------------------------------------
 
-    api_key = Path(
-        "local_secret_do_not_commit/openai_api_key.txt"
-    ).read_text(
-        encoding="utf-8"
-    ).strip()
+    if not MOCK_API_CALL:
 
-    client = OpenAI(
-        api_key=api_key
-    )
+        api_key = Path(
+            "local_secret_do_not_commit/openai_api_key.txt"
+        ).read_text(
+            encoding="utf-8"
+        ).strip()
+
+        client = OpenAI(
+            api_key=api_key
+        )
 
 
     # ---------------------------------------------------
     # TRANSLATE BATCH
     # ---------------------------------------------------
 
-    print(f"\n=== TRANSLATE BATCH {batch['id'] + 1}/{len(batches)} ===")
+    batch["status"] = PROCESSING
+    save_batch(batch, batches, progress_info)
 
-    api_timer_start = time.perf_counter()
+    print(f"\n=== TRANSLATION OF BATCH {batch['id'] + 1}/{len(batches)}: [{batch["status"]}]... ===")
 
-    response = client.responses.create(
-        model = LLM_MODEL,
-        instructions = instructions,
-        input = json.dumps(
-            batch_payload,
-            ensure_ascii=False
-        )
-    )
+    if MOCK_API_CALL:
 
-    try:
+        print(f"\n{YELLOW}=== MOCK MODE IS ON ===")
+        print(f"Translations are just copies of the input text.{RESET}\n")
 
-        translated_payload = json.loads(
-            response.output_text
-        )
+        for translatable in batch_payload:
+            translations_with_placeholders.append(translatable)
 
-    except Exception as e:
+    else:
 
-        post_mortem_dump(
-            title = "FATAL ERROR",
-            details = (
-                f"{type(e).__name__}\n"
-                f"{str(e)}"
-            ),
-            response_metadata = None,
-            raw_response = response.output_text,
-            batch_payload = batch_payload,
-            translations_with_placeholders = translations_with_placeholders,
-            integrity_errors = integrity_errors
+        api_timer_start = time.perf_counter()
+
+        response = client.responses.create(
+            model = LLM_MODEL,
+            instructions = instructions,
+            input = json.dumps(
+                batch_payload,
+                ensure_ascii=False
+            )
         )
 
-        raise
+        try:
+
+            translations_with_placeholders = json.loads(response.output_text)
+
+        except Exception as e:
+
+            post_mortem_dump(
+                title = "FATAL ERROR",
+                details = (
+                    f"{type(e).__name__}\n"
+                    f"{str(e)}"
+                ),
+                response_metadata = None,
+                raw_response = response.output_text,
+                batch_payload = batch_payload,
+                translations_with_placeholders = translations_with_placeholders,
+                integrity_errors = integrity_errors
+            )
+
+            raise
 
 
-    api_timer_end = time.perf_counter()
+        api_timer_end = time.perf_counter()
 
-    print(
-        f"Batch {batch["id"] + 1}/{len(batches)} API duration: "
-        f"{api_timer_end - api_timer_start:.2f} seconds"
-    )
+        print(
+            f"Batch {batch["id"] + 1}/{len(batches)} API duration: "
+            f"{api_timer_end - api_timer_start:.2f} seconds"
+        )
 
     # ---------------------------------------------------
     # SAVE TRANSLATIONS (STILL WITH PLACEHOLDERS)
-    # just a placeholder for now
     # ---------------------------------------------------
+
+    save_json_output(translations_with_placeholders, TRANSLATIONS_WITH_PLACEHOLDERS_FILE)
+
+    # -------
+    # Tests:
+    # -------
+    loaded_translations_with_placeholders = load_json_input(TRANSLATIONS_WITH_PLACEHOLDERS_FILE)
+    test_save_to_file(translations_with_placeholders, loaded_translations_with_placeholders)
+
+
+    # ---------------------------------------------------
+    # SET BATCH & PROGRESS INFO TO COMPLETED
+    # ---------------------------------------------------
+
+    batch["status"] = COMPLETED
+    save_batch(batch, batches, progress_info)
+    print(f"\n{GREEN}=== ... TRANSLATION OF BATCH {batch["id"] + 1}/{len(batches)}: [{batch["status"]}] ==={RESET}")
 
     # ---------------------------------------------------
     # PLACEHOLDER INTEGRITY CHECK => IDENTIFY POST-REVIEW ITEMS
@@ -384,6 +426,9 @@ for batch in batches:
     # SAVE FINAL TRANSLATIONS TO PROGRESS FOLDER
     # just a placeholder for now
     # ---------------------------------------------------
+
+    save_json_output(translations_final, TRANSLATIONS_FINAL_FILE)
+
 
     # ---------------------------------------------------
     # SET BATCH STATUS TO COMPLETED
@@ -437,5 +482,11 @@ save_json_output(babele_data, OUTPUT_FILE)
 global_timer_end = time.perf_counter()
 print(f"\n=== TOTAL processing duration: {global_timer_end - global_timer_start:.2f} seconds ===")
 
-print(f"\n{GREEN}=== PROCESS COMPLETED SUCCESSFULLY ==={RESET}")
+if MOCK_API_CALL:
+
+    print(f"\n{YELLOW}=== MOCK MODE IS ON! THIS WAS ONLY A SIMULATION! ==={RESET}")
+
+else:
+
+    print(f"\n{GREEN}=== PROCESS COMPLETED SUCCESSFULLY ==={RESET}")
 

@@ -30,24 +30,24 @@ def test_extract_translatables_from_babele(translatables):
     # )
 
 
-def test_save_translatables(translatables, loaded_translatables):
+def test_save_to_file(saved_data, loaded_data):
 
-    print(f"UNIT TEST - Expected: {len(translatables)}")
-    result = check_result(len(translatables) == len(loaded_translatables))
+    print(f"UNIT TEST - Expected: {len(saved_data)}")
+    result = check_result(len(saved_data) == len(loaded_data))
     print(
-        f"UNIT TEST - Translatables count identical ({len(translatables)} == {len(loaded_translatables)}): "
+        f"UNIT TEST - Saved vs. Loaded count identical ({len(saved_data)} == {len(loaded_data)}): "
         f"{result["color"]}{result["status"]}{RESET}"
     )
     if result["status"] == FAILED:
         exit("Terminated with Unit Test Failure!")
 
     # print(
-    #     f"DEBUG - first translatable identical: "
-    #     f"{translatables[0] == loaded_translatables[0]}"
+    #     f"DEBUG - first entry identical: "
+    #     f"{saved_data[0] == loaded_data[0]}"
     # )
     # print(
-    #     f"DEBUG - last translatable identical: "
-    #     f"{translatables[-1] == loaded_translatables[-1]}"
+    #     f"DEBUG - last entry identical: "
+    #     f"{saved_data[-1] == loaded_data[-1]}"
     # )
 
 
@@ -86,53 +86,6 @@ def test_create_translatables_with_placeholders(translatables_with_placeholders)
     # )
 
 
-def test_save_translatables_with_placeholders(translatables, placeholders):
-
-    loaded_translatables_with_placeholders = load_translatables(with_placeholders=True)
-    print(f"UNIT TEST - Expected: {len(translatables)}")
-    result = check_result(len(translatables) == len(loaded_translatables_with_placeholders))
-    print(
-        f"UNIT TEST - Translatables with Placeholders count identical ({len(translatables)} == {len(loaded_translatables_with_placeholders)}): "
-        f"{result["color"]}{result["status"]}{RESET}"
-    )
-    if result["status"] == FAILED:
-        exit("Terminated with Unit Test Failure!")
-
-    loaded_placeholders = load_placeholders()
-    print(f"UNIT TEST - Expected: {len(placeholders)}")
-    result = check_result(len(placeholders) == len(loaded_placeholders))
-    print(
-        f"UNIT TEST - Placeholder count identical ({len(placeholders)} == {len(loaded_placeholders)}): "
-        f"{result["color"]}{result["status"]}{RESET}"
-    )
-    if result["status"] == FAILED:
-        exit("Terminated with Unit Test Failure!")
-
-
-def test_save_batches(batches):
-
-    print(f"UNIT TEST - Expected: {len(batches)}")
-    loaded_batches = load_batches()
-
-    result = check_result(len(batches) == len(loaded_batches))
-    print(
-        f"UNIT TEST - Batches count identical ({len(batches)} == {len(loaded_batches)}): "
-        f"{result["color"]}{result["status"]}{RESET}"
-    )
-    if result["status"] == FAILED:
-        exit("Terminated with Unit Test Failure!")
-
-    # print(
-    #     f"DEBUG - first batch identical: "
-    #     f"{batches[0] == loaded_batches[0]}"
-    # )
-    #
-    # print(
-    #     f"DEBUG - last batch identical: "
-    #     f"{batches[-1] == loaded_batches[-1]}"
-    # )
-
-
 def test_assemble_batch_payload(batch, batch_translatables):
 
     result = check_result(len(batch_translatables) == len(batch["translatable_ids"]))
@@ -142,7 +95,6 @@ def test_assemble_batch_payload(batch, batch_translatables):
     )
     if result["status"] == FAILED:
         exit("Terminated with Unit Test Failure!")
-
 
 
 

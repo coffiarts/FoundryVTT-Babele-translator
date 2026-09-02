@@ -162,10 +162,7 @@ def validate_progress_info():
 
         else:
 
-            if resume_batch is None:
-                resume_batch = batch
-
-            if batch["status"] == COMPLETED:
+            if batch["status"]  == COMPLETED:
                 raise ValueError(
                     "Corrupt ProgressInfo: "
                     f"COMPLETED batch id: (id={batch["id"]}) found after non-COMPLETED batch."
@@ -175,7 +172,8 @@ def validate_progress_info():
 
         raise ValueError(
             "Nothing to resume: "
-            f"Picking up this process is not necessary. All {len(progress_info["batches"])} Batches already marked as {COMPLETED}."
+            f"Picking up this process is not necessary. All {len(progress_info["batches"])} Batches already marked as {COMPLETED}.\n"
+            f"To run a fresh translation, please delete contents of folder '{PROGRESS_INFO_FOLDER_NAME}'."
         )
 
     else:
@@ -220,6 +218,7 @@ def build_batches(translatables_with_placeholders):
 
             current_batch["status"] = FAILED
             current_batch["error"] = error
+            # set_batch_status(current_batch, FAILED, )
             break
 
         if current_batch["char_count"] + text_size > MAX_BATCH_SIZE:
@@ -306,7 +305,7 @@ def load_translatables(
 
 
 # ------------------------------------------------------------
-# Function: Load fist Translatable for Batch
+# Function: Load Translatables for Batch
 # Optional parameters:
 # - with_placeholders (True/False): Return placeholders-protected versions (default) or those without placeholders
 # - limit: Limit list returned to the leading n elements
@@ -334,6 +333,25 @@ def load_translatables_for_batch(
             with_placeholders=with_placeholders)
 
     return translatables
+
+
+# ------------------------------------------------------------
+# Function: Load Translatables for Batch - just for Translations ;-)
+# ------------------------------------------------------------
+def load_translations_for_batch(
+        batch,
+        with_placeholders = True,
+        limit = None):
+
+    file = (
+        TRANSLATIONS_FINAL_FILE
+        if not with_placeholders
+        else TRANSLATIONS_WITH_PLACEHOLDERS_FILE
+    )
+
+    translations = load_json_input(file)[:limit]
+
+    return translations
 
 
 # ------------------------------------------------------------
@@ -714,4 +732,25 @@ def post_mortem_dump(
     print(
         f"{RED}{ERRORS_FILE}{RESET}"
     )
+
+# ------------------------------------------------------------
+# Function: Save Batch
+# Writes the current state of <batch> to bith the Batches and ProgressInfo file,
+# thus keeping both related files in sync.
+# The full list data <all_batches> and <all_progress_info> nned to be passed
+# along with the batch to ensure consistency, because the updates requires
+# a full rewrite of both files
+# ------------------------------------------------------------
+def save_batch(updated_batch, all_batches, all_progress_info):
+
+    all_batches[updated_batch["id"]] = updated_batch
+
+    for entry in all_progress_info["batches"]:
+        if entry["id"] == updated_batch["id"]:
+            for key in entry:
+                entry[key] = updated_batch[key]
+
+    save_json_output(all_batches, BATCHES_FILE)
+    save_json_output(all_progress_info, PROGRESS_INFO_FILE)
+
 
