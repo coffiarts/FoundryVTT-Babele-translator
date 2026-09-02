@@ -227,7 +227,7 @@ test_save_to_file(batches, loaded_batches)
 print(f"\n=== BEGIN BATCH PROCESSING LOOP ... ===")
 
 translations_with_placeholders = {}
-
+translations_final = {}
 integrity_errors = []
 
 for batch in batches:
@@ -416,10 +416,8 @@ for batch in batches:
     # ---------------------------------------------------
 
     # mockup!
-    translations_final = {
-        0: "[FIRST TRANSLATED]",
-        1: "[LAST TRANSLATED]"
-    }
+    for translations_with_placeholders in translations_with_placeholders:
+        translations_final[translations_with_placeholders["id"]] = translations_with_placeholders["translation"]
 
 
     # ---------------------------------------------------
