@@ -88,21 +88,32 @@ def to_prettified_json(data):
 
 
 # ----------------------------------------------------------------------------------
-# Convert a dict or list to multiline lines of pattern:
-# "<key/index>: <value>\n"
+# Convert a flat dict or list of type <key/index>: <text> to multiline lines of pattern:
+# "<key/index>: <text>\n"
 # Typically used for logging enumerables to console
+# value_char_limit formats <text> as "<first n chars of text> ..."
 # ----------------------------------------------------------------------------------
-def to_multiline_text(dictionary):
+def to_multiline_text(input, value_char_limit=None, row_limit=None):
 
     text = ""
+    counter = 0
 
-    if type(dictionary) == dict:
-        for key, value in dictionary.items():
-            text += f"{key}: {value}\n"
+    if type(input) == dict:
+        for key, value in input.items():
+            if row_limit is not None and ++counter > row_limit:
+                break
+            print_value = value if value_char_limit is None else f"{value[:value_char_limit]} ..."
+            text += f"{key}: {print_value}\n"
 
-    if type(dictionary) == list:
-        for index, value in enumerate(dictionary):
-            text += f"{index}: {value}\n"
+    if type(input) == list:
+        for index, value in enumerate(input):
+            if row_limit is not None and ++counter > row_limit:
+                break
+            print_value = value if value_char_limit is None else f"{value[:value_char_limit]} ..."
+            text += f"{index}: {print_value}\n"
+
+    if row_limit is not None:
+        text += "...\n"
 
     return text
 
@@ -336,7 +347,7 @@ def load_translatables_for_batch(
 
 
 # ------------------------------------------------------------
-# Function: Load Translatables for Batch - just for Translations ;-)
+# Function: Load Translations for Batch
 # ------------------------------------------------------------
 def load_translations_for_batch(
         batch,
@@ -353,6 +364,21 @@ def load_translations_for_batch(
 
     return translations
 
+# ------------------------------------------------------------
+# Function: Load Translations Final
+# These require a dedicated load functions to force dict keys
+# to numeric format
+# ------------------------------------------------------------
+def load_translations_final():
+
+    translations = load_json_input(
+        TRANSLATIONS_FINAL_FILE
+    )
+
+    return {
+        int(id): translation
+        for id, translation in translations.items()
+    }
 
 # ------------------------------------------------------------
 # Function: Load and return Placeholders

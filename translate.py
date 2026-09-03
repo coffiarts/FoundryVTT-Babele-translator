@@ -228,16 +228,19 @@ print(f"\n=== BEGIN BATCH PROCESSING LOOP ... ===")
 
 translations_with_placeholders = []
 placeholder_translation_errors = []
-translations_final = {}
+translations_final = {} #must be a dict, because it is used like a key-based lookup later
 
 # Pick up any existing translations from previous run (important for RESUME and MOCK MODE)
 if TRANSLATIONS_FINAL_FILE.exists():
 
-    translations_final = load_json_input(TRANSLATIONS_FINAL_FILE)
-    print(f"Picked up {len(translations_final)} translations from previous run")
+    translations_final = load_translations_final()
+    print(f"Picked up {len(translations_final)} translations from previous run:")
+    print(f"{
+        to_multiline_text(
+            input=translations_final,
+            value_char_limit=50
+        )}")
 
-    for id, translation in translations_final.items():
-        print(f"{id}: {translation[:50]} ...\n")
 
 for batch in batches:
 
@@ -360,7 +363,6 @@ for batch in batches:
 
         try:
 
-            print(response.output_text)
             new_translations = json.loads(response.output_text)
 
             for new_translation in new_translations:
@@ -429,9 +431,13 @@ for batch in batches:
 
     # mockup!
     for translation_with_placeholders in translations_with_placeholders:
-
         translations_final[translation_with_placeholders["id"]] = translation_with_placeholders["translation"]
 
+    if (len(translations_final) > 0):
+        translations_final[0] = "FIRST TRANSLATION"
+
+    if (len(translations_final) > 1):
+        translations_final[1] = "SECOND TRANSLATION"
 
     # ---------------------------------------------------
     # SAVE FINAL TRANSLATIONS TO PROGRESS FOLDER
