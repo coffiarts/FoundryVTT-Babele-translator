@@ -493,8 +493,8 @@ def apply_translations(
         translatables,
         translations_final):
 
-    for id, translation in translations_final.items():
-        set_json_element(babele_json, translatables[id]["path"], translation)
+    for translatable in translatables:
+        set_json_element(babele_json, translatable["path"], translations_final[translatable["id"]])
 
     # TODO - apply any "on-top"" translations (like translator's watermark etc.)
 

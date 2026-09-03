@@ -226,9 +226,18 @@ test_save_to_file(batches, loaded_batches)
 
 print(f"\n=== BEGIN BATCH PROCESSING LOOP ... ===")
 
-translations_with_placeholders = {}
+translations_with_placeholders = []
+placeholder_translation_errors = []
 translations_final = {}
-integrity_errors = []
+
+# Pick up any existing translations from previous run (important for RESUME and MOCK MODE)
+if TRANSLATIONS_FINAL_FILE.exists():
+
+    translations_final = load_json_input(TRANSLATIONS_FINAL_FILE)
+    print(f"Picked up {len(translations_final)} translations from previous run")
+
+    for id, translation in translations_final.items():
+        print(f"{id}: {translation[:50]} ...\n")
 
 for batch in batches:
 
@@ -236,10 +245,6 @@ for batch in batches:
     if run_mode == RESUME:
 
         if resume_batch is not None and batch != resume_batch:
-
-            # If we're skipping already processed batches, we need to collect their existing translations, otherwise they'll get lost on file rewrite
-            translations_with_placeholders.append(load_translations_for_batch(batch, with_placeholders=True))
-            translations_final.append(load_translations_for_batch(batch))
 
             print(f"\n{GREEN}=== BATCH {batch['id'] + 1}/{len(batches)} SKIPPED (already completed) ==={RESET}")
             continue
@@ -335,7 +340,10 @@ for batch in batches:
         print(f"Translations are just copies of the input text.{RESET}\n")
 
         for translatable in batch_payload:
-            translations_with_placeholders.append(translatable)
+            translations_with_placeholders.append({
+                "id": translatable["id"],
+                "translation": translatable["text"]
+            })
 
     else:
 
@@ -352,7 +360,11 @@ for batch in batches:
 
         try:
 
-            translations_with_placeholders = json.loads(response.output_text)
+            print(response.output_text)
+            new_translations = json.loads(response.output_text)
+
+            for new_translation in new_translations:
+                translations_with_placeholders.append(new_translation)
 
         except Exception as e:
 
@@ -366,7 +378,7 @@ for batch in batches:
                 raw_response = response.output_text,
                 batch_payload = batch_payload,
                 translations_with_placeholders = translations_with_placeholders,
-                integrity_errors = integrity_errors
+                integrity_errors = placeholder_translation_errors
             )
 
             raise
@@ -416,8 +428,9 @@ for batch in batches:
     # ---------------------------------------------------
 
     # mockup!
-    for translations_with_placeholders in translations_with_placeholders:
-        translations_final[translations_with_placeholders["id"]] = translations_with_placeholders["translation"]
+    for translation_with_placeholders in translations_with_placeholders:
+
+        translations_final[translation_with_placeholders["id"]] = translation_with_placeholders["translation"]
 
 
     # ---------------------------------------------------
