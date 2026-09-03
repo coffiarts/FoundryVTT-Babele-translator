@@ -431,7 +431,7 @@ def extract_translatables_from_babele(input, translatables, current_path):
 # ------------------------------------------------------------
 # Function: Protect with Placeholders
 # - Scans all passed text for occurrences of Foundry-specific, non-translatable syntax
-# - Replaces them with numbered placeholders of pattern <<<FOUNDRY_nnnnnn>>>
+# - Replaces them with numbered placeholders of pattern PLACEHOLDER_PATTERN
 # - Returns the result (texts_with_placeholders), plus the list of generated placeholders
 # ------------------------------------------------------------
 def protect_with_placeholders(translatables):
@@ -441,9 +441,16 @@ def protect_with_placeholders(translatables):
 
     def create_and_register_placeholder(match):
 
-        placeholder_name = (
-            f"<<<FOUNDRY_{len(placeholders):06d}>>>"
-        )
+        placeholder_number_digit_length = re.search(
+            r'\\d{(\d)}',
+            PLACEHOLDER_PATTERN
+        )[1]
+
+        placeholder_name = re.sub(
+            r'\\d{\d}',
+            f"{str(len(placeholders)).zfill(int(placeholder_number_digit_length))}",
+            PLACEHOLDER_PATTERN
+        ) # yields something like <<<FOUNDRY_000003>>>
 
         placeholders[
             placeholder_name
@@ -453,7 +460,7 @@ def protect_with_placeholders(translatables):
 
     for translatable in translatables:
 
-        # copy orignal translatable
+        # copy original translatable
         translatable_to_protect = translatable.copy()
 
         for pattern in FOUNDRY_SYNTAX_PATTERNS:
@@ -779,4 +786,83 @@ def save_batch(updated_batch, all_batches, all_progress_info):
     save_json_output(all_batches, BATCHES_FILE)
     save_json_output(all_progress_info, PROGRESS_INFO_FILE)
 
+
+# ------------------------------------------------------------
+# Function: Verify placeholder integrity
+# ------------------------------------------------------------
+# def verify_placeholder_integrity(
+#         translatables_with_placeholders,
+#         translations_with_placeholders):
+#
+#     placeholders = set(
+#         re.findall(
+#             PLACEHOLDER_PATTERN,
+#             translatables_with_placeholders
+#         )
+#     )
+#
+#     for placeholder in placeholders:
+#
+#         count = translations_with_placeholders.count(
+#             placeholder
+#         )
+#
+#         if count != 1:
+#
+#             print(
+#                 f"\n❌ PLACEHOLDER ERROR #{len(integrity_errors)+1}: {placeholder}"
+#             )
+#
+#             print(
+#                 f"Occurrences in translation: "
+#                 f"{count}"
+#             )
+#
+#             print(
+#                 f"\nTranslated text (missing {placeholder}): "
+#                 f"{translations_with_placeholders}"
+#             )
+#
+#             print(
+#                 f"\nOriginal text (should contain {placeholder}): "
+#                 f"{translatables_with_placeholders}"
+#             )
+#
+#             print(
+#                 f"\n=== PROTECTED ELEMENT ===\n"
+#                 f"{placeholder} -> {protected_elements[placeholder]}"
+#             )
+#
+#             position = translatables_with_placeholders.find(
+#                 placeholder
+#             )
+#
+#             start = max(
+#                 0,
+#                 position - 200
+#             )
+#
+#             end = min(
+#                 len(translatables_with_placeholders),
+#                 position + len(placeholder) + 200
+#             )
+#
+#             return {
+#                 "placeholder": placeholder,
+#                 "count": count,
+#                 "translated_context": translations_with_placeholders[
+#                     max(0, position - 300):
+#                     min(len(translations_with_placeholders), position + 300)
+#                 ],
+#                 "original_context": translatables_with_placeholders[
+#                     start:end
+#                 ]
+#             }
+#
+#             # raise ValueError(
+#             #     f"Placeholder integrity failure: "
+#             #     f"{placeholder}"
+#             # )
+#
+#     return None
 

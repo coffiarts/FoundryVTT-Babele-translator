@@ -227,7 +227,6 @@ test_save_to_file(batches, loaded_batches)
 print(f"\n=== BEGIN BATCH PROCESSING LOOP ... ===")
 
 translations_with_placeholders = []
-placeholder_translation_errors = []
 translations_final = {} #must be a dict, because it is used like a key-based lookup later
 
 # Pick up any existing translations from previous run (important for RESUME and MOCK MODE)
@@ -414,47 +413,50 @@ for batch in batches:
     save_batch(batch, batches, progress_info)
     print(f"\n{GREEN}=== ... TRANSLATION OF BATCH {batch["id"] + 1}/{len(batches)}: [{batch["status"]}] ==={RESET}")
 
-    # ---------------------------------------------------
-    # PLACEHOLDER INTEGRITY CHECK => IDENTIFY POST-REVIEW ITEMS
-    # just a placeholder for now
-    # ---------------------------------------------------
-
-    # ---------------------------------------------------
-    # SAVE POST-REVIEW ITEMS
-    # just a placeholder for now
-    # ---------------------------------------------------
-
-    # ---------------------------------------------------
-    # REPLACE PLACEHOLDERS
-    # just a placeholder for now
-    # ---------------------------------------------------
-
-    # mockup!
-    for translation_with_placeholders in translations_with_placeholders:
-        translations_final[translation_with_placeholders["id"]] = translation_with_placeholders["translation"]
-
-    if (len(translations_final) > 0):
-        translations_final[0] = "FIRST TRANSLATION"
-
-    if (len(translations_final) > 1):
-        translations_final[1] = "SECOND TRANSLATION"
-
-    # ---------------------------------------------------
-    # SAVE FINAL TRANSLATIONS TO PROGRESS FOLDER
-    # just a placeholder for now
-    # ---------------------------------------------------
-
-    save_json_output(translations_final, TRANSLATIONS_FINAL_FILE)
-
-
-    # ---------------------------------------------------
-    # SET BATCH STATUS TO COMPLETED
-    # just a placeholder for now
-    # ---------------------------------------------------
-
 # ---------------------------------------------------
 # ... END OF BATCH PROCESSING LOOP
 # ---------------------------------------------------
+
+# ---------------------------------------------------
+# VALIDATE PLACEHOLDERS => REVIEW ITEMS
+# ---------------------------------------------------
+
+# review_items = verify_placeholder_integrity(
+#     translatables_with_placeholders,
+#     translations_with_placeholders
+# )
+
+# ---------------------------------------------------
+# SAVE REVIEW ITEMS
+# ---------------------------------------------------
+
+# save_json_output(
+#     review_items,
+#     POST_REVIEW_ITEMS_FILE
+# )
+
+# ---------------------------------------------------
+# REPLACE PLACEHOLDERS
+# just a placeholder for now
+# ---------------------------------------------------
+
+# mockup!
+for translation_with_placeholders in translations_with_placeholders:
+    translations_final[translation_with_placeholders["id"]] = translation_with_placeholders["translation"]
+
+if (len(translations_final) > 0):
+    translations_final[0] = "FIRST TRANSLATION"
+
+if (len(translations_final) > 1):
+    translations_final[1] = "SECOND TRANSLATION"
+
+# ---------------------------------------------------
+# SAVE FINAL TRANSLATIONS TO PROGRESS FOLDER
+# just a placeholder for now
+# ---------------------------------------------------
+
+save_json_output(translations_final, TRANSLATIONS_FINAL_FILE)
+
 
 # ---------------------------------------------------
 # COMBINE AND APPLY TRANSLATIONS TO Babele FILE

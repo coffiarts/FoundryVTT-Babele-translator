@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 INPUT_FILE_NAME = "test-input.json"
-MOCK_API_CALL = False # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
+MOCK_API_CALL = True # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
 
 # ------------------------------------------------------------
 # Core Configuration
@@ -25,6 +25,8 @@ FOUNDRY_SYNTAX_PATTERNS = {
     r'@(UUID|Embed|Compendium)\[[^\]]*\]',
     r'\[\[[^\]]*\]\]'
 }
+
+PLACEHOLDER_PATTERN = r'<<<FOUNDRY_\d{6}>>>' # MUST contain \d{<number>} to represent the increment number of n digits length
 
 
 # ------------------------------------------------------------
