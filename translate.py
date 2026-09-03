@@ -26,7 +26,7 @@ print(f"===========================================================")
 if MOCK_API_CALL:
     print(f"\n{YELLOW}=== MOCK MODE IS ON ===")
     print(f"API Calls to the remote LLM are only simulated!")
-    print(f"For real processing change parameter MOCK_API_CALL to False in config.py{RESET}")
+    print(f"For real processing change parameter MOCK_API_CALL to False in config.py{COLOR_RESET}")
 
 print(f"\n=== CONFIGURATION ===")
 print(f"{to_multiline_text(get_resume_relevant_config())}")
@@ -35,11 +35,11 @@ print(f"{to_multiline_text(get_resume_relevant_config())}")
 try:
 
     run_mode = determine_run_mode()
-    print(f"{YELLOW}Run mode: {run_mode}{RESET}")
+    print(f"{YELLOW}Run mode: {run_mode}{COLOR_RESET}")
 
 except ValueError as e:
 
-    print(f"{RED}❌ {e.args[0]}{RESET}")
+    print(f"{RED}❌ {e.args[0]}{COLOR_RESET}")
     exit()
 
 global_timer_start = time.perf_counter()
@@ -66,7 +66,7 @@ else:
 
     except ValueError as e:
 
-        print(f"{RED}❌ {e.args[0]}{RESET}")
+        print(f"{RED}❌ {e.args[0]}{COLOR_RESET}")
         exit()
 
 
@@ -190,7 +190,7 @@ except ValueError as e:
     details["batches"].pop()
     save_json_output(data=details["batches"], output_file=BATCHES_FILE)
 
-    print(f"{RED}❌ {details["error"]}{RESET}")
+    print(f"{RED}❌ {details["error"]}{COLOR_RESET}")
     exit()
 
 # -------
@@ -248,7 +248,7 @@ for batch in batches:
 
         if resume_batch is not None and batch != resume_batch:
 
-            print(f"\n{GREEN}=== BATCH {batch['id'] + 1}/{len(batches)} SKIPPED (already completed) ==={RESET}")
+            print(f"\n{GREEN}=== BATCH {batch['id'] + 1}/{len(batches)} SKIPPED (already completed) ==={COLOR_RESET}")
             continue
 
         else:
@@ -339,7 +339,7 @@ for batch in batches:
     if MOCK_API_CALL:
 
         print(f"\n{YELLOW}=== MOCK MODE IS ON ===")
-        print(f"Translations are just copies of the input text.{RESET}\n")
+        print(f"Translations are just copies of the input text.{COLOR_RESET}\n")
 
         for translatable in batch_payload:
             translations_with_placeholders.append({
@@ -396,6 +396,7 @@ for batch in batches:
     # SAVE TRANSLATIONS (STILL WITH PLACEHOLDERS)
     # ---------------------------------------------------
 
+    print(f"\n=== SAVING {len(translations_with_placeholders)} TRANSLATIONS (STILL WITH PLACEHOLDERS) ===")
     save_json_output(translations_with_placeholders, TRANSLATIONS_WITH_PLACEHOLDERS_FILE)
 
     # -------
@@ -411,7 +412,7 @@ for batch in batches:
 
     batch["status"] = COMPLETED
     save_batch(batch, batches, progress_info)
-    print(f"\n{GREEN}=== ... TRANSLATION OF BATCH {batch["id"] + 1}/{len(batches)}: [{batch["status"]}] ==={RESET}")
+    print(f"\n{GREEN}=== ... TRANSLATION OF BATCH {batch["id"] + 1}/{len(batches)}: [{batch["status"]}] ==={COLOR_RESET}")
 
 # ---------------------------------------------------
 # ... END OF BATCH PROCESSING LOOP
@@ -421,19 +422,28 @@ for batch in batches:
 # VALIDATE PLACEHOLDERS => REVIEW ITEMS
 # ---------------------------------------------------
 
-# review_items = verify_placeholder_integrity(
-#     translatables_with_placeholders,
-#     translations_with_placeholders
-# )
+review_items = create_placeholder_review_items(
+    translatables_with_placeholders,
+    translations_with_placeholders
+)
+print(f"\n=== VALIDATE PLACEHOLDERS ===")
+
+color = (GREEN if len(review_items) == 0 else MAGENTA)
+print(f"{color}{len(review_items)} integrity issue(s) identified")
+if (len(review_items) > 0):
+    print("=> Post-review item(s) created:")
+    print(to_prettified_json(review_items))
+print(COLOR_RESET)
+
 
 # ---------------------------------------------------
 # SAVE REVIEW ITEMS
 # ---------------------------------------------------
 
-# save_json_output(
-#     review_items,
-#     POST_REVIEW_ITEMS_FILE
-# )
+save_json_output(
+    review_items,
+    POST_REVIEW_ITEMS_FILE
+)
 
 # ---------------------------------------------------
 # REPLACE PLACEHOLDERS
@@ -503,9 +513,9 @@ print(f"\n=== TOTAL processing duration: {global_timer_end - global_timer_start:
 
 if MOCK_API_CALL:
 
-    print(f"\n{YELLOW}=== MOCK MODE IS ON! THIS WAS ONLY A SIMULATION! ==={RESET}")
+    print(f"\n{YELLOW}=== MOCK MODE IS ON! THIS WAS ONLY A SIMULATION! ==={COLOR_RESET}")
 
 else:
 
-    print(f"\n{GREEN}=== PROCESS COMPLETED SUCCESSFULLY ==={RESET}")
+    print(f"\n{GREEN}=== PROCESS COMPLETED SUCCESSFULLY ==={COLOR_RESET}")
 

@@ -93,24 +93,32 @@ def to_prettified_json(data):
 # Typically used for logging enumerables to console
 # value_char_limit formats <text> as "<first n chars of text> ..."
 # ----------------------------------------------------------------------------------
-def to_multiline_text(input, value_char_limit=None, row_limit=None):
+def to_multiline_text(input, value_char_limit=None, row_limit=None, text=""):
 
     text = ""
     counter = 0
 
     if type(input) == dict:
         for key, value in input.items():
+
+            label = key
+
             if row_limit is not None and ++counter > row_limit:
                 break
+
             print_value = value if value_char_limit is None else f"{value[:value_char_limit]} ..."
-            text += f"{key}: {print_value}\n"
+            text += f"\n{label}: {print_value}"
 
     if type(input) == list:
         for index, value in enumerate(input):
+
+            label = index
+
             if row_limit is not None and ++counter > row_limit:
                 break
+
             print_value = value if value_char_limit is None else f"{value[:value_char_limit]} ..."
-            text += f"{index}: {print_value}\n"
+            text += f"\n{label}: {print_value}"
 
     if row_limit is not None:
         text += "...\n"
@@ -759,11 +767,11 @@ def post_mortem_dump(
             file.write("\n\n")
 
     print(
-        f"\n❌{RED}POST-MORTEM DUMP WRITTEN TO:{RESET}"
+        f"\n❌{RED}POST-MORTEM DUMP WRITTEN TO:{COLOR_RESET}"
     )
 
     print(
-        f"{RED}{ERRORS_FILE}{RESET}"
+        f"{RED}{ERRORS_FILE}{COLOR_RESET}"
     )
 
 # ------------------------------------------------------------
@@ -790,79 +798,87 @@ def save_batch(updated_batch, all_batches, all_progress_info):
 # ------------------------------------------------------------
 # Function: Verify placeholder integrity
 # ------------------------------------------------------------
-# def verify_placeholder_integrity(
-#         translatables_with_placeholders,
-#         translations_with_placeholders):
-#
-#     placeholders = set(
-#         re.findall(
-#             PLACEHOLDER_PATTERN,
-#             translatables_with_placeholders
-#         )
-#     )
-#
-#     for placeholder in placeholders:
-#
-#         count = translations_with_placeholders.count(
-#             placeholder
-#         )
-#
-#         if count != 1:
-#
-#             print(
-#                 f"\n❌ PLACEHOLDER ERROR #{len(integrity_errors)+1}: {placeholder}"
-#             )
-#
-#             print(
-#                 f"Occurrences in translation: "
-#                 f"{count}"
-#             )
-#
-#             print(
-#                 f"\nTranslated text (missing {placeholder}): "
-#                 f"{translations_with_placeholders}"
-#             )
-#
-#             print(
-#                 f"\nOriginal text (should contain {placeholder}): "
-#                 f"{translatables_with_placeholders}"
-#             )
-#
-#             print(
-#                 f"\n=== PROTECTED ELEMENT ===\n"
-#                 f"{placeholder} -> {protected_elements[placeholder]}"
-#             )
-#
-#             position = translatables_with_placeholders.find(
-#                 placeholder
-#             )
-#
-#             start = max(
-#                 0,
-#                 position - 200
-#             )
-#
-#             end = min(
-#                 len(translatables_with_placeholders),
-#                 position + len(placeholder) + 200
-#             )
-#
-#             return {
-#                 "placeholder": placeholder,
-#                 "count": count,
-#                 "translated_context": translations_with_placeholders[
-#                     max(0, position - 300):
-#                     min(len(translations_with_placeholders), position + 300)
-#                 ],
-#                 "original_context": translatables_with_placeholders[
-#                     start:end
-#                 ]
-#             }
-#
-#             # raise ValueError(
-#             #     f"Placeholder integrity failure: "
-#             #     f"{placeholder}"
-#             # )
-#
-#     return None
+def create_placeholder_review_items(
+        translatables_with_placeholders,
+        translations_with_placeholders):
+
+    review_items = []
+
+    translations_by_id = {
+        translation["id"]: translation
+        for translation in translations_with_placeholders
+    }
+
+    for translatable in translatables_with_placeholders:
+
+        new_review_items = verify_placeholder_integrity(
+                len(review_items),
+                translatable["original"],
+                translations_by_id[
+                    translatable["id"]
+                ]["translation"]
+        )
+
+        review_items.extend(new_review_items)
+
+    return review_items
+
+
+def verify_placeholder_integrity(
+        next_id,
+        original_text_with_placeholders,
+        translated_text,
+        trailing_chars=100):
+
+    new_review_items = []
+
+    # Collect all expected placeholders from original
+    expected_placeholders = re.findall(
+            PLACEHOLDER_PATTERN,
+            original_text_with_placeholders
+    )
+
+    # Check for each expected placeholder whether it is present in the translation
+    for placeholder in expected_placeholders:
+
+        count = translated_text.count(
+            placeholder
+        )
+
+        if count != 1:
+
+            position = (
+                original_text_with_placeholders.find(
+                    placeholder
+                )
+            )
+
+            start = max(
+                0,
+                position - 200
+            )
+
+            end = min(
+                len(original_text_with_placeholders),
+                position + len(placeholder) + trailing_chars
+            )
+
+
+            new_review_items.append( {
+                "id": next_id,
+                "type": "placeholder_translation_error",
+                "details": {
+                    "placeholder": placeholder,
+                    "count": count,
+                    "original_context":
+                        "... " + original_text_with_placeholders[start:end] + " ...",
+                    "translated_context":
+                        "... " + translated_text[max(0, position - trailing_chars):
+                                        min(len(translated_text), position + trailing_chars)] + " ..."
+                }
+            })
+
+            next_id = next_id + 1
+
+    return new_review_items
 

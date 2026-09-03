@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 INPUT_FILE_NAME = "test-input.json"
-MOCK_API_CALL = True # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
+MOCK_API_CALL = False # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
 
 # ------------------------------------------------------------
 # Core Configuration
@@ -129,8 +129,13 @@ RED    = "\033[31m"
 GREEN  = "\033[32m"
 YELLOW = "\033[33m"
 BLUE   = "\033[34m"
-RESET  = "\033[0m"
+MAGENTA = "\033[35m"
+CYAN = "\033[36m"
+WHITE = "\033[37m"
+COLOR_RESET  = "\033[0m"
 
+# Error Types
+PLACEHOLDER_TRANSLATION_ERROR = "PLACEHOLDER_TRANSLATION_ERROR"
 
 # ------------------------------------------------------------
 # Preprocess configuration (do not edit!)
