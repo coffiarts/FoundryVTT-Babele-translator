@@ -37,7 +37,7 @@ def save_json_output(data, output_file):
 
         file.write(json_string)
 
-    print(f"File written to: {output_file} with {len(json_string)} chars")
+    # print(f"File written to: {output_file} with {len(json_string)} chars")
 
 
 # ------------------------------------------------------------
@@ -866,7 +866,7 @@ def verify_placeholder_integrity(
 
             new_review_items.append( {
                 "id": next_id,
-                "type": "placeholder_translation_error",
+                "type": PLACEHOLDER_TRANSLATION_ERROR,
                 "details": {
                     "placeholder": placeholder,
                     "count": count,

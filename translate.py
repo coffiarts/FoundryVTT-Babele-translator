@@ -428,12 +428,11 @@ review_items = create_placeholder_review_items(
 )
 print(f"\n=== VALIDATE PLACEHOLDERS ===")
 
-color = (GREEN if len(review_items) == 0 else MAGENTA)
-print(f"{color}{len(review_items)} integrity issue(s) identified")
-if (len(review_items) > 0):
-    print("=> Post-review item(s) created:")
-    print(to_prettified_json(review_items))
-print(COLOR_RESET)
+color = ()
+print(
+    f"{GREEN if len(review_items) == 0 else MAGENTA}"
+    f"{len(review_items)} integrity issue(s) identified{COLOR_RESET}"
+)
 
 
 # ---------------------------------------------------
@@ -444,6 +443,15 @@ save_json_output(
     review_items,
     POST_REVIEW_ITEMS_FILE
 )
+
+if (len(review_items) > 0):
+    print(
+        f"{GREEN if len(review_items) == 0 else MAGENTA}"
+        f"Post-review item(s) written to {POST_REVIEW_ITEMS_FILE}:\n"
+        f"{to_prettified_json(review_items)}"
+        f"{COLOR_RESET}"
+    )
+
 
 # ---------------------------------------------------
 # REPLACE PLACEHOLDERS
