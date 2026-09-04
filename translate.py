@@ -164,7 +164,7 @@ try:
 
     batches = build_batches(translatables_with_placeholders)
 
-    # IMPORTANT: In Resume mode, we need to preserve any batch status from the preceeding run
+    # IMPORTANT: In Resume mode, we need to preserve any batch status from the preceding run
     if run_mode == RESUME:
         for batch in batches:
             batch[TERMINOLOGY_STATUS] = progress_info["batches"][batch["id"]][TERMINOLOGY_STATUS]
@@ -257,11 +257,11 @@ if TERMINOLOGY_FILE.exists() and not REBUILD_TERMINOLOGY_IF_EXISTS:
         progress_info
     )
 
-    print(f"\n=== REUSING MASTER TERMINOLOGY ({len(master_terminology["terms"])} entries) ===")
+    print(f"\n{MAGENTA}=== REUSING EXISTING MASTER TERMINOLOGY ({len(master_terminology["terms"])} entries) ==={COLOR_RESET}")
 
 else:
 
-    print(f"\n=== BUILDING MASTER TERMINOLOGY ... ===")
+    print(f"\n=== BUILDING FRESH MASTER TERMINOLOGY ... ===")
 
 
     # ---------------------------------------------------
@@ -299,17 +299,17 @@ else:
 
             api_timer_start = time.perf_counter()
 
-            response = client.responses.create(
-                model = LLM_MODEL,
-                instructions = TERMINOLOGY_INSTRUCTIONS,
-                input = json.dumps(
-                    batch_payload,
-                    ensure_ascii=False
-                ),
-                text=TERMINOLOGY_OUTPUT_STRUCTURE
-            )
-
             try:
+
+                response = client.responses.create(
+                    model = LLM_MODEL,
+                    instructions = TERMINOLOGY_INSTRUCTIONS,
+                    input = json.dumps(
+                        batch_payload,
+                        ensure_ascii=False
+                    ),
+                    text=TERMINOLOGY_OUTPUT_STRUCTURE
+                )
 
                 terminology_response = json.loads(response.output_text)
                 # print(f"DEBUG - terminology response: {to_prettified_json(terminology_response)}")
@@ -387,14 +387,14 @@ for batch in batches:
     if batch[TERMINOLOGY_STATUS] != COMPLETED:
 
         raise ValueError(
-            "Master terminology has not been completed yet. "
+            "❌ Master terminology has not been completed yet. "
             "Translation cannot start."
         )
 
     # In RUN_MODE = RESUME, skip all Batches until current batch is the resume_batch
     if run_mode == RESUME:
 
-        if resume_batch is not None and batch != resume_batch:
+        if resume_batch is not None and batch["id"] != resume_batch["id"]:
 
             print(f"\n{GREEN}=== BATCH {batch['id'] + 1}/{len(batches)} SKIPPED (already completed) ==={COLOR_RESET}")
             continue

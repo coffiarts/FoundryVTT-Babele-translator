@@ -98,27 +98,15 @@ def to_multiline_text(input, value_char_limit=None, row_limit=None, text=""):
     text = ""
     counter = 0
 
-    if type(input) == dict:
-        for key, value in input.items():
+    for key, value in input.items():
 
-            label = key
+        label = key
 
-            if row_limit is not None and ++counter > row_limit:
-                break
+        if row_limit is not None and ++counter > row_limit:
+            break
 
-            print_value = value if value_char_limit is None else f"{value[:value_char_limit]} ..."
-            text += f"\n{label}: {print_value}"
-
-    if type(input) == list:
-        for index, value in enumerate(input):
-
-            label = index
-
-            if row_limit is not None and ++counter > row_limit:
-                break
-
-            print_value = value if value_char_limit is None else f"{value[:value_char_limit]} ..."
-            text += f"\n{label}: {print_value}"
+        print_value = value if value_char_limit is None else f"{value[:value_char_limit]} ..."
+        text += f"\n{label}: {print_value}"
 
     if row_limit is not None:
         text += "...\n"
@@ -194,7 +182,7 @@ def validate_progress_info():
     if terminology_completed and translation_completed:
 
         raise ValueError(
-            "Nothing to resume: "
+            "❌ Nothing to resume: "
             f"Picking up this process is not necessary. All {len(progress_info["batches"])} Batches already marked as {COMPLETED}.\n"
             f"To run a fresh translation, please delete contents of folder '{PROGRESS_FOLDER_NAME}'."
         )
@@ -242,7 +230,7 @@ def validate_status_sequence(
             if batch_progress_info[status_phase] == COMPLETED:
 
                 raise ValueError(
-                    f"Corrupt ProgressInfo: "
+                    f"❌ Corrupt ProgressInfo: "
                     f"{status_phase}="
                     f"{COMPLETED} found after non-"
                     f"{COMPLETED} batch "
@@ -627,7 +615,7 @@ def determine_run_mode():
     if progress_info["config"] != current_config:
 
         raise ValueError(
-            f"CONFIGURATION MISMATCH\n"
+            f"❌ CONFIGURATION MISMATCH\n"
             f"======================\n"
             f"At least one essential parameter in config.py "
             f"has changed since the last attempt to run this process.\n"
@@ -905,7 +893,7 @@ def verify_placeholder_integrity(
         next_id,
         original_text_with_placeholders,
         translated_text,
-        trailing_chars=100):
+        trailing_chars=300):
 
     new_review_items = []
 
@@ -932,7 +920,7 @@ def verify_placeholder_integrity(
 
             start = max(
                 0,
-                position - 200
+                position - trailing_chars
             )
 
             end = min(

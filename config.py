@@ -4,7 +4,8 @@ from pathlib import Path
 INPUT_FILE_NAME = "dnd-test-text.json"
 
 REBUILD_TERMINOLOGY_IF_EXISTS = False
-MOCK_API_CALL = False # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
+
+MOCK_API_CALL = True # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
 
 # ------------------------------------------------------------
 # Core Configuration
