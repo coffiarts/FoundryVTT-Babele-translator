@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
-from tkinter.ttk import Progressbar
 
 INPUT_FILE_NAME = "dnd-test-text.json"
+REBUILD_TERMINOLOGY_IF_EXISTS = False
 MOCK_API_CALL = False # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
 
 # ------------------------------------------------------------
@@ -90,20 +90,20 @@ Sie sind König Grol gegenüber loyal.
 # ------------------------------------------------------------
 
 INPUT_FOLDER_NAME = "input"
-PROGRESS_INFO_FOLDER_NAME = "progress-info"
+PROGRESS_INFO_FOLDER_NAME = "progress"
 SECRETS_FOLDER_NAME = "local_secret_do_not_commit"
 OUTPUT_FOLDER_NAME = "output"
 
 PROGRESS_INFO_FILE_NAME = "00-progress-info.json"
-TRANSLATABLES_FILE_NAME = "01-translatables.json"
-TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME = "02-translatables-with-placeholders.json"
-PLACEHOLDERS_FILE_NAME = "03-placeholders.json"
-BATCHES_FILE_NAME = "04-batches.json"
-TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME = "05-translations-with-placeholders.json"
-TRANSLATIONS_FINAL_FILE_NAME = "06-translations-final.json"
-POST_REVIEW_ITEMS_FILE_NAME = f"{INPUT_FILE_NAME.removesuffix(".json")}-post-review-items.json"
-
+TERMINOLOGY_FILE_NAME = "01-terminology.json"
+TRANSLATABLES_FILE_NAME = "02-translatables.json"
+TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME = "03-translatables-with-placeholders.json"
+PLACEHOLDERS_FILE_NAME = "04-placeholders.json"
+BATCHES_FILE_NAME = "05-batches.json"
+TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME = "06-translations-with-placeholders.json"
+TRANSLATIONS_FINAL_FILE_NAME = "07-translations-final.json"
 ERRORS_FILE_NAME = "99-errors.json"
+POST_REVIEW_ITEMS_FILE_NAME = f"{INPUT_FILE_NAME.removesuffix(".json")}-post-review-items.json"
 APIKEY_FILE_NAME = "openai_api_key.txt"
 
 
@@ -151,6 +151,7 @@ if not os.path.exists(OUTPUT_FOLDER_NAME):
     os.makedirs(OUTPUT_FOLDER_NAME)
 
 PROGRESS_INFO_FILE = Path(PROGRESS_FOLDER_NAME) / PROGRESS_INFO_FILE_NAME
+TERMINOLOGY_FILE = Path(PROGRESS_FOLDER_NAME) / TERMINOLOGY_FILE_NAME
 TRANSLATABLES_FILE = Path(PROGRESS_FOLDER_NAME) / TRANSLATABLES_FILE_NAME
 TRANSLATABLES_WITH_PLACEHOLDERS_FILE = Path(PROGRESS_FOLDER_NAME) / TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME
 PLACEHOLDERS_FILE = Path(PROGRESS_FOLDER_NAME) / PLACEHOLDERS_FILE_NAME

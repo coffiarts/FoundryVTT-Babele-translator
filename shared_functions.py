@@ -140,6 +140,10 @@ def init_progress_info():
 
     progress_info = {
         "config": current_config,
+        "terminology": {
+            "status": UNPROCESSED,
+            "char_count": 0
+        },
         "batches": []
     }
 
@@ -645,8 +649,7 @@ def post_mortem_dump(
         response_metadata=None,
         raw_response=None,
         batch_payload=None,
-        translations_with_placeholders=None,
-        integrity_errors=None
+        translations_with_placeholders=None
 ):
 
     with open(
@@ -741,24 +744,6 @@ def post_mortem_dump(
             file.write(
                 json.dumps(
                     translations_with_placeholders,
-                    indent=2,
-                    ensure_ascii=False
-                )
-            )
-
-            file.write("\n\n")
-
-        if integrity_errors is not None:
-
-            file.write(
-                "====================================================\n"
-                "COLLECTED INTEGRITY ERRORS\n"
-                "====================================================\n\n"
-            )
-
-            file.write(
-                json.dumps(
-                    integrity_errors,
                     indent=2,
                     ensure_ascii=False
                 )
@@ -885,3 +870,30 @@ def verify_placeholder_integrity(
 
     return new_review_items
 
+
+# ------------------------------------------------------------
+# Function: Restore Foundry Syntax
+# ------------------------------------------------------------
+def restore_foundry_syntax(
+        text_with_placeholders,
+        placeholders
+):
+    for placeholder, original in placeholders.items():
+
+        text_with_placeholders = text_with_placeholders.replace(
+            placeholder,
+            original
+        )
+
+    return text_with_placeholders
+
+
+# ------------------------------------------------------------
+# Function: Restore Foundry Syntax
+# ------------------------------------------------------------
+def load_terminology():
+    return load_json_input(
+        TERMINOLOGY_FILE
+    )
+def save_terminology(terminology):
+    ...

@@ -220,26 +220,32 @@ save_json_output(
 loaded_batches = load_batches()
 test_save_to_file(batches, loaded_batches)
 
+
 # ---------------------------------------------------
-# BEGIN BATCH PROCESSING LOOP ...
+# BUILD OR REUSE MASTER TERMINOLOGY
+# ---------------------------------------------------
+
+if TERMINOLOGY_FILE.exists() and not REBUILD_TERMINOLOGY_IF_EXISTS:
+
+    print(f"\n=== REUSING MASTER TERMINOLOGY ... ===")
+
+else:
+
+    print(f"\n=== BUILDING MASTER TERMINOLOGY ... ===")
+
+    save_json_output(
+        {"terms": []},
+        TERMINOLOGY_FILE
+    )
+
+
+# ---------------------------------------------------
+# BEGIN BATCH TRANSLATION LOOP ...
 # ---------------------------------------------------
 
 print(f"\n=== BEGIN BATCH PROCESSING LOOP ... ===")
 
 translations_with_placeholders = []
-translations_final = {} #must be a dict, because it is used like a key-based lookup later
-
-# Pick up any existing translations from previous run (important for RESUME and MOCK MODE)
-if TRANSLATIONS_FINAL_FILE.exists():
-
-    translations_final = load_translations_final()
-    print(f"Picked up {len(translations_final)} translations from previous run:")
-    print(f"{
-        to_multiline_text(
-            input=translations_final,
-            value_char_limit=50
-        )}")
-
 
 for batch in batches:
 
@@ -378,8 +384,7 @@ for batch in batches:
                 response_metadata = None,
                 raw_response = response.output_text,
                 batch_payload = batch_payload,
-                translations_with_placeholders = translations_with_placeholders,
-                integrity_errors = placeholder_translation_errors
+                translations_with_placeholders = translations_with_placeholders
             )
 
             raise
@@ -457,15 +462,31 @@ if (len(review_items) > 0):
 # REPLACE PLACEHOLDERS (Restore Foundry Syntax)
 # ---------------------------------------------------
 
-# mockup!
+translations_final = {} #must be a dict, because it is used like a key-based lookup later
+
+# Pick up any existing translations from previous run (important for RESUME and MOCK MODE)
+if TRANSLATIONS_FINAL_FILE.exists():
+
+    translations_final = load_translations_final()
+    print(f"Picked up {len(translations_final)} translations from previous run:")
+    print(f"{
+    to_multiline_text(
+        input=translations_final,
+        value_char_limit=50
+    )}")
+
+
 for translation_with_placeholders in translations_with_placeholders:
-    translations_final[translation_with_placeholders["id"]] = translation_with_placeholders["translation"]
 
-if (len(translations_final) > 0):
-    translations_final[0] = "FIRST TRANSLATION"
+    restored_translation = restore_foundry_syntax(
+        translation_with_placeholders["translation"],
+        placeholders
+    )
 
-if (len(translations_final) > 1):
-    translations_final[1] = "SECOND TRANSLATION"
+    translations_final[
+        translation_with_placeholders["id"]
+    ] = restored_translation
+
 
 # ---------------------------------------------------
 # SAVE FINAL TRANSLATIONS TO PROGRESS FOLDER
