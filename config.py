@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 INPUT_FILE_NAME = "dnd-test-text.json"
+
 REBUILD_TERMINOLOGY_IF_EXISTS = False
 MOCK_API_CALL = False # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
 
@@ -31,7 +32,7 @@ PLACEHOLDER_PATTERN = r'<<<FOUNDRY_\d{6}>>>' # MUST contain \d{<number>} to repr
 
 
 # ------------------------------------------------------------
-# LLM Parameters
+# LLM Parameters (change these only for translation fine-tuning)
 # ------------------------------------------------------------
 
 LLM_MODEL = "gpt-5.4-mini"
@@ -178,9 +179,9 @@ TERMINOLOGY_OUTPUT_STRUCTURE = {
 }
 
 
-# ------------------------------------------------------------
-# Folders and file names
-# ------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Folders and file names (usually there's no reason to change any of these)
+# ---------------------------------------------------------------------------
 
 INPUT_FOLDER_NAME = "input"
 PROGRESS_FOLDER_NAME = "progress"
@@ -202,7 +203,7 @@ APIKEY_FILE_NAME = "openai_api_key.txt"
 
 
 # ------------------------------------------------------------
-# String Constants (do not edit!)
+# String Constants (better not edit at all!)
 # ------------------------------------------------------------
 
 # Run Mode
@@ -234,9 +235,9 @@ COLOR_RESET  = "\033[0m"
 # Error Types
 PLACEHOLDER_TRANSLATION_ERROR = "PLACEHOLDER_TRANSLATION_ERROR"
 
-# ------------------------------------------------------------
-# Preprocess configuration (do not edit!)
-# ------------------------------------------------------------
+# ---------------------------------------------------------------
+# Preprocess configuration (do not edit under ANY circumstance!)
+# ---------------------------------------------------------------
 INPUT_FILE = Path(INPUT_FOLDER_NAME) / INPUT_FILE_NAME
 OUTPUT_FILE = Path(OUTPUT_FOLDER_NAME) / INPUT_FILE_NAME
 

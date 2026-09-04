@@ -1,7 +1,7 @@
-from config import *
 import json
-from openai import OpenAI
 import re
+from config import *
+from openai import OpenAI
 
 
 # ------------------------------------------------------------

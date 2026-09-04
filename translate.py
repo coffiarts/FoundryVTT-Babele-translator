@@ -71,20 +71,16 @@ else:
         exit()
 
 
-
 # ---------------------------------------------------
 # IMPORT INPUT FILE
 # ---------------------------------------------------
-
 print(f"\n=== IMPORT INPUT FILE (JSON exported from FoundryVTT) ===")
-
 babele_data = load_json_input(INPUT_FILE)
 
 
 # ---------------------------------------------------
 # EXTRACT TRANSLATABLES
 # ---------------------------------------------------
-
 print(f"\n=== EXTRACT TRANSLATABLES ===")
 
 translatables = []
@@ -101,10 +97,10 @@ print(f"Extracted translatables: {len(translatables)}")
 # -------
 test_extract_translatables_from_babele(translatables)
 
+
 # ---------------------------------------------------
 # SAVE TRANSLATABLES TO PROGRESS FOLDER
 # ---------------------------------------------------
-
 print(f"\n=== SAVE TRANSLATABLES TO PROGRESS FOLDER ===")
 
 save_json_output(
@@ -119,10 +115,10 @@ loaded_translatables = load_json_input(TRANSLATABLES_FILE)
 # -------
 test_save_to_file(translatables, loaded_translatables)
 
+
 # -----------------------------------------------------------------
 # PROTECT TRANSLATABLES WITH PLACEHOLDERS
 # -----------------------------------------------------------------
-
 print(f"\n=== PROTECT TRANSLATABLES WITH PLACEHOLDERS (MASK FOUNDRY ELEMENTS) ===")
 
 translatables_with_placeholders, placeholders = protect_with_placeholders(
@@ -134,10 +130,10 @@ translatables_with_placeholders, placeholders = protect_with_placeholders(
 # ==================
 test_create_translatables_with_placeholders(translatables_with_placeholders)
 
+
 # ---------------------------------------------------
 # SAVE TRANSLATABLES WITH PLACEHOLDERS
 # ---------------------------------------------------
-
 print(f"\n=== SAVE TRANSLATABLES WITH PLACEHOLDERS TO PROGRESS FOLDER ===")
 
 save_json_output(
@@ -158,10 +154,10 @@ test_save_to_file(translatables_with_placeholders, loaded_translatables_with_pla
 loaded_placeholders = load_placeholders()
 test_save_to_file(placeholders, loaded_placeholders)
 
+
 # ---------------------------------------------------
 # BUILD BATCHES
 # ---------------------------------------------------
-
 print(f"\n=== BUILD BATCHES ===")
 
 try:
@@ -208,7 +204,6 @@ except ValueError as e:
 # ---------------------------------------------------
 # SAVE BATCHES TO PROGRESS FOLDER
 # ---------------------------------------------------
-
 print(f"\n=== SAVE BATCHES TO PROGRESS FOLDER ===")
 
 save_json_output(
@@ -226,7 +221,6 @@ test_save_to_file(batches, loaded_batches)
 # ---------------------------------------------------
 # PREPARE API REQUEST
 # ---------------------------------------------------
-
 if not MOCK_API_CALL:
 
     api_key = Path(
@@ -243,7 +237,6 @@ if not MOCK_API_CALL:
 # ---------------------------------------------------
 # BUILD OR REUSE MASTER TERMINOLOGY
 # ---------------------------------------------------
-
 master_terminology_raw = {
     "terms": []
 }
@@ -270,10 +263,10 @@ else:
 
     print(f"\n=== BUILDING MASTER TERMINOLOGY ... ===")
 
+
     # ---------------------------------------------------
     # START TERMINOLOGY BATCH LOOP ...
     # ---------------------------------------------------
-
     for batch in batches:
 
         batch[TERMINOLOGY_STATUS] = PROCESSING
@@ -361,7 +354,6 @@ else:
     # ---------------------------------------------------
     # ... END OF TERMINOLOGY BATCH LOOP
     # ---------------------------------------------------
-
     master_terminology = deduplicate_terminology(
         master_terminology_raw
     )
@@ -382,12 +374,12 @@ else:
 # ---------------------------------------------------
 # BEGIN BATCH TRANSLATION LOOP ...
 # ---------------------------------------------------
-
 print(f"\n=== BEGIN BATCH PROCESSING LOOP ... ===")
 
 translations_with_placeholders = []
 
 for batch in batches:
+
 
     # ---------------------------------------------------
     # ABORT IF TERMINOLOGY IS MISSING
@@ -411,26 +403,10 @@ for batch in batches:
 
             resume_batch = None
 
-    # ---------------------------------------------------
-    # ENRICH INSTRUCTIONS WITH TERMINOLOGY
-    # ---------------------------------------------------
-
-    batch_specific_terminology = "" # postponed, just a placeholder for now
-
-    instructions = (
-            TRANSLATION_INSTRUCTIONS
-            + "\n\n"
-            + "=== TERMINOLOGY DATABASE ===\n"
-            + batch_specific_terminology
-            + "\n\n"
-            + "=== END TERMINOLOGY DATABASE ===\n"
-    )
-
 
     # ---------------------------------------------------
     # ASSEMBLE BATCH PAYLOAD
     # ---------------------------------------------------
-
     print(f"\n=== ASSEMBLE BATCH PAYLOAD ===")
 
     batch_payload = []
@@ -459,17 +435,56 @@ for batch in batches:
             "text": translatable["original"]
         })
 
-    batch_payload_chars = total_char_count(batch_payload, "text")
-    print(f"Batch {batch["id"] + 1}/{len(batches)}: Payload assembled wth {batch_payload_chars} chars")
 
     # ---------------------------------------------------
     # ... END OF TRANSLATABLES LOOP
     # ---------------------------------------------------
+    batch_payload_chars = total_char_count(batch_payload, "text")
+    print(f"Batch {batch["id"] + 1}/{len(batches)}: Payload assembled wth {batch_payload_chars} chars")
+
+
+    # ---------------------------------------------------
+    # ENRICH INSTRUCTIONS WITH TERMINOLOGY
+    # ---------------------------------------------------
+    print(f"\n=== ENRICH INSTRUCTIONS WITH TERMINOLOGY ... ===")
+
+    # Extract batch-specific terminology from Master Terminology
+    batch_text = "\n".join(
+        translatable["original"]
+        for translatable in batch_translatables
+    )
+
+    batch_text_lower = batch_text.lower()
+
+    batch_relevant_terms = [
+        term
+        for term in master_terminology["terms"]
+        if term["original"].lower() in batch_text_lower
+    ]
+
+    print(f"Found {len(batch_relevant_terms)} relevant terms in Master Terminology.")
+
+    batch_specific_terminology = {
+        "terms": batch_relevant_terms
+    }
+
+    batch_specific_terminology_json = to_prettified_json(
+        batch_specific_terminology
+    )
+
+    instructions = (
+            TRANSLATION_INSTRUCTIONS
+            + "\n\n"
+            + "=== TERMINOLOGY DATABASE ===\n"
+            + batch_specific_terminology_json
+            + "\n\n"
+            + "=== END TERMINOLOGY DATABASE ===\n"
+    )
+
 
     # ---------------------------------------------------
     # TRANSLATE BATCH
     # ---------------------------------------------------
-
     batch[TRANSLATION_STATUS] = PROCESSING
     save_batch(batch, batches, progress_info)
 
@@ -531,10 +546,10 @@ for batch in batches:
             f"{BLUE}{api_timer_end - api_timer_start:.2f} seconds{COLOR_RESET}"
         )
 
+
     # ---------------------------------------------------
     # SAVE TRANSLATIONS (STILL WITH PLACEHOLDERS)
     # ---------------------------------------------------
-
     print(f"\n=== SAVING {len(translations_with_placeholders)} TRANSLATIONS (STILL WITH PLACEHOLDERS) ===")
     save_json_output(translations_with_placeholders, TRANSLATIONS_WITH_PLACEHOLDERS_FILE)
 
@@ -548,19 +563,19 @@ for batch in batches:
     # ---------------------------------------------------
     # SET BATCH & PROGRESS INFO TO COMPLETED
     # ---------------------------------------------------
-
     batch[TRANSLATION_STATUS] = COMPLETED
     save_batch(batch, batches, progress_info)
     print(f"\n{GREEN}=== ... TRANSLATION OF BATCH {batch["id"] + 1}/{len(batches)}: [{batch[TRANSLATION_STATUS]}] ==={COLOR_RESET}")
+
 
 # ---------------------------------------------------
 # ... END OF BATCH PROCESSING LOOP
 # ---------------------------------------------------
 
+
 # ---------------------------------------------------
 # VALIDATE PLACEHOLDERS => REVIEW ITEMS
 # ---------------------------------------------------
-
 review_items = identify_review_items(
     translatables_with_placeholders,
     translations_with_placeholders
@@ -577,7 +592,6 @@ print(
 # ---------------------------------------------------
 # SAVE REVIEW ITEMS
 # ---------------------------------------------------
-
 if (len(review_items) > 0):
     save_json_output(
         review_items,
@@ -598,7 +612,6 @@ if (len(review_items) > 0):
 # ---------------------------------------------------
 # REPLACE PLACEHOLDERS (Restore Foundry Syntax)
 # ---------------------------------------------------
-
 translations_final = {} #must be a dict, because it is used like a key-based lookup later
 
 # Pick up any existing translations from previous run (important for RESUME and MOCK MODE)
@@ -629,14 +642,12 @@ for translation_with_placeholders in translations_with_placeholders:
 # SAVE FINAL TRANSLATIONS TO PROGRESS FOLDER
 # just a placeholder for now
 # ---------------------------------------------------
-
 save_json_output(translations_final, TRANSLATIONS_FINAL_FILE)
 
 
 # ---------------------------------------------------
 # COMBINE AND APPLY TRANSLATIONS TO Babele FILE
 # ---------------------------------------------------
-
 print(f"\n=== APPLY TRANSLATIONS TO Babele ===")
 
 apply_translations(
@@ -649,7 +660,6 @@ print(f"{len(translations_final)} translations applied to original Babele data."
 # -------
 # Tests:
 # -------
-
 # print(
 #     f"DEBUG - Result of FIRST translation at Babele path: {loaded_translatables[0]["path"]}"
 #     f"\n=> {get_json_element(babele_json, loaded_translatables[0]["path"])}"
@@ -664,7 +674,6 @@ print(f"{len(translations_final)} translations applied to original Babele data."
 # ---------------------------------------------------
 # SAVE FINAL Babele FIILE
 # ---------------------------------------------------
-
 print(f"\n=== SAVE FINAL Babele FIILE ===")
 save_json_output(babele_data, OUTPUT_FILE)
 
@@ -672,7 +681,6 @@ save_json_output(babele_data, OUTPUT_FILE)
 # ------------------------------------------------------------
 # Stop global timer
 # ------------------------------------------------------------
-
 global_timer_end = time.perf_counter()
 print(f"\n=== TOTAL processing duration: {BLUE}{global_timer_end - global_timer_start:.2f} seconds{COLOR_RESET} ===")
 
