@@ -796,9 +796,9 @@ def save_batch(updated_batch, all_batches, all_progress_info):
 
 
 # ------------------------------------------------------------
-# Function: Verify placeholder integrity
+# Function: Identify Review Items
 # ------------------------------------------------------------
-def create_placeholder_review_items(
+def identify_review_items(
         translatables_with_placeholders,
         translations_with_placeholders):
 
@@ -824,6 +824,9 @@ def create_placeholder_review_items(
     return review_items
 
 
+# ------------------------------------------------------------
+# Function: Verify placeholder integrity
+# ------------------------------------------------------------
 def verify_placeholder_integrity(
         next_id,
         original_text_with_placeholders,

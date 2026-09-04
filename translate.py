@@ -422,7 +422,7 @@ for batch in batches:
 # VALIDATE PLACEHOLDERS => REVIEW ITEMS
 # ---------------------------------------------------
 
-review_items = create_placeholder_review_items(
+review_items = identify_review_items(
     translatables_with_placeholders,
     translations_with_placeholders
 )
@@ -454,8 +454,7 @@ if (len(review_items) > 0):
 
 
 # ---------------------------------------------------
-# REPLACE PLACEHOLDERS
-# just a placeholder for now
+# REPLACE PLACEHOLDERS (Restore Foundry Syntax)
 # ---------------------------------------------------
 
 # mockup!
