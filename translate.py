@@ -63,7 +63,7 @@ else:
 
         progress_info, resume_batch = validate_progress_info()
         starting_text = load_translatables_for_batch(resume_batch, limit=1)[0]["original"][:100]
-        print(f"Resuming from Batch with id={resume_batch["id"]} [{resume_batch["status"]}] - starting with: \"{starting_text} ...\"")
+        print(f"Resuming from Batch with id={resume_batch["id"]} [Terminology: {resume_batch[TERMINOLOGY_STATUS]} / Translation: {resume_batch[TRANSLATION_STATUS]}] - starting with: \"{starting_text} ...\"")
 
     except ValueError as e:
 
@@ -171,7 +171,8 @@ try:
     # IMPORTANT: In Resume mode, we need to preserve any batch status from the preceeding run
     if run_mode == RESUME:
         for batch in batches:
-            batch["status"] = progress_info["batches"][batch["id"]]["status"]
+            batch[TERMINOLOGY_STATUS] = progress_info["batches"][batch["id"]][TERMINOLOGY_STATUS]
+            batch[TRANSLATION_STATUS] = progress_info["batches"][batch["id"]][TRANSLATION_STATUS]
 
     # Update ProgressInfo (batches will be saved later)
     progress_info["batches"] = batches
@@ -253,6 +254,16 @@ if TERMINOLOGY_FILE.exists() and not REBUILD_TERMINOLOGY_IF_EXISTS:
         TERMINOLOGY_FILE
     )
 
+    # We're skipping terminology completely, so we need to tell process control (progress-info) that everything's completed here.
+    # Otherwise, there would be an abort due to "missing terminology" later
+    for batch in batches:
+        batch[TERMINOLOGY_STATUS] = COMPLETED
+
+    save_batches(
+        batches,
+        progress_info
+    )
+
     print(f"\n=== REUSING MASTER TERMINOLOGY ({len(master_terminology["terms"])} entries) ===")
 
 else:
@@ -264,6 +275,9 @@ else:
     # ---------------------------------------------------
 
     for batch in batches:
+
+        batch[TERMINOLOGY_STATUS] = PROCESSING
+        save_batch(batch, batches, progress_info)
 
         batch_translatables = load_translatables_for_batch(
             batch,
@@ -284,6 +298,9 @@ else:
 
             print(f"\n{YELLOW}=== MOCK MODE IS ON ===")
             print(f"Terminology will be empty.{COLOR_RESET}\n")
+
+            batch[TERMINOLOGY_STATUS] = COMPLETED
+            save_batch(batch, batches, progress_info)
 
         else:
 
@@ -307,6 +324,9 @@ else:
 
             except Exception as e:
 
+                batch[TERMINOLOGY_STATUS] = FAILED
+                save_batch(batch, batches, progress_info)
+
                 post_mortem_dump(
                     title = "FATAL ERROR",
                     details = (
@@ -316,7 +336,7 @@ else:
                     response_metadata = None,
                     raw_response = response.output_text,
                     batch_payload = batch_payload,
-                    master_terminology = master_terminology
+                    master_terminology = master_terminology_raw
                 )
 
                 raise
@@ -333,6 +353,10 @@ else:
             master_terminology_raw,
             TERMINOLOGY_FILE
         )
+
+        batch[TERMINOLOGY_STATUS] = COMPLETED
+        save_batch(batch, batches, progress_info)
+
 
     # ---------------------------------------------------
     # ... END OF TERMINOLOGY BATCH LOOP
@@ -354,6 +378,7 @@ else:
 
     print(f"{GREEN}Saved {len(master_terminology["terms"])} entries in Master Terminology: {TERMINOLOGY_FILE}{COLOR_RESET}")
 
+
 # ---------------------------------------------------
 # BEGIN BATCH TRANSLATION LOOP ...
 # ---------------------------------------------------
@@ -363,6 +388,16 @@ print(f"\n=== BEGIN BATCH PROCESSING LOOP ... ===")
 translations_with_placeholders = []
 
 for batch in batches:
+
+    # ---------------------------------------------------
+    # ABORT IF TERMINOLOGY IS MISSING
+    # ---------------------------------------------------
+    if batch[TERMINOLOGY_STATUS] != COMPLETED:
+
+        raise ValueError(
+            "Master terminology has not been completed yet. "
+            "Translation cannot start."
+        )
 
     # In RUN_MODE = RESUME, skip all Batches until current batch is the resume_batch
     if run_mode == RESUME:
@@ -435,10 +470,10 @@ for batch in batches:
     # TRANSLATE BATCH
     # ---------------------------------------------------
 
-    batch["status"] = PROCESSING
+    batch[TRANSLATION_STATUS] = PROCESSING
     save_batch(batch, batches, progress_info)
 
-    print(f"\n=== TRANSLATION OF BATCH {batch['id'] + 1}/{len(batches)}: [{batch["status"]}]... ===")
+    print(f"\n=== TRANSLATION OF BATCH {batch['id'] + 1}/{len(batches)}: [{batch[TRANSLATION_STATUS]}]... ===")
 
     if MOCK_API_CALL:
 
@@ -470,6 +505,9 @@ for batch in batches:
             translations_with_placeholders.extend(new_translations)
 
         except Exception as e:
+
+            batch[TRANSLATION_STATUS] = FAILED
+            save_batch(batch, batches, progress_info)
 
             post_mortem_dump(
                 title = "FATAL ERROR",
@@ -511,9 +549,9 @@ for batch in batches:
     # SET BATCH & PROGRESS INFO TO COMPLETED
     # ---------------------------------------------------
 
-    batch["status"] = COMPLETED
+    batch[TRANSLATION_STATUS] = COMPLETED
     save_batch(batch, batches, progress_info)
-    print(f"\n{GREEN}=== ... TRANSLATION OF BATCH {batch["id"] + 1}/{len(batches)}: [{batch["status"]}] ==={COLOR_RESET}")
+    print(f"\n{GREEN}=== ... TRANSLATION OF BATCH {batch["id"] + 1}/{len(batches)}: [{batch[TRANSLATION_STATUS]}] ==={COLOR_RESET}")
 
 # ---------------------------------------------------
 # ... END OF BATCH PROCESSING LOOP
@@ -540,15 +578,18 @@ print(
 # SAVE REVIEW ITEMS
 # ---------------------------------------------------
 
-save_json_output(
-    review_items,
-    POST_REVIEW_ITEMS_FILE
-)
+if (len(review_items) > 0):
+    save_json_output(
+        review_items,
+        REVIEW_ITEMS_FILE
+    )
+else:
+    delete_file(REVIEW_ITEMS_FILE)
 
 if (len(review_items) > 0):
     print(
         f"{GREEN if len(review_items) == 0 else MAGENTA}"
-        f"Post-review item(s) written to {POST_REVIEW_ITEMS_FILE}:\n"
+        f"Post-review item(s) written to {REVIEW_ITEMS_FILE}:\n"
         f"{to_prettified_json(review_items)}"
         f"{COLOR_RESET}"
     )

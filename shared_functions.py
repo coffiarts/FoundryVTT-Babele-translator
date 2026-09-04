@@ -140,10 +140,6 @@ def init_progress_info():
 
     progress_info = {
         "config": current_config,
-        "terminology": {
-            "status": UNPROCESSED,
-            "char_count": 0
-        },
         "batches": []
     }
 
@@ -157,9 +153,12 @@ def init_progress_info():
 # ------------------------------------------------------------
 # Function: Validate Progress
 # Used by Run Mode = RESUME
+# Checks if the status sequence of subsequent Batches is valid for being resumed.
+# As each Batch's lifecycle consists of two separate loops (first: Terminology, then: Translation),
+# these sequences need to be checked separately
 # Returns (if valid):
 # - the existing Progress Info
-# - the Batch to restart from (pickup_batch)
+# - the Batch to restart from (resume_batch)
 # (if invalid): an Error is thrown.
 # ------------------------------------------------------------
 def validate_progress_info():
@@ -168,30 +167,31 @@ def validate_progress_info():
 
     progress_info = load_json_input(PROGRESS_INFO_FILE)
 
-    # Check for proper state changes:
-    completed_phase = True
+    terminology_completed = True
+    translation_completed = True
 
-    resume_batch = None
+    # Check for proper status sequence:
+    try:
 
-    for batch in progress_info["batches"]:
+        terminology_completed = validate_status_sequence(
+            progress_info["batches"],
+            TERMINOLOGY_STATUS
+        )
 
-        if completed_phase:
+        print(f"Terminology loop completed: {terminology_completed}")
 
-            if batch["status"] != COMPLETED:
-                completed_phase = False
+        translation_completed = validate_status_sequence(
+            progress_info["batches"],
+            TRANSLATION_STATUS
+        )
 
-                if resume_batch is None:
-                    resume_batch = batch
+        print(f"Translation loop completed: {translation_completed}")
 
-        else:
+    except ValueError:
 
-            if batch["status"]  == COMPLETED:
-                raise ValueError(
-                    "Corrupt ProgressInfo: "
-                    f"COMPLETED batch id: (id={batch["id"]}) found after non-COMPLETED batch."
-                )
+        raise
 
-    if completed_phase:
+    if terminology_completed and translation_completed:
 
         raise ValueError(
             "Nothing to resume: "
@@ -202,7 +202,54 @@ def validate_progress_info():
     else:
 
         print("... valid.")
+
+        resume_batch = None
+
+        for batch_progress_info in progress_info["batches"]:
+
+            if (
+                    batch_progress_info[TERMINOLOGY_STATUS] != COMPLETED
+                    or
+                    batch_progress_info[TRANSLATION_STATUS] != COMPLETED
+            ):
+
+                resume_batch = batch_progress_info
+                break
+
         return progress_info, resume_batch
+
+
+# ------------------------------------------------------------
+# Function: Validate Status Sequence
+# Does the detailed checks for validate_progress_info(), for a specific
+# status_phase (TERMINOLOGY_STATUS vs. TRANSLATION_STATUS)
+# ------------------------------------------------------------
+def validate_status_sequence(
+        batches_progress_info,
+        status_phase):
+
+    phase_completed = True
+
+    for batch_progress_info in batches_progress_info:
+
+        if phase_completed:
+
+            if batch_progress_info[status_phase] != COMPLETED:
+                phase_completed = False
+
+        else:
+
+            if batch_progress_info[status_phase] == COMPLETED:
+
+                raise ValueError(
+                    f"Corrupt ProgressInfo: "
+                    f"{status_phase}="
+                    f"{COMPLETED} found after non-"
+                    f"{COMPLETED} batch "
+                    f"(id={batch_progress_info['id']})."
+                )
+
+    return phase_completed
 
 
 #------------------------------------------------------------
@@ -219,7 +266,8 @@ def build_batches(translatables_with_placeholders):
             "id": len(batches),
             "translatable_ids": [],
             "char_count": 0,
-            "status": UNPROCESSED
+            f"{TERMINOLOGY_STATUS}": UNPROCESSED,
+            f"{TRANSLATION_STATUS}": UNPROCESSED
         }
 
     current_batch = create_empty_batch()
@@ -239,8 +287,8 @@ def build_batches(translatables_with_placeholders):
                 f"\nProposed solution: Increase MAX_BATCH_SIZE in config.py and resume process."
             )
 
-            current_batch["status"] = FAILED
-            current_batch["error"] = error
+            current_batch[TERMINOLOGY_STATUS] = FAILED
+            current_batch[ERROR] = error
             # set_batch_status(current_batch, FAILED, )
             break
 
@@ -616,7 +664,7 @@ def cleanup_progress_files():
         BATCHES_FILE,
         TRANSLATIONS_WITH_PLACEHOLDERS_FILE,
         TRANSLATIONS_FINAL_FILE,
-        POST_REVIEW_ITEMS_FILE
+        REVIEW_ITEMS_FILE
     ]:
 
         if file.exists():
@@ -625,6 +673,15 @@ def cleanup_progress_files():
             print(f"... Deleted: {file}")
 
     print("Done.")
+
+
+# ------------------------------------------------------------
+# Function: Delete file
+# ------------------------------------------------------------
+def delete_file(file):
+
+    if file.exists():
+        file.unlink()
 
 
 # ------------------------------------------------------------
@@ -797,6 +854,19 @@ def save_batch(updated_batch, all_batches, all_progress_info):
 
     save_json_output(all_batches, BATCHES_FILE)
     save_json_output(all_progress_info, PROGRESS_INFO_FILE)
+
+
+# ------------------------------------------------------------
+# Function: Save Batches
+# This is the "bulk version" of save_batch().
+# Used for updating all Batches at once to avoid multiple file writes.
+# ------------------------------------------------------------
+def save_batches(all_batches, progress_info):
+
+    progress_info["batches"] = all_batches
+
+    save_json_output(all_batches, BATCHES_FILE)
+    save_json_output(progress_info, PROGRESS_INFO_FILE)
 
 
 # ------------------------------------------------------------
