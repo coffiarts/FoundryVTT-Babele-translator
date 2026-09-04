@@ -5,7 +5,7 @@ INPUT_FILE_NAME = "dnd-test-text.json"
 
 REBUILD_TERMINOLOGY_IF_EXISTS = False
 
-MOCK_API_CALL = True # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
+MOCK_API_CALL = False # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
 
 # ------------------------------------------------------------
 # Core Configuration
@@ -17,11 +17,47 @@ MOCK_API_CALL = True # Default: False: If set to True, remote LLM requests/respo
 
 MAX_BATCH_SIZE = 1000
 
+# -----------------------------------------------------------------
+# TRANSLATABLE FIELDS
+# Identifies translatable texts by their direct attribute names.
+# If any plain attributes matching these names are found,
+# their related value will get translated.
+# Example:
+#   "entries": {
+#     "Bond": {
+#       "name": "Bond",
+# Will be translated to:
+#   "entries": {
+# #     "Bond": {
+# #       "name": "Bindung",
+# # -----------------------------------------------------------------
 TRANSLATABLE_FIELDS = {
     "text",
     "name",
     "caption",
-    "description"
+    "description",
+    "label"
+}
+
+# -----------------------------------------------------------------
+# TRANSLATABLE CONTAINERS
+# Identifies translatable texts by their parent's name.
+# If any nodes (with children) matching these names are found,
+# any values of their direct children will get translated, no matter how the child attributes are named.
+# Example:
+# "results": {
+#     "1-1": "Result 1",
+#     "2-2": "Result 2",
+#     "3-3": "Result 3:
+# Will be translated to:
+# "results": {
+#     "1-1": "Ergebnis 1",
+#     "2-2": "Ergebnis 2",
+#     "3-3": "Ergebnis 3:
+# -----------------------------------------------------------------
+TRANSLATABLE_CONTAINERS = {
+    "folders",
+    "results"
 }
 
 FOUNDRY_SYNTAX_PATTERNS = {

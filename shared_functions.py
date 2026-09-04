@@ -182,7 +182,7 @@ def validate_progress_info():
     if terminology_completed and translation_completed:
 
         raise ValueError(
-            "❌ Nothing to resume: "
+            "Nothing to resume: "
             f"Picking up this process is not necessary. All {len(progress_info["batches"])} Batches already marked as {COMPLETED}.\n"
             f"To run a fresh translation, please delete contents of folder '{PROGRESS_FOLDER_NAME}'."
         )
@@ -457,6 +457,21 @@ def extract_translatables_from_babele(input, translatables, current_path):
                     "original": item
                 })
 
+            elif (
+                    key in TRANSLATABLE_CONTAINERS
+                    and isinstance(item, dict)
+            ):
+
+                for sub_key, sub_item in item.items():
+
+                    if isinstance(sub_item, str):
+
+                        translatables.append({
+                            "id": len(translatables),
+                            "path": current_path + [key, sub_key],
+                            "original": sub_item
+                        })
+
             elif isinstance(item, (dict, list)):
 
                 extract_translatables_from_babele(
@@ -591,6 +606,7 @@ def get_resume_relevant_config():
     return {
         "max_batch_size": MAX_BATCH_SIZE,
         "translatable_fields": sorted(TRANSLATABLE_FIELDS),
+        "translatable_containers": sorted(TRANSLATABLE_CONTAINERS),
         "foundry_syntax_patterns": sorted(FOUNDRY_SYNTAX_PATTERNS)
     }
 
