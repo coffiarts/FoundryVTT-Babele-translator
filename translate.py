@@ -345,8 +345,8 @@ else:
             api_timer_end = time.perf_counter()
 
             print(
-                f"Batch {batch["id"] + 1}/{len(batches)} API duration: "
-                f"{api_timer_end - api_timer_start:.2f} seconds"
+                f"Batch {batch["id"] + 1}/{len(batches)} - API duration: "
+                f"{BLUE}{api_timer_end - api_timer_start:.2f} seconds{COLOR_RESET}"
             )
 
         save_json_output(
@@ -528,7 +528,7 @@ for batch in batches:
 
         print(
             f"Batch {batch["id"] + 1}/{len(batches)} API duration: "
-            f"{api_timer_end - api_timer_start:.2f} seconds"
+            f"{BLUE}{api_timer_end - api_timer_start:.2f} seconds{COLOR_RESET}"
         )
 
     # ---------------------------------------------------
@@ -674,7 +674,7 @@ save_json_output(babele_data, OUTPUT_FILE)
 # ------------------------------------------------------------
 
 global_timer_end = time.perf_counter()
-print(f"\n=== TOTAL processing duration: {global_timer_end - global_timer_start:.2f} seconds ===")
+print(f"\n=== TOTAL processing duration: {BLUE}{global_timer_end - global_timer_start:.2f} seconds{COLOR_RESET} ===")
 
 if MOCK_API_CALL:
 
