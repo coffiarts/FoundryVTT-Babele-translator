@@ -7,6 +7,7 @@ from unit_tests import *
 # - extract translatables
 # - protect translatables by replacing Foundry specific syntax with placeholders
 # - build batches for processing
+# - extract master terminology from the input (or reuse an existing one)
 # - translate (using an external LLM)
 # - validate
 # - restore Foundry specific syntax from placeholders
@@ -222,22 +223,136 @@ test_save_to_file(batches, loaded_batches)
 
 
 # ---------------------------------------------------
+# PREPARE API REQUEST
+# ---------------------------------------------------
+
+if not MOCK_API_CALL:
+
+    api_key = Path(
+        "local_secret_do_not_commit/openai_api_key.txt"
+    ).read_text(
+        encoding="utf-8"
+    ).strip()
+
+    client = OpenAI(
+        api_key=api_key
+    )
+
+
+# ---------------------------------------------------
 # BUILD OR REUSE MASTER TERMINOLOGY
 # ---------------------------------------------------
 
+master_terminology_raw = {
+    "terms": []
+}
+
 if TERMINOLOGY_FILE.exists() and not REBUILD_TERMINOLOGY_IF_EXISTS:
 
-    print(f"\n=== REUSING MASTER TERMINOLOGY ... ===")
+    master_terminology = load_json_input(
+        TERMINOLOGY_FILE
+    )
+
+    print(f"\n=== REUSING MASTER TERMINOLOGY ({len(master_terminology["terms"])} entries) ===")
 
 else:
 
     print(f"\n=== BUILDING MASTER TERMINOLOGY ... ===")
 
+    # ---------------------------------------------------
+    # START TERMINOLOGY BATCH LOOP ...
+    # ---------------------------------------------------
+
+    for batch in batches:
+
+        batch_translatables = load_translatables_for_batch(
+            batch,
+            with_placeholders=False
+        )
+
+        batch_payload = "\n\n".join(
+            translatable["original"]
+            for translatable in batch_translatables
+        )
+
+        print(
+            f"Terminology Batch {batch['id'] + 1}/{len(batches)} "
+            f"[{len(batch_payload)} chars]"
+        )
+
+        if MOCK_API_CALL:
+
+            print(f"\n{YELLOW}=== MOCK MODE IS ON ===")
+            print(f"Terminology will be empty.{COLOR_RESET}\n")
+
+        else:
+
+            api_timer_start = time.perf_counter()
+
+            response = client.responses.create(
+                model = LLM_MODEL,
+                instructions = TERMINOLOGY_INSTRUCTIONS,
+                input = json.dumps(
+                    batch_payload,
+                    ensure_ascii=False
+                ),
+                text=TERMINOLOGY_OUTPUT_STRUCTURE
+            )
+
+            try:
+
+                terminology_response = json.loads(response.output_text)
+                # print(f"DEBUG - terminology response: {to_prettified_json(terminology_response)}")
+                master_terminology_raw["terms"].extend(terminology_response["terms"])
+
+            except Exception as e:
+
+                post_mortem_dump(
+                    title = "FATAL ERROR",
+                    details = (
+                        f"{type(e).__name__}\n"
+                        f"{str(e)}"
+                    ),
+                    response_metadata = None,
+                    raw_response = response.output_text,
+                    batch_payload = batch_payload,
+                    master_terminology = master_terminology
+                )
+
+                raise
+
+
+            api_timer_end = time.perf_counter()
+
+            print(
+                f"Batch {batch["id"] + 1}/{len(batches)} API duration: "
+                f"{api_timer_end - api_timer_start:.2f} seconds"
+            )
+
+        save_json_output(
+            master_terminology_raw,
+            TERMINOLOGY_FILE
+        )
+
+    # ---------------------------------------------------
+    # ... END OF TERMINOLOGY BATCH LOOP
+    # ---------------------------------------------------
+
+    master_terminology = deduplicate_terminology(
+        master_terminology_raw
+    )
+
+    duplicate_cnt = len(master_terminology_raw["terms"]) - len(master_terminology["terms"])
+
+    if (duplicate_cnt > 0):
+        print(f"{YELLOW}Eliminated {duplicate_cnt} duplicate(s){COLOR_RESET} from Terminology.")
+
     save_json_output(
-        {"terms": []},
+        master_terminology,
         TERMINOLOGY_FILE
     )
 
+    print(f"{GREEN}Saved {len(master_terminology["terms"])} entries in Master Terminology: {TERMINOLOGY_FILE}{COLOR_RESET}")
 
 # ---------------------------------------------------
 # BEGIN BATCH TRANSLATION LOOP ...
@@ -317,23 +432,6 @@ for batch in batches:
     # ---------------------------------------------------
 
     # ---------------------------------------------------
-    # PREPARE API REQUEST
-    # ---------------------------------------------------
-
-    if not MOCK_API_CALL:
-
-        api_key = Path(
-            "local_secret_do_not_commit/openai_api_key.txt"
-        ).read_text(
-            encoding="utf-8"
-        ).strip()
-
-        client = OpenAI(
-            api_key=api_key
-        )
-
-
-    # ---------------------------------------------------
     # TRANSLATE BATCH
     # ---------------------------------------------------
 
@@ -369,9 +467,7 @@ for batch in batches:
         try:
 
             new_translations = json.loads(response.output_text)
-
-            for new_translation in new_translations:
-                translations_with_placeholders.append(new_translation)
+            translations_with_placeholders.extend(new_translations)
 
         except Exception as e:
 

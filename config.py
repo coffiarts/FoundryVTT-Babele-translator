@@ -31,7 +31,7 @@ PLACEHOLDER_PATTERN = r'<<<FOUNDRY_\d{6}>>>' # MUST contain \d{<number>} to repr
 
 
 # ------------------------------------------------------------
-# Translation Parameters
+# LLM Parameters
 # ------------------------------------------------------------
 
 LLM_MODEL = "gpt-5.4-mini"
@@ -84,24 +84,118 @@ Incorrect output:
 Sie sind König Grol gegenüber loyal.
 """
 
+TERMINOLOGY_INSTRUCTIONS = """
+You are a terminology analyst for a German translation of a
+D&D 5e fantasy role-playing adventure.
+
+Analyze the supplied English text and identify only terms that
+are likely to require consistent translation across the adventure.
+
+Prioritize:
+- D&D rules terminology
+- creature and monster names or types
+- established fantasy and setting terminology
+- names of places, people, factions, organizations, etc.
+- terms whose German grammatical gender, number, or inflection
+  could cause recurring translation errors
+- terms whose translation is ambiguous or likely to be inconsistent
+
+Do NOT include ordinary vocabulary, generic descriptive words,
+or isolated words that do not require terminological consistency.
+
+Proper names must remain untranslated by default.
+This includes personal names, place names, organization names,
+faction names, and other named entities.
+Do not translate or localize a proper name unless the source
+text itself clearly indicates that it is a translatable descriptive name.
+
+For each selected term provide:
+- the original English term
+- your proposed German translation
+- grammatical gender and number
+- whether it is a proper name
+- a short note explaining an important translation decision,
+  ambiguity, or grammatical consideration
+
+The proposed translations are suggestions only. Do not assume
+that they are official D&D terminology.
+
+Use English for all metadata and notes.
+
+Return only valid JSON.
+"""
+
+TERMINOLOGY_OUTPUT_STRUCTURE = {
+    "format": {
+        "type": "json_schema",
+        "name": "terminology",
+        "strict": True,
+        "schema": {
+            "type": "object",
+            "properties": {
+                "terms": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "original": {
+                                "type": "string"
+                            },
+                            "proposedGerman": {
+                                "type": "string"
+                            },
+                            "gender": {
+                                "type": "string"
+                            },
+                            "number": {
+                                "type": "string"
+                            },
+                            "properName": {
+                                "type": "boolean"
+                            },
+                            "note": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "original",
+                            "proposedGerman",
+                            "gender",
+                            "number",
+                            "properName",
+                            "note"
+                        ],
+                        "additionalProperties": False
+                    }
+                }
+            },
+            "required": [
+                "terms"
+            ],
+            "additionalProperties": False
+        }
+    }
+}
+
 
 # ------------------------------------------------------------
 # Folders and file names
 # ------------------------------------------------------------
 
 INPUT_FOLDER_NAME = "input"
-PROGRESS_INFO_FOLDER_NAME = "progress"
+PROGRESS_FOLDER_NAME = "progress"
+TERMINOLOGY_FOLDER_NAME = "terminology"
 SECRETS_FOLDER_NAME = "local_secret_do_not_commit"
 OUTPUT_FOLDER_NAME = "output"
 
 PROGRESS_INFO_FILE_NAME = "00-progress-info.json"
-TERMINOLOGY_FILE_NAME = "01-terminology.json"
-TRANSLATABLES_FILE_NAME = "02-translatables.json"
-TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME = "03-translatables-with-placeholders.json"
-PLACEHOLDERS_FILE_NAME = "04-placeholders.json"
-BATCHES_FILE_NAME = "05-batches.json"
-TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME = "06-translations-with-placeholders.json"
-TRANSLATIONS_FINAL_FILE_NAME = "07-translations-final.json"
+TRANSLATABLES_FILE_NAME = "01-translatables.json"
+TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME = "02-translatables-with-placeholders.json"
+PLACEHOLDERS_FILE_NAME = "03-placeholders.json"
+BATCHES_FILE_NAME = "04-batches.json"
+TERMINOLOGY_FILE_NAME = f"{INPUT_FILE_NAME.removesuffix(".json")}-terminology.json"
+TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME = "05-translations-with-placeholders.json"
+TRANSLATIONS_FINAL_FILE_NAME = "06-translations-final.json"
 ERRORS_FILE_NAME = "99-errors.json"
 POST_REVIEW_ITEMS_FILE_NAME = f"{INPUT_FILE_NAME.removesuffix(".json")}-post-review-items.json"
 APIKEY_FILE_NAME = "openai_api_key.txt"
@@ -144,18 +238,18 @@ INPUT_FILE = Path(INPUT_FOLDER_NAME) / INPUT_FILE_NAME
 OUTPUT_FILE = Path(OUTPUT_FOLDER_NAME) / INPUT_FILE_NAME
 
 # create subfolders if necessary
-PROGRESS_FOLDER_NAME = Path(PROGRESS_INFO_FOLDER_NAME) / INPUT_FILE_NAME.removesuffix(".json")
+PROGRESS_FOLDER_NAME = Path(PROGRESS_FOLDER_NAME) / INPUT_FILE_NAME.removesuffix(".json")
 if not os.path.exists(PROGRESS_FOLDER_NAME):
     os.makedirs(PROGRESS_FOLDER_NAME)
 if not os.path.exists(OUTPUT_FOLDER_NAME):
     os.makedirs(OUTPUT_FOLDER_NAME)
 
 PROGRESS_INFO_FILE = Path(PROGRESS_FOLDER_NAME) / PROGRESS_INFO_FILE_NAME
-TERMINOLOGY_FILE = Path(PROGRESS_FOLDER_NAME) / TERMINOLOGY_FILE_NAME
 TRANSLATABLES_FILE = Path(PROGRESS_FOLDER_NAME) / TRANSLATABLES_FILE_NAME
 TRANSLATABLES_WITH_PLACEHOLDERS_FILE = Path(PROGRESS_FOLDER_NAME) / TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME
 PLACEHOLDERS_FILE = Path(PROGRESS_FOLDER_NAME) / PLACEHOLDERS_FILE_NAME
 BATCHES_FILE = Path(PROGRESS_FOLDER_NAME) / BATCHES_FILE_NAME
+TERMINOLOGY_FILE = Path(TERMINOLOGY_FOLDER_NAME) / TERMINOLOGY_FILE_NAME
 TRANSLATIONS_WITH_PLACEHOLDERS_FILE = Path(PROGRESS_FOLDER_NAME) / TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME
 TRANSLATIONS_FINAL_FILE = Path(PROGRESS_FOLDER_NAME) / TRANSLATIONS_FINAL_FILE_NAME
 POST_REVIEW_ITEMS_FILE = Path(OUTPUT_FOLDER_NAME) / POST_REVIEW_ITEMS_FILE_NAME

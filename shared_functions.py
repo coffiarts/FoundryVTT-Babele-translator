@@ -196,7 +196,7 @@ def validate_progress_info():
         raise ValueError(
             "Nothing to resume: "
             f"Picking up this process is not necessary. All {len(progress_info["batches"])} Batches already marked as {COMPLETED}.\n"
-            f"To run a fresh translation, please delete contents of folder '{PROGRESS_INFO_FOLDER_NAME}'."
+            f"To run a fresh translation, please delete contents of folder '{PROGRESS_FOLDER_NAME}'."
         )
 
     else:
@@ -649,6 +649,7 @@ def post_mortem_dump(
         response_metadata=None,
         raw_response=None,
         batch_payload=None,
+        master_terminology=None,
         translations_with_placeholders=None
 ):
 
@@ -726,6 +727,24 @@ def post_mortem_dump(
             file.write(
                 json.dumps(
                     batch_payload,
+                    indent=2,
+                    ensure_ascii=False
+                )
+            )
+
+            file.write("\n\n")
+
+        if master_terminology is not None:
+
+            file.write(
+                "====================================================\n"
+                "MASTER TERMINOLOGY\n"
+                "====================================================\n\n"
+            )
+
+            file.write(
+                json.dumps(
+                    master_terminology,
                     indent=2,
                     ensure_ascii=False
                 )
@@ -889,11 +908,21 @@ def restore_foundry_syntax(
 
 
 # ------------------------------------------------------------
-# Function: Restore Foundry Syntax
+# Function: Deduplicate Terminology
 # ------------------------------------------------------------
-def load_terminology():
-    return load_json_input(
-        TERMINOLOGY_FILE
+def deduplicate_terminology(master_terminology):
+
+    unique_terms = {}
+
+    for term in master_terminology["terms"]:
+
+        original = term["original"]
+
+        if original not in unique_terms:
+            unique_terms[original] = term
+
+    master_terminology["terms"] = list(
+        unique_terms.values()
     )
-def save_terminology(terminology):
-    ...
+
+    return master_terminology
