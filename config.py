@@ -1,12 +1,6 @@
 import os
 from pathlib import Path
 
-INPUT_FILE_NAME = "dnd-example-file.json"
-
-REBUILD_TERMINOLOGY_IF_EXISTS = False
-
-MOCK_API_CALL = False # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
-
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 # --- RESUME-RELEVANT CORE CONFIGURATION
@@ -16,6 +10,8 @@ MOCK_API_CALL = False # Default: False: If set to True, remote LLM requests/resp
 # --- See also: get_resume_relevant_config()
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
+
+MOCK_MODE = False # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
 
 MAX_BATCH_SIZE = 50000
 
@@ -224,29 +220,6 @@ TERMINOLOGY_OUTPUT_STRUCTURE = {
 }
 
 
-# ---------------------------------------------------------------------------
-# Folders and file names (usually there's no reason to change any of these)
-# ---------------------------------------------------------------------------
-
-INPUT_FOLDER_NAME = "input"
-PROGRESS_FOLDER_NAME = "progress"
-TERMINOLOGY_FOLDER_NAME = "terminology"
-SECRETS_FOLDER_NAME = "local_secret_do_not_commit"
-OUTPUT_FOLDER_NAME = "output"
-
-PROGRESS_INFO_FILE_NAME = "00-progress-info.json"
-TRANSLATABLES_FILE_NAME = "01-translatables.json"
-TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME = "02-translatables-with-placeholders.json"
-PLACEHOLDERS_FILE_NAME = "03-placeholders.json"
-BATCHES_FILE_NAME = "04-batches.json"
-TERMINOLOGY_FILE_NAME = f"{INPUT_FILE_NAME.removesuffix(".json")}-terminology.json"
-TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME = "05-translations-with-placeholders.json"
-TRANSLATIONS_FINAL_FILE_NAME = "06-translations-final.json"
-ERRORS_FILE_NAME = "99-errors.json"
-REVIEW_ITEMS_FILE_NAME = f"{INPUT_FILE_NAME.removesuffix(".json")}-review-items.json"
-APIKEY_FILE_NAME = "openai_api_key.txt"
-
-
 # ------------------------------------------------------------
 # String Constants (better not edit at all!)
 # ------------------------------------------------------------
@@ -281,30 +254,50 @@ COLOR_RESET  = "\033[0m"
 PLACEHOLDER_TRANSLATION_ERROR = "PLACEHOLDER_TRANSLATION_ERROR"
 
 # ---------------------------------------------------------------
+# Folders and file names (usually no reason to change any of these)
+# ---------------------------------------------------------------
+INPUT_FOLDER_NAME = "input"
+PROGRESS_FOLDER_NAME = "progress"
+TERMINOLOGY_FOLDER_NAME = "terminology"
+SECRETS_FOLDER_NAME = "local_secret_do_not_commit"
+OUTPUT_FOLDER_NAME = "output"
+
+PROGRESS_INFO_FILE_NAME = "00-progress-info.json"
+TRANSLATABLES_FILE_NAME = "01-translatables.json"
+TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME = "02-translatables-with-placeholders.json"
+PLACEHOLDERS_FILE_NAME = "03-placeholders.json"
+BATCHES_FILE_NAME = "04-batches.json"
+TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME = "05-translations-with-placeholders.json"
+TRANSLATIONS_FINAL_FILE_NAME = "06-translations-final.json"
+ERRORS_FILE_NAME = "99-errors.json"
+
+APIKEY_FILE_NAME = "openai_api_key.txt"
+
+# ---------------------------------------------------------------
 # Preprocess configuration (do not edit under ANY circumstance!)
 # ---------------------------------------------------------------
-REBUILD_TERMINOLOGY_IF_EXISTS = False # Just for initializing. Parameter is handled by user prompt
 
-INPUT_FILE = Path(INPUT_FOLDER_NAME) / INPUT_FILE_NAME
-OUTPUT_FILE = Path(OUTPUT_FOLDER_NAME) / INPUT_FILE_NAME
+INPUT_FILE_NAME = None  # Just for initializing. Parameter is handled by user prompt
 
-# create subfolders if necessary
-PROGRESS_FOLDER_NAME = Path(PROGRESS_FOLDER_NAME) / INPUT_FILE_NAME.removesuffix(".json")
-if not os.path.exists(PROGRESS_FOLDER_NAME):
-    os.makedirs(PROGRESS_FOLDER_NAME)
-if not os.path.exists(OUTPUT_FOLDER_NAME):
-    os.makedirs(OUTPUT_FOLDER_NAME)
+REVIEW_ITEMS_FILE_NAME = None  # Just for initializing. Parameter is handled by user prompt
+TERMINOLOGY_FILE_NAME = None  # Just for initializing. Parameter is handled by user prompt
 
-PROGRESS_INFO_FILE = Path(PROGRESS_FOLDER_NAME) / PROGRESS_INFO_FILE_NAME
-TRANSLATABLES_FILE = Path(PROGRESS_FOLDER_NAME) / TRANSLATABLES_FILE_NAME
-TRANSLATABLES_WITH_PLACEHOLDERS_FILE = Path(PROGRESS_FOLDER_NAME) / TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME
-PLACEHOLDERS_FILE = Path(PROGRESS_FOLDER_NAME) / PLACEHOLDERS_FILE_NAME
-BATCHES_FILE = Path(PROGRESS_FOLDER_NAME) / BATCHES_FILE_NAME
-TERMINOLOGY_FILE = Path(TERMINOLOGY_FOLDER_NAME) / TERMINOLOGY_FILE_NAME
-TRANSLATIONS_WITH_PLACEHOLDERS_FILE = Path(PROGRESS_FOLDER_NAME) / TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME
-TRANSLATIONS_FINAL_FILE = Path(PROGRESS_FOLDER_NAME) / TRANSLATIONS_FINAL_FILE_NAME
-REVIEW_ITEMS_FILE = Path(OUTPUT_FOLDER_NAME) / REVIEW_ITEMS_FILE_NAME
+INPUT_FILE = None  # Just for initializing. Parameter is handled by user prompt
+OUTPUT_FILE = None  # Just for initializing. Parameter is handled by user prompt
+PROGRESS_INFO_FILE = None  # Just for initializing. Parameter is handled by user prompt
+TRANSLATABLES_FILE = None  # Just for initializing. Parameter is handled by user prompt
+TRANSLATABLES_WITH_PLACEHOLDERS_FILE = None  # Just for initializing. Parameter is handled by user prompt
+PLACEHOLDERS_FILE = None  # Just for initializing. Parameter is handled by user prompt
+BATCHES_FILE = None  # Just for initializing. Parameter is handled by user prompt
+TERMINOLOGY_FILE = None  # Just for initializing. Parameter is handled by user prompt
+TRANSLATIONS_WITH_PLACEHOLDERS_FILE = None  # Just for initializing. Parameter is handled by user prompt
+TRANSLATIONS_FINAL_FILE = None  # Just for initializing. Parameter is handled by user prompt
+ERRORS_FILE = None  # Just for initializing. Parameter is handled by user prompt
+REVIEW_ITEMS_FILE = None  # Just for initializing. Parameter is handled by user prompt
 
-ERRORS_FILE = Path(PROGRESS_FOLDER_NAME) / ERRORS_FILE_NAME
 APIKEY_FILE = Path(SECRETS_FOLDER_NAME) / APIKEY_FILE_NAME
+REBUILD_TERMINOLOGY_IF_EXISTS = False  # Just for initializing. Parameter is handled by user prompt
+
+
+
 

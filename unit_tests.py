@@ -1,5 +1,5 @@
-from config import *
-from shared_functions import *
+import config
+import shared_functions as fn
 
 # ------------------------------------------------------------
 # Function: Check Result
@@ -12,13 +12,13 @@ def check_result(result):
 
     if result is True:
         return {
-            "status": PASSED,
-            "color": GREEN
+            "status": config.PASSED,
+            "color": config.GREEN
         }
     else:
         return {
-            "status": FAILED,
-            "color": RED
+            "status": config.FAILED,
+            "color": config.RED
         }
 
 
@@ -36,9 +36,9 @@ def test_save_to_file(saved_data, loaded_data):
     result = check_result(len(saved_data) == len(loaded_data))
     print(
         f"UNIT TEST - Saved vs. Loaded count identical ({len(saved_data)} == {len(loaded_data)}): "
-        f"{result["color"]}{result["status"]}{COLOR_RESET}"
+        f"{result["color"]}{result["status"]}{config.COLOR_RESET}"
     )
-    if result["status"] == FAILED:
+    if result["status"] == config.FAILED:
         exit("Terminated with Unit Test Failure!")
 
     # print(
@@ -57,15 +57,15 @@ def test_create_translatables_with_placeholders(translatables_with_placeholders)
         translatable["original"]
         for translatable in translatables_with_placeholders
     )
-    remainders = find_patterns(all_text, FOUNDRY_SYNTAX_PATTERNS, leading_trailing_chars=100)
+    remainders = fn.find_patterns(all_text, config.FOUNDRY_SYNTAX_PATTERNS, leading_trailing_chars=100)
     result = check_result(len(remainders) == 0)
     print(
         f"UNIT TEST - No of remaining foundry syntax matches == 0 ({len(remainders)}): "
-        f"{result["color"]}{(result["status"])}{COLOR_RESET}"
+        f"{result["color"]}{(result["status"])}{config.COLOR_RESET}"
     )
-    if result["status"] == FAILED:
+    if result["status"] == config.FAILED:
         print(
-            f"{result["color"]}{to_prettified_json(remainders)}{COLOR_RESET}"
+            f"{result["color"]}{config.to_prettified_json(remainders)}{config.COLOR_RESET}"
         )
         exit("Terminated with Unit Test Failure!")
 
@@ -91,9 +91,9 @@ def test_assemble_batch_payload(batch, batch_translatables):
     result = check_result(len(batch_translatables) == len(batch["translatable_ids"]))
     print(
         f"UNIT TEST - Translatables count in Batch identical to Loaded ({len(batch["translatable_ids"])} == {len(batch_translatables)}): "
-        f"{result["color"]}{result["status"]}{COLOR_RESET}"
+        f"{result["color"]}{result["status"]}{config.COLOR_RESET}"
     )
-    if result["status"] == FAILED:
+    if result["status"] == config.FAILED:
         exit("Terminated with Unit Test Failure!")
 
 

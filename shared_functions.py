@@ -1,8 +1,9 @@
+import config
 import json
+import os
 import re
-from config import *
+from pathlib import Path
 from openai import OpenAI
-
 
 # ------------------------------------------------------------
 # Function: Load and return data (as list) from JSON input_file (path)
@@ -16,9 +17,9 @@ def load_json_input(input_file):
 
         data = json.load(file)
 
-    chars_cnt = to_prettified_json(data)
+    # chars_cnt = to_prettified_json(data)
+    # print(f"DEBUG - Loaded {len(data)} top-level elements from {input_file} with {len(chars_cnt)} chars")
 
-    # print(f"Loaded {len(data)} top-level elements from {input_file} with {len(chars_cnt)} chars")
     return data
 
 
@@ -131,9 +132,9 @@ def init_progress_info():
         "batches": []
     }
 
-    save_json_output(data=progress_info, output_file=PROGRESS_INFO_FILE)
+    save_json_output(data=progress_info, output_file=config.PROGRESS_INFO_FILE)
 
-    print(f"... Done. New Progress Info is now tracked by file {PROGRESS_INFO_FILE}")
+    print(f"... Done. New Progress Info is now tracked by file {config.PROGRESS_INFO_FILE}")
 
     return progress_info
 
@@ -153,7 +154,7 @@ def validate_progress_info():
 
     print("Validating existing Progress Info ...")
 
-    progress_info = load_json_input(PROGRESS_INFO_FILE)
+    progress_info = load_json_input(config.PROGRESS_INFO_FILE)
 
     terminology_completed = True
     translation_completed = True
@@ -163,14 +164,14 @@ def validate_progress_info():
 
         terminology_completed = validate_status_sequence(
             progress_info["batches"],
-            TERMINOLOGY_STATUS
+            config.TERMINOLOGY_STATUS
         )
 
         print(f"Terminology loop completed: {terminology_completed}")
 
         translation_completed = validate_status_sequence(
             progress_info["batches"],
-            TRANSLATION_STATUS
+            config.TRANSLATION_STATUS
         )
 
         print(f"Translation loop completed: {translation_completed}")
@@ -201,9 +202,9 @@ def validate_progress_info():
         for batch_progress_info in progress_info["batches"]:
 
             if (
-                    batch_progress_info[TERMINOLOGY_STATUS] != COMPLETED
+                    batch_progress_info[config.TERMINOLOGY_STATUS] != config.COMPLETED
                     or
-                    batch_progress_info[TRANSLATION_STATUS] != COMPLETED
+                    batch_progress_info[config.TRANSLATION_STATUS] != config.COMPLETED
             ):
 
                 resume_batch = batch_progress_info
@@ -227,18 +228,18 @@ def validate_status_sequence(
 
         if phase_completed:
 
-            if batch_progress_info[status_phase] != COMPLETED:
+            if batch_progress_info[status_phase] != config.COMPLETED:
                 phase_completed = False
 
         else:
 
-            if batch_progress_info[status_phase] == COMPLETED:
+            if batch_progress_info[status_phase] == config.COMPLETED:
 
                 raise ValueError(
                     f"Corrupt ProgressInfo: "
                     f"{status_phase}="
-                    f"{COMPLETED} found after non-"
-                    f"{COMPLETED} batch "
+                    f"{config.COMPLETED} found after non-"
+                    f"{config.COMPLETED} batch "
                     f"(id={batch_progress_info['id']})."
                 )
 
@@ -259,8 +260,8 @@ def build_batches(translatables_with_placeholders):
             "id": len(batches),
             "translatable_ids": [],
             "char_count": 0,
-            f"{TERMINOLOGY_STATUS}": UNPROCESSED,
-            f"{TRANSLATION_STATUS}": UNPROCESSED
+            f"{config.TERMINOLOGY_STATUS}": config.UNPROCESSED,
+            f"{config.TRANSLATION_STATUS}": config.UNPROCESSED
         }
 
     current_batch = create_empty_batch()
@@ -272,20 +273,20 @@ def build_batches(translatables_with_placeholders):
         text_size = len(translatable["original"])
 
         # No Translatable must exceed the Batch size limit by itself, this requires an abort.
-        if text_size > MAX_BATCH_SIZE:
+        if text_size > config.MAX_BATCH_SIZE:
             error = (
                 f"Translatable {translatable['id']} " +
                 f"contains {text_size} chars and exceeds " +
-                f"MAX_BATCH_SIZE={MAX_BATCH_SIZE}" +
+                f"MAX_BATCH_SIZE={config.MAX_BATCH_SIZE}" +
                 f"\nProposed solution: Increase MAX_BATCH_SIZE in config.py and resume process."
             )
 
-            current_batch[TERMINOLOGY_STATUS] = FAILED
-            current_batch[ERROR] = error
+            current_batch[config.TERMINOLOGY_STATUS] = config.FAILED
+            current_batch[config.ERROR] = error
             # set_batch_status(current_batch, FAILED, )
             break
 
-        if current_batch["char_count"] + text_size > MAX_BATCH_SIZE:
+        if current_batch["char_count"] + text_size > config.MAX_BATCH_SIZE:
             # Batch is full: Close and send it to the list
             batches.append(current_batch)
             current_batch = create_empty_batch()
@@ -317,7 +318,7 @@ def build_batches(translatables_with_placeholders):
 # ------------------------------------------------------------
 def load_batches(batch_ids = None):
 
-    batches = load_json_input(BATCHES_FILE)
+    batches = load_json_input(config.BATCHES_FILE)
 
     if batch_ids is None:
         return batches
@@ -347,9 +348,9 @@ def load_translatables(
         with_placeholders = False):
 
     source_file = (
-        TRANSLATABLES_FILE
+        config.TRANSLATABLES_FILE
         if not with_placeholders
-        else TRANSLATABLES_WITH_PLACEHOLDERS_FILE
+        else config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE
     )
 
     translatables = load_json_input(source_file)
@@ -408,9 +409,9 @@ def load_translations_for_batch(
         limit = None):
 
     file = (
-        TRANSLATIONS_FINAL_FILE
+        config.TRANSLATIONS_FINAL_FILE
         if not with_placeholders
-        else TRANSLATIONS_WITH_PLACEHOLDERS_FILE
+        else config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE
     )
 
     translations = load_json_input(file)[:limit]
@@ -425,7 +426,7 @@ def load_translations_for_batch(
 def load_translations_final():
 
     translations = load_json_input(
-        TRANSLATIONS_FINAL_FILE
+        config.TRANSLATIONS_FINAL_FILE
     )
 
     return {
@@ -439,7 +440,7 @@ def load_translations_final():
 # ------------------------------------------------------------
 def load_placeholders():
 
-    return load_json_input(PLACEHOLDERS_FILE)
+    return load_json_input(config.PLACEHOLDERS_FILE)
 
 
 # --------------------------------------------------------------
@@ -452,7 +453,7 @@ def extract_translatables_from_babele(input, translatables, current_path):
         for key, item in input.items():
 
             if (
-                    key in TRANSLATABLE_FIELDS
+                    key in config.TRANSLATABLE_FIELDS
                     and isinstance(item, str)
             ):
 
@@ -463,7 +464,7 @@ def extract_translatables_from_babele(input, translatables, current_path):
                 })
 
             elif (
-                    key in TRANSLATABLE_CONTAINERS
+                    key in config.TRANSLATABLE_CONTAINERS
                     and isinstance(item, dict)
             ):
 
@@ -511,13 +512,13 @@ def protect_with_placeholders(translatables):
 
         placeholder_number_digit_length = re.search(
             r'\\d{(\d)}',
-            PLACEHOLDER_PATTERN
+            config.PLACEHOLDER_PATTERN
         )[1]
 
         placeholder_name = re.sub(
             r'\\d{\d}',
             f"{str(len(placeholders)).zfill(int(placeholder_number_digit_length))}",
-            PLACEHOLDER_PATTERN
+            config.PLACEHOLDER_PATTERN
         ) # yields something like <<<FOUNDRY_000003>>>
 
         placeholders[
@@ -531,7 +532,7 @@ def protect_with_placeholders(translatables):
         # copy original translatable
         translatable_to_protect = translatable.copy()
 
-        for pattern in FOUNDRY_SYNTAX_PATTERNS:
+        for pattern in config.FOUNDRY_SYNTAX_PATTERNS:
 
             translatable_to_protect["original"] = re.sub(
                 pattern,
@@ -577,7 +578,7 @@ def find_patterns(text, patterns, leading_trailing_chars = 100):
 # ------------------------------------------------------------
 def init_api_client():
 
-    api_key = APIKEY_FILE.read_text(
+    api_key = config.APIKEY_FILE.read_text(
         encoding="utf-8"
     ).strip()
     client = OpenAI(
@@ -609,10 +610,11 @@ def apply_translations(
 def get_resume_relevant_config():
 
     return {
-        "max_batch_size": MAX_BATCH_SIZE,
-        "translatable_fields": sorted(TRANSLATABLE_FIELDS),
-        "translatable_containers": sorted(TRANSLATABLE_CONTAINERS),
-        "foundry_syntax_patterns": sorted(FOUNDRY_SYNTAX_PATTERNS)
+        "max_batch_size": config.MAX_BATCH_SIZE,
+        "translatable_fields": sorted(config.TRANSLATABLE_FIELDS),
+        "translatable_containers": sorted(config.TRANSLATABLE_CONTAINERS),
+        "foundry_syntax_patterns": sorted(config.FOUNDRY_SYNTAX_PATTERNS),
+        "mock_mode": config.MOCK_MODE,
     }
 
 
@@ -624,11 +626,11 @@ def get_resume_relevant_config():
 # ------------------------------------------------------------
 def determine_run_mode():
 
-    if not PROGRESS_INFO_FILE.exists():
-        return NEW_RUN
+    if not config.PROGRESS_INFO_FILE.exists():
+        return config.NEW_RUN
 
     progress_info = load_json_input(
-        PROGRESS_INFO_FILE
+        config.PROGRESS_INFO_FILE
     )
 
     current_config = get_resume_relevant_config()
@@ -636,12 +638,12 @@ def determine_run_mode():
     if progress_info["config"] != current_config:
 
         raise ValueError(
-            f"❌ CONFIGURATION MISMATCH\n"
+            f"CONFIGURATION MISMATCH\n"
             f"======================\n"
             f"At least one essential parameter in config.py "
             f"has changed since the last attempt to run this process.\n"
             f"The following parameters are not allowed to change when resuming a process for the same input file.\n"
-            f"(File to be processed: {INPUT_FILE})\n\n"
+            f"(File to be processed: {config.INPUT_FILE})\n\n"
             
             f"Current configuration:\n"
             f"----------------------\n"
@@ -652,10 +654,10 @@ def determine_run_mode():
             f"{to_multiline_text(progress_info['config'])}\n\n"
             
             f"Please either adjust config.py accordingly and retry, "
-            f"or delete file {PROGRESS_INFO_FILE} to start a fresh process (discarding all intermediary results)."
+            f"or delete file {config.PROGRESS_INFO_FILE} to start a fresh process (discarding all intermediary results)."
         )
 
-    return RESUME
+    return config.RESUME
 
 
 # ------------------------------------------------------------
@@ -666,14 +668,14 @@ def cleanup_progress_files():
     print("Cleaning up progress files from previous runs (if any) ...")
 
     for file in [
-        PROGRESS_INFO_FILE,
-        TRANSLATABLES_FILE,
-        TRANSLATABLES_WITH_PLACEHOLDERS_FILE,
-        PLACEHOLDERS_FILE,
-        BATCHES_FILE,
-        TRANSLATIONS_WITH_PLACEHOLDERS_FILE,
-        TRANSLATIONS_FINAL_FILE,
-        REVIEW_ITEMS_FILE
+        config.PROGRESS_INFO_FILE,
+        config.TRANSLATABLES_FILE,
+        config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE,
+        config.PLACEHOLDERS_FILE,
+        config.BATCHES_FILE,
+        config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE,
+        config.TRANSLATIONS_FINAL_FILE,
+        config.REVIEW_ITEMS_FILE
     ]:
 
         if file.exists():
@@ -720,7 +722,7 @@ def post_mortem_dump(
 ):
 
     with open(
-            ERRORS_FILE,
+            config.ERRORS_FILE,
             "w",
             encoding="utf-8"
     ) as file:
@@ -837,11 +839,11 @@ def post_mortem_dump(
             file.write("\n\n")
 
     print(
-        f"\n❌{RED}POST-MORTEM DUMP WRITTEN TO:{COLOR_RESET}"
+        f"\n❌{config.RED}POST-MORTEM DUMP WRITTEN TO:{config.COLOR_RESET}"
     )
 
     print(
-        f"{RED}{ERRORS_FILE}{COLOR_RESET}"
+        f"{config.RED}{config.ERRORS_FILE}{config.COLOR_RESET}"
     )
 
 # ------------------------------------------------------------
@@ -861,8 +863,8 @@ def save_batch(updated_batch, all_batches, all_progress_info):
             for key in entry:
                 entry[key] = updated_batch[key]
 
-    save_json_output(all_batches, BATCHES_FILE)
-    save_json_output(all_progress_info, PROGRESS_INFO_FILE)
+    save_json_output(all_batches, config.BATCHES_FILE)
+    save_json_output(all_progress_info, config.PROGRESS_INFO_FILE)
 
 
 # ------------------------------------------------------------
@@ -874,8 +876,8 @@ def save_batches(all_batches, progress_info):
 
     progress_info["batches"] = all_batches
 
-    save_json_output(all_batches, BATCHES_FILE)
-    save_json_output(progress_info, PROGRESS_INFO_FILE)
+    save_json_output(all_batches, config.BATCHES_FILE)
+    save_json_output(progress_info, config.PROGRESS_INFO_FILE)
 
 
 # ------------------------------------------------------------
@@ -924,7 +926,7 @@ def verify_placeholder_integrity(
 
     # Collect all expected placeholders from original
     expected_placeholders = re.findall(
-            PLACEHOLDER_PATTERN,
+        config.PLACEHOLDER_PATTERN,
             original_text_with_placeholders
     )
 
@@ -956,7 +958,7 @@ def verify_placeholder_integrity(
 
             new_review_items.append( {
                 "id": next_id,
-                "type": PLACEHOLDER_TRANSLATION_ERROR,
+                "type": config.PLACEHOLDER_TRANSLATION_ERROR,
                 "details": {
                     "placeholder": placeholder,
                     "original_value": all_placeholders[placeholder],
@@ -998,8 +1000,8 @@ def verify_translation_completeness(batch, batches_cnt, batch_payload, translati
             f"Unexpected Translations (IDs) {extra_ids}.\n"
             f"Aborting process.\n"
             f"Please check the following files for details about the missing/extra texts:\n"
-            f"- {TRANSLATABLES_WITH_PLACEHOLDERS_FILE}:\n"
-            f"- {TRANSLATIONS_WITH_PLACEHOLDERS_FILE}:\n"
+            f"- {config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE}:\n"
+            f"- {config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE}:\n"
             f"This is usually a temporary API failure. Just resume the process to try again (it will automatcally resume from this Batch).\n"
         )
 
@@ -1048,14 +1050,14 @@ def deduplicate_terminology(master_terminology):
 # ------------------------------------------------------------
 def prompt_for_terminology_rebuild():
 
-    if TERMINOLOGY_FILE.exists():
+    if config.TERMINOLOGY_FILE.exists():
         answer = input(
-            f"\n{MAGENTA}=== REBUILD TERMINOLOGY? ===\n"
-            f"Existing Terminology for this input file already exists at: {TERMINOLOGY_FILE}\n"
+            f"\n{config.MAGENTA}=== REBUILD TERMINOLOGY? ===\n"
+            f"Existing Terminology for this input file already exists at: {config.TERMINOLOGY_FILE}\n"
             "Do you want to rebuild it online before translating?\n"
             "(y) = Rebuild\n"
             f"(n) or (Enter): No, reuse existing Terminology\n"
-            f"> {COLOR_RESET}"
+            f"> {config.COLOR_RESET}"
         ).strip().upper()
 
         return (answer == "Y")
@@ -1067,22 +1069,93 @@ def prompt_for_terminology_rebuild():
 def prompt_for_force_new_run():
 
     text_if_output_still_exists = (
-        f"A translated output file can still be found at: {OUTPUT_FILE}\n"
-        if OUTPUT_FILE.exists()
+        f"A translated output file can still be found at: {config.OUTPUT_FILE}\n"
+        if config.OUTPUT_FILE.exists()
         else ""
     )
 
     answer = input(
-        f"\n{MAGENTA}=== REPLACE PREVIOUS RESULTS? ===\n"
-        f"The last run for this file is marked as fully {COMPLETED}.\n"
+        f"\n{config.MAGENTA}=== REPLACE PREVIOUS RESULTS? ===\n"
+        f"The last run for this file is marked as fully {config.COMPLETED}.\n"
         f"{text_if_output_still_exists}"
         "Do you want to discard the results and start a complete, FRESH translation?\n"
         "Or do you want to keep them and just rerun Post-Processing steps (integrity checks and rebuilding of the output file)?\n"
         "(y) = Discard and replace previous results.\n"
         f"(n) or (Enter): No, just rerun Post-Processing\n"
-        f"> {COLOR_RESET}"
+        f"> {config.COLOR_RESET}"
     ).strip().upper()
 
     return (answer == "Y")
 
 
+# ------------------------------------------------------------
+# Function: Prompt for input file
+# ------------------------------------------------------------
+def prompt_for_input_file():
+
+    global INPUT_FILE_NAME
+
+    json_files = sorted(
+        [
+            file.name
+            for file in Path(config.INPUT_FOLDER_NAME).glob("*.json")
+        ]
+    )
+
+    print(
+        f"\n{config.MAGENTA}"
+        f"=== SELECT INPUT FILE (from subfolder: {config.INPUT_FOLDER_NAME}) ==="
+        f"\nUse parameter config.py->INPUT_FOLDER_NAME to switch to another subfolder."
+        f"{config.COLOR_RESET}")
+
+    for i, file_name in enumerate(json_files, start=1):
+        print(f"{i}. {file_name}")
+
+    while True:
+
+        try:
+
+            selection = int(
+                input("\nSelect file ?> ")
+            )
+
+            if 1 <= selection <= len(json_files):
+                init_dynamic_paths(json_files[selection - 1])
+                break
+
+        except ValueError:
+            pass
+
+        print(f"{config.RED}Invalid selection.{config.COLOR_RESET}")
+
+
+# ------------------------------------------------------------
+# Function: Prompt for input file
+# ------------------------------------------------------------
+def init_dynamic_paths(input_file_name):
+
+    config.INPUT_FILE_NAME = input_file_name
+    config.INPUT_FILE = Path(config.INPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
+    config.REVIEW_ITEMS_FILE_NAME = f"{config.INPUT_FILE_NAME.removesuffix(".json")}-review-items.json"
+    config.OUTPUT_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
+    config.TERMINOLOGY_FILE_NAME = f"{config.INPUT_FILE_NAME.removesuffix(".json")}-terminology.json"
+
+    # create subfolders if necessary
+    progress_subfolder_name = Path(config.PROGRESS_FOLDER_NAME) / config.INPUT_FILE_NAME.removesuffix(".json")
+    if not os.path.exists(config.PROGRESS_FOLDER_NAME):
+        os.makedirs(config.PROGRESS_FOLDER_NAME)
+    if not os.path.exists(progress_subfolder_name):
+        os.makedirs(config.PROGRESS_FOLDER_NAME)
+    if not os.path.exists(config.OUTPUT_FOLDER_NAME):
+        os.makedirs(config.OUTPUT_FOLDER_NAME)
+
+    config.PROGRESS_INFO_FILE = Path(progress_subfolder_name) / config.PROGRESS_INFO_FILE_NAME
+    config.TRANSLATABLES_FILE = Path(progress_subfolder_name) / config.TRANSLATABLES_FILE_NAME
+    config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE = Path(progress_subfolder_name) / config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME
+    config.PLACEHOLDERS_FILE = Path(progress_subfolder_name) / config.PLACEHOLDERS_FILE_NAME
+    config.BATCHES_FILE = Path(progress_subfolder_name) / config.BATCHES_FILE_NAME
+    config.TERMINOLOGY_FILE = Path(progress_subfolder_name) / config.TERMINOLOGY_FILE_NAME
+    config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE = Path(progress_subfolder_name) / config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME
+    config.TRANSLATIONS_FINAL_FILE = Path(progress_subfolder_name) / config.TRANSLATIONS_FINAL_FILE_NAME
+    config.ERRORS_FILE = Path(progress_subfolder_name) / config.ERRORS_FILE_NAME
+    config.REVIEW_ITEMS_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.REVIEW_ITEMS_FILE_NAME
