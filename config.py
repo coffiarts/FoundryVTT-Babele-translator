@@ -12,7 +12,7 @@ from pathlib import Path
 
 MOCK_MODE = False # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
 
-MAX_BATCH_SIZE = 1000
+MAX_BATCH_SIZE = 50000
 
 # TRANSLATABLE FIELDS
 # Identifies translatable texts by their direct attribute names.

@@ -88,6 +88,8 @@ elif run_mode == config.RESUME:
             fn.validate_progress_info()
         )
 
+        fn.validate_resume_relevant_config(progress_info)
+
         if resume_batch is not None:
             starting_text = fn.load_translatables_for_batch(resume_batch, limit=1)[0]["original"][:100]
             print(f"Resuming from Batch with id={resume_batch["id"]} [Terminology: {resume_batch[config.TERMINOLOGY_STATUS]} / Translation: {resume_batch[config.TRANSLATION_STATUS]}] - starting with: \"{starting_text} ...\"")
@@ -447,8 +449,8 @@ if run_mode != config.POSTPROCESSING_ONLY:
 
         for batch in batches:
 
-            if batch["id"] > 0:
-                raise Exception("!!! TEST ABORT !!!")
+            # if batch["id"] > 0:
+            #     raise Exception("!!! TEST ABORT !!!")
 
             # ---------------------------------------------------
             # ABORT IF TERMINOLOGY IS MISSING
