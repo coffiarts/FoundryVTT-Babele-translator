@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-INPUT_FILE_NAME = "dnd-phandelver-below.pbso-bestiary.json"
+INPUT_FILE_NAME = "dnd-example-file.json"
 
 REBUILD_TERMINOLOGY_IF_EXISTS = False
 

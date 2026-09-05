@@ -716,6 +716,7 @@ save_json_output(babele_data, OUTPUT_FILE)
 # ------------------------------------------------------------
 global_timer_end = time.perf_counter()
 print(f"\n=== TOTAL processing duration: {BLUE}{global_timer_end - global_timer_start:.2f} seconds{COLOR_RESET} ===")
+print(f"\nFind the translated file here: {BLUE}{OUTPUT_FILE}{COLOR_RESET}")
 
 if MOCK_API_CALL:
 
