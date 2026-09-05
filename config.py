@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 # --------------------------------------------------------------------
@@ -13,7 +12,7 @@ from pathlib import Path
 
 MOCK_MODE = False # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
 
-MAX_BATCH_SIZE = 50000
+MAX_BATCH_SIZE = 1000
 
 # TRANSLATABLE FIELDS
 # Identifies translatable texts by their direct attribute names.
@@ -224,9 +223,10 @@ TERMINOLOGY_OUTPUT_STRUCTURE = {
 # String Constants (better not edit at all!)
 # ------------------------------------------------------------
 
-# Run Mode
+# Run Modes
 NEW_RUN = "NEW_RUN"
 RESUME = "RESUME"
+POSTPROCESSING_ONLY = "POSTPROCESSING_ONLY"
 
 # Batch Status
 TERMINOLOGY_STATUS = "terminology_status"

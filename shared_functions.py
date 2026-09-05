@@ -94,7 +94,7 @@ def to_prettified_json(data):
 # Typically used for logging enumerables to console
 # value_char_limit formats <text> as "<first n chars of text> ..."
 # ----------------------------------------------------------------------------------
-def to_multiline_text(input, value_char_limit=None, row_limit=None, text=""):
+def to_multiline_text(input, value_char_limit=None, row_limit=None):
 
     text = ""
     counter = 0
@@ -156,9 +156,6 @@ def validate_progress_info():
 
     progress_info = load_json_input(config.PROGRESS_INFO_FILE)
 
-    terminology_completed = True
-    translation_completed = True
-
     # Check for proper status sequence:
     try:
 
@@ -180,37 +177,19 @@ def validate_progress_info():
 
         raise
 
-    if terminology_completed and translation_completed:
+    print("... valid.")
 
-        force_new_run = prompt_for_force_new_run()
+    resume_batch = find_resume_batch(
+        progress_info
+    )
 
-        if force_new_run:
-            cleanup_progress_files()
+    if resume_batch is None:
+        raise ValueError(
+            "Internal consistency error: "
+            "Run mode RESUME detected, but no resume batch found."
+        )
 
-            return None, None
-
-        else:
-
-            return progress_info, None
-
-    else:
-
-        print("... valid.")
-
-        resume_batch = None
-
-        for batch_progress_info in progress_info["batches"]:
-
-            if (
-                    batch_progress_info[config.TERMINOLOGY_STATUS] != config.COMPLETED
-                    or
-                    batch_progress_info[config.TRANSLATION_STATUS] != config.COMPLETED
-            ):
-
-                resume_batch = batch_progress_info
-                break
-
-        return progress_info, resume_batch
+    return progress_info, resume_batch
 
 
 # ------------------------------------------------------------
@@ -380,8 +359,6 @@ def load_translatables_for_batch(
         with_placeholders = True,
         limit = None):
 
-    translatables = []
-
     if limit is not None and type(limit) == int and limit > 0:
         translatable_ids = (
             batch["translatable_ids"][:limit]
@@ -414,7 +391,18 @@ def load_translations_for_batch(
         else config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE
     )
 
-    translations = load_json_input(file)[:limit]
+    translation_ids = set(
+        batch["translatable_ids"]
+    )
+
+    translations = [
+        translation
+        for translation in load_json_input(file)
+        if translation["id"] in translation_ids
+    ]
+
+    if limit is not None:
+        translations = translations[:limit]
 
     return translations
 
@@ -446,7 +434,7 @@ def load_placeholders():
 # --------------------------------------------------------------
 # Function: Recursively extract Translatables from Babele input
 # --------------------------------------------------------------
-def extract_translatables_from_babele(input, translatables, current_path):
+def extract_translatables_from_input(input, translatables, current_path):
 
     if isinstance(input, dict):
 
@@ -480,7 +468,7 @@ def extract_translatables_from_babele(input, translatables, current_path):
 
             elif isinstance(item, (dict, list)):
 
-                extract_translatables_from_babele(
+                extract_translatables_from_input(
                     item,
                     translatables,
                     current_path+ [key]
@@ -490,7 +478,7 @@ def extract_translatables_from_babele(input, translatables, current_path):
 
         for index, item in enumerate(input):
 
-            extract_translatables_from_babele(
+            extract_translatables_from_input(
                 item,
                 translatables,
                 current_path + [index]
@@ -610,11 +598,11 @@ def apply_translations(
 def get_resume_relevant_config():
 
     return {
-        "max_batch_size": config.MAX_BATCH_SIZE,
-        "translatable_fields": sorted(config.TRANSLATABLE_FIELDS),
-        "translatable_containers": sorted(config.TRANSLATABLE_CONTAINERS),
-        "foundry_syntax_patterns": sorted(config.FOUNDRY_SYNTAX_PATTERNS),
-        "mock_mode": config.MOCK_MODE,
+        "MAX_BATCH_SIZE": config.MAX_BATCH_SIZE,
+        "TRANSLATABLE_FIELDS": sorted(config.TRANSLATABLE_FIELDS),
+        "TRANSLATABLE_CONTAINERS": sorted(config.TRANSLATABLE_CONTAINERS),
+        "FOUNDRY_SYNTAX_PATTERNS": sorted(config.FOUNDRY_SYNTAX_PATTERNS),
+        "MOCK_MODE": config.MOCK_MODE,
     }
 
 
@@ -633,29 +621,19 @@ def determine_run_mode():
         config.PROGRESS_INFO_FILE
     )
 
-    current_config = get_resume_relevant_config()
+    if len(progress_info["batches"]) == 0:
+        return config.NEW_RUN
 
-    if progress_info["config"] != current_config:
+    if find_resume_batch(progress_info) is None:
 
-        raise ValueError(
-            f"CONFIGURATION MISMATCH\n"
-            f"======================\n"
-            f"At least one essential parameter in config.py "
-            f"has changed since the last attempt to run this process.\n"
-            f"The following parameters are not allowed to change when resuming a process for the same input file.\n"
-            f"(File to be processed: {config.INPUT_FILE})\n\n"
-            
-            f"Current configuration:\n"
-            f"----------------------\n"
-            f"{to_multiline_text(current_config)}\n\n"
-            
-            f"Configuration values expected from last attempt:\n"
-            f"------------------------------------------------\n"
-            f"{to_multiline_text(progress_info['config'])}\n\n"
-            
-            f"Please either adjust config.py accordingly and retry, "
-            f"or delete file {config.PROGRESS_INFO_FILE} to start a fresh process (discarding all intermediary results)."
-        )
+        # Run is already complete. So we need to ask the user what they want:
+        if prompt_for_force_new_run():
+
+            return config.NEW_RUN
+
+        else:
+
+            return config.POSTPROCESSING_ONLY
 
     return config.RESUME
 
@@ -1060,7 +1038,7 @@ def prompt_for_terminology_rebuild():
             f"> {config.COLOR_RESET}"
         ).strip().upper()
 
-        return (answer == "Y")
+        config.REBUILD_TERMINOLOGY_IF_EXISTS = (answer == "y")
 
 
 # ------------------------------------------------------------
@@ -1145,7 +1123,7 @@ def init_dynamic_paths(input_file_name):
     if not os.path.exists(config.PROGRESS_FOLDER_NAME):
         os.makedirs(config.PROGRESS_FOLDER_NAME)
     if not os.path.exists(progress_subfolder_name):
-        os.makedirs(config.PROGRESS_FOLDER_NAME)
+        os.makedirs(progress_subfolder_name)
     if not os.path.exists(config.OUTPUT_FOLDER_NAME):
         os.makedirs(config.OUTPUT_FOLDER_NAME)
 
@@ -1154,8 +1132,28 @@ def init_dynamic_paths(input_file_name):
     config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE = Path(progress_subfolder_name) / config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME
     config.PLACEHOLDERS_FILE = Path(progress_subfolder_name) / config.PLACEHOLDERS_FILE_NAME
     config.BATCHES_FILE = Path(progress_subfolder_name) / config.BATCHES_FILE_NAME
-    config.TERMINOLOGY_FILE = Path(progress_subfolder_name) / config.TERMINOLOGY_FILE_NAME
+    config.TERMINOLOGY_FILE = Path(config.TERMINOLOGY_FOLDER_NAME) / config.TERMINOLOGY_FILE_NAME
     config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE = Path(progress_subfolder_name) / config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME
     config.TRANSLATIONS_FINAL_FILE = Path(progress_subfolder_name) / config.TRANSLATIONS_FINAL_FILE_NAME
     config.ERRORS_FILE = Path(progress_subfolder_name) / config.ERRORS_FILE_NAME
     config.REVIEW_ITEMS_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.REVIEW_ITEMS_FILE_NAME
+
+
+# ------------------------------------------------------------
+# Function: Find Resume Batch
+# ------------------------------------------------------------
+def find_resume_batch(progress_info):
+
+    for batch_progress_info in progress_info["batches"]:
+
+        if (
+                batch_progress_info[config.TERMINOLOGY_STATUS] != config.COMPLETED
+                or
+                batch_progress_info[config.TRANSLATION_STATUS] != config.COMPLETED
+        ):
+            return batch_progress_info
+
+    return None
+
+
+
