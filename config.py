@@ -55,14 +55,14 @@ TRANSLATABLE_CONTAINERS = {
 
 # Regular Expressions for identifying anything technical inside the translatable text that should not be touched
 # by the translation and must therefor be masked temporarily by placeholders
-FOUNDRY_SYNTAX_PATTERNS = {
+PROTECTED_SYNTAX_PATTERNS = {
     r'@(UUID|Embed|Compendium)\[[^\]]*\]',
     r'\[\[[^\]]*\]\]'
 }
 
 # The fixed pattern used for the numbered placeholders that temporarily replace text chunks identified
 # by FOUNDRY_SYNTAX_PATTERNS
-PLACEHOLDER_PATTERN = r'<<<FOUNDRY_\d{6}>>>' # MUST contain \d{<number>} to represent the increment number of n digits length
+PLACEHOLDER_PATTERN = r'<<<PLACEHOLDER_\d{6}>>>' # MUST contain \d{<number>} to represent the increment number of n digits length
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------

@@ -521,7 +521,7 @@ def protect_with_placeholders(translatables):
         # copy original translatable
         translatable_to_protect = translatable.copy()
 
-        for pattern in config.FOUNDRY_SYNTAX_PATTERNS:
+        for pattern in config.PROTECTED_SYNTAX_PATTERNS:
 
             translatable_to_protect["original"] = re.sub(
                 pattern,
@@ -580,12 +580,12 @@ def init_api_client():
 # Function: Apply translations (all at once)
 # ------------------------------------------------------------
 def apply_translations(
-        babele_json,
+        input_data,
         translatables,
         translations_final):
 
     for translatable in translatables:
-        set_json_element(babele_json, translatable["path"], translations_final[translatable["id"]])
+        set_json_element(input_data, translatable["path"], translations_final[translatable["id"]])
 
     # TODO - apply any "on-top"" translations (like translator's watermark etc.)
 
@@ -602,7 +602,7 @@ def get_resume_relevant_config():
         "MAX_BATCH_SIZE": config.MAX_BATCH_SIZE,
         "TRANSLATABLE_FIELDS": sorted(config.TRANSLATABLE_FIELDS),
         "TRANSLATABLE_CONTAINERS": sorted(config.TRANSLATABLE_CONTAINERS),
-        "FOUNDRY_SYNTAX_PATTERNS": sorted(config.FOUNDRY_SYNTAX_PATTERNS),
+        "PROTECTED_SYNTAX_PATTERNS": sorted(config.PROTECTED_SYNTAX_PATTERNS),
         "MOCK_MODE": config.MOCK_MODE,
     }
 

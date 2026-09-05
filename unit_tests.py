@@ -57,7 +57,7 @@ def test_create_translatables_with_placeholders(translatables_with_placeholders)
         translatable["original"]
         for translatable in translatables_with_placeholders
     )
-    remainders = fn.find_patterns(all_text, config.FOUNDRY_SYNTAX_PATTERNS, leading_trailing_chars=100)
+    remainders = fn.find_patterns(all_text, config.PROTECTED_SYNTAX_PATTERNS, leading_trailing_chars=100)
     result = check_result(len(remainders) == 0)
     print(
         f"UNIT TEST - No of remaining foundry syntax matches == 0 ({len(remainders)}): "

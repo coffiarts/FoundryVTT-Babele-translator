@@ -115,19 +115,18 @@ global_timer_start = time.perf_counter()
 
 if run_mode != config.POSTPROCESSING_ONLY:
 
-    # ---------------------------------------------------
-    # START OF INPUT PROCESSING AND TRANSLATION
-    # ---------------------------------------------------
-    # Everything from here on is either the preparation of
-    # or the execution of batch-based processing of the
-    # translatable texts from the input file. it ends
-    # at the point where all raw translations have been
-    # received from the remote LLM and safely stored locally.
-    # It includes recoverability logic for handling
-    # unexpected errors, thus avoiding unnecessary remote calls.
-    # It does NOT yet include any subsequent (local only)
-    # post-processing (like validation or final assembly).
-    # ---------------------------------------------------
+# ---------------------------------------------------
+# START OF INPUT PROCESSING AND TRANSLATION
+# ---------------------------------------------------
+# Everything from here on is either the preparation of
+# or the execution of batch-based processing of the
+# translatable texts from the input file through an
+# online translation service (LLM like OpenAI). It ends
+# at the point where all raw translations have been
+# received from the remote LLM and safely stored locally.
+# It includes recoverability logic for handling
+# unexpected errors, thus avoiding unnecessary remote calls.
+# ---------------------------------------------------
 
     # ---------------------------------------------------
     # IMPORT INPUT FILE
@@ -670,18 +669,20 @@ if run_mode != config.POSTPROCESSING_ONLY:
             print(
                 f"\n{config.GREEN}=== ... TRANSLATION OF BATCH {batch["id"] + 1}/{len(batches)}: [{batch[config.TRANSLATION_STATUS]}] ==={config.COLOR_RESET}")
 
-            # ---------------------------------------------------
-            # ... END OF BATCH PROCESSING LOOP
-            # ---------------------------------------------------
+        # ---------------------------------------------------
+        # ... END OF BATCH PROCESSING LOOP
+        # ---------------------------------------------------
 
 # ---------------------------------------------------
 # START OF POST-PROCESSING
+# ---------------------------------------------------
 # Everything from here on is just post-processing of
-# local files: No more Batch-preparation or remote API Calls
-# involved.
-# All the different scenarios come together at this junction point.
-# So first of all, we want to reload everything processed so far once more from the files.
-# This makes clear that every scenario now continues with the same persisted data from here.
+# local files: No more Batch-preparation or remote
+# API Calls involved. All the different scenarios come
+# together at this junction point. So first of all,
+# we want to reload everything processed so far once
+# more from the files. This makes clear that every
+# scenario now continues with the same persisted data from here.
 # ---------------------------------------------------
 
 input_data = fn.load_json_input(config.INPUT_FILE)
