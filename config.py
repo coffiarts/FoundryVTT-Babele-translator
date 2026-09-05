@@ -253,6 +253,10 @@ COLOR_RESET  = "\033[0m"
 # Error Types
 PLACEHOLDER_TRANSLATION_ERROR = "PLACEHOLDER_TRANSLATION_ERROR"
 
+# Other
+YES = "Y"
+NO = "N"
+
 # ---------------------------------------------------------------
 # Folders and file names (usually no reason to change any of these)
 # ---------------------------------------------------------------

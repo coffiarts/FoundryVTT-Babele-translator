@@ -1070,12 +1070,14 @@ def prompt_for_terminology_rebuild():
             f"\n{config.MAGENTA}=== REBUILD TERMINOLOGY? ===\n"
             f"Existing Terminology for this input file already exists at: {config.TERMINOLOGY_FILE}\n"
             "Do you want to rebuild it online before translating?\n"
-            "(y) = Rebuild\n"
-            f"(n) or (Enter): No, reuse existing Terminology\n"
+            f"({config.YES.lower()}) = Rebuild\n"
+            f"({config.NO.lower()}) or (Enter): No, reuse existing Terminology\n"
             f"?> {config.COLOR_RESET}"
-        ).strip().upper()
+        ).strip().lower()
 
-        config.REBUILD_TERMINOLOGY_IF_EXISTS = (answer == "y")
+        normalized_answer = True if answer == config.YES.lower() else False
+
+        config.REBUILD_TERMINOLOGY_IF_EXISTS = normalized_answer
 
 
 # ------------------------------------------------------------
@@ -1095,12 +1097,14 @@ def prompt_for_force_new_run():
         f"{text_if_output_still_exists}"
         "Do you want to discard the results and start a complete, FRESH translation?\n"
         "Or do you want to keep them and just rerun Post-Processing steps (integrity checks and rebuilding of the output file)?\n"
-        "(y) = Discard and replace previous results.\n"
-        f"(n) or (Enter): No, just rerun Post-Processing\n"
+        f"({config.YES.lower()}) = Discard and replace previous results.\n"
+        f"({config.NO.lower()}) or (Enter): No, just rerun Post-Processing (this will also skip Terminology rebuild!)\n"
         f"?> {config.COLOR_RESET}"
-    ).strip().upper()
+    ).strip().lower()
 
-    return (answer == "Y")
+    normalized_answer = True if answer == config.YES.lower() else False
+
+    return normalized_answer
 
 
 # ------------------------------------------------------------
@@ -1145,7 +1149,7 @@ def prompt_for_input_file():
 
 
 # ------------------------------------------------------------
-# Function: Prompt for input file
+# Function: Init dynamic paths
 # ------------------------------------------------------------
 def init_dynamic_paths(input_file_name):
 
