@@ -690,7 +690,8 @@ def cleanup_progress_files():
         config.BATCHES_FILE,
         config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE,
         config.TRANSLATIONS_FINAL_FILE,
-        config.REVIEW_ITEMS_FILE
+        config.REVIEW_ITEMS_FILE,
+        config.POST_MORTEM_DUMP_FILE
     ]:
 
         if file.exists():
@@ -1070,8 +1071,8 @@ def prompt_for_terminology_rebuild():
             f"\n{config.MAGENTA}=== REBUILD TERMINOLOGY? ===\n"
             f"Existing Terminology for this input file already exists at: {config.TERMINOLOGY_FILE}\n"
             "Do you want to rebuild it online before translating?\n"
-            f"({config.YES.lower()}) = Rebuild\n"
-            f"({config.NO.lower()}) or (Enter): No, reuse existing Terminology\n"
+            f"({config.YES.lower()}) = Rebuild from scratch \n"
+            f"({config.NO.lower()}) or (Enter): No, reuse existing Terminology (or continue, in case of aborts)\n"
             f"?> {config.COLOR_RESET}"
         ).strip().lower()
 

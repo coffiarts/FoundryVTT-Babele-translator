@@ -285,13 +285,10 @@ if run_mode != config.POSTPROCESSING_ONLY:
         )
 
     # ---------------------------------------------------
-    # BUILD OR REUSE MASTER TERMINOLOGY
+    # REUSE, CONTINUE OR BUILD MASTER TERMINOLOGY
     # ---------------------------------------------------
-    master_terminology_raw = {
-        "terms": []
-    }
 
-    if config.TERMINOLOGY_FILE.exists() and not config.REBUILD_TERMINOLOGY_IF_EXISTS:
+    if run_mode != config.RESUME and config.TERMINOLOGY_FILE.exists() and not config.REBUILD_TERMINOLOGY_IF_EXISTS:
 
         master_terminology = fn.load_json_input(
             config.TERMINOLOGY_FILE
@@ -308,16 +305,47 @@ if run_mode != config.POSTPROCESSING_ONLY:
         )
 
         print(
-            f"\n{config.MAGENTA}=== REUSING EXISTING MASTER TERMINOLOGY ({len(master_terminology["terms"])} entries) ==={config.COLOR_RESET}")
+            f"\n{config.MAGENTA}=== REUSING EXISTING TERMINOLOGY ({len(master_terminology["terms"])} entries) ==={config.COLOR_RESET}")
 
     else:
 
-        print(f"\n=== BUILDING FRESH MASTER TERMINOLOGY ... ===")
+        if (run_mode == config.RESUME
+                and config.TERMINOLOGY_FILE.exists()):
+
+            master_terminology_raw = fn.load_json_input(
+                config.TERMINOLOGY_FILE
+            )
+
+            print(f"\n=== CONTINUING TERMINOLOGY FROM LAST RUN ({len(master_terminology_raw["terms"])} entries) ... ==={config.COLOR_RESET}")
+
+        else:
+
+            master_terminology_raw = {
+                "terms": []
+            }
+
+            print(f"\n=== BUILDING FRESH TERMINOLOGY ... ===")
 
         # ---------------------------------------------------
         # START TERMINOLOGY BATCH LOOP ...
         # ---------------------------------------------------
         for batch in batches:
+
+            # if batch["id"] > 0:
+            #     raise Exception("!!! TEST ABORT !!!")
+
+            if (run_mode == config.RESUME
+                    and batch[config.TERMINOLOGY_STATUS] == config.COMPLETED):
+
+                print(
+                    f"\n{config.GREEN}"
+                    f"=== TERMINOLOGY BATCH "
+                    f"{batch['id'] + 1}/{len(batches)} "
+                    f"SKIPPED (already completed) ==="
+                    f"{config.COLOR_RESET}"
+                )
+
+                continue
 
             batch[config.TERMINOLOGY_STATUS] = config.PROCESSING
             fn.save_batch(batch, batches, progress_info)
