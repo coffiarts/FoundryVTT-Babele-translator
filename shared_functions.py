@@ -1032,3 +1032,22 @@ def deduplicate_terminology(master_terminology):
     )
 
     return master_terminology
+
+
+# ------------------------------------------------------------
+# Function: Prompt for Terminology Rebuild
+# ------------------------------------------------------------
+def prompt_for_terminology_rebuild():
+
+    if TERMINOLOGY_FILE.exists():
+        answer = input(
+            f"\n{MAGENTA}=== REBUILD TERMINOLOGY? ===\n"
+            f"Existing Terminology for this input file already exists at: {TERMINOLOGY_FILE}\n"
+            "Do you want to rebuild it online before translating?\n"
+            "(y) = Rebuild\n"
+            f"(n) or (Enter): No, reuse existing Terminology\n"
+            f"> {COLOR_RESET}"
+        ).strip().upper()
+
+        return (answer == "Y")
+

@@ -29,14 +29,19 @@ if MOCK_API_CALL:
     print(f"API Calls to the remote LLM are only simulated!")
     print(f"For real processing change parameter MOCK_API_CALL to False in config.py{COLOR_RESET}")
 
+# ---------------------------------------------------
+# CONFIGURATION INFO AND PROMPTS
+# ---------------------------------------------------
 print(f"\n=== CONFIGURATION ===")
+
 print(f"{to_multiline_text(get_resume_relevant_config())}")
 
+REBUILD_TERMINOLOGY_IF_EXISTS = prompt_for_terminology_rebuild()
 
 try:
 
     run_mode = determine_run_mode()
-    print(f"{YELLOW}Run mode: {run_mode}{COLOR_RESET}")
+    print(f"\n{YELLOW}Run mode: {run_mode}{COLOR_RESET}\n")
 
 except ValueError as e:
 
@@ -615,10 +620,9 @@ review_items = identify_review_items(
 )
 print(f"\n=== VALIDATE PLACEHOLDERS ===")
 
-color = ()
 print(
-    f"{GREEN if len(review_items) == 0 else MAGENTA}"
-    f"{len(review_items)} integrity issue(s) identified{COLOR_RESET}"
+    f"{GREEN if len(review_items) == 0 else YELLOW}"
+    f"{len(review_items)} Placeholder translation issue(s) identified{COLOR_RESET}"
 )
 
 
@@ -635,7 +639,7 @@ else:
 
 if (len(review_items) > 0):
     print(
-        f"{GREEN if len(review_items) == 0 else MAGENTA}"
+        f"{GREEN if len(review_items) == 0 else YELLOW}"
         f"Post-review item(s) written to {REVIEW_ITEMS_FILE}:\n"
         f"{to_prettified_json(review_items)}"
         f"{COLOR_RESET}"

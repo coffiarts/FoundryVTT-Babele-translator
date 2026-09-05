@@ -283,6 +283,8 @@ PLACEHOLDER_TRANSLATION_ERROR = "PLACEHOLDER_TRANSLATION_ERROR"
 # ---------------------------------------------------------------
 # Preprocess configuration (do not edit under ANY circumstance!)
 # ---------------------------------------------------------------
+REBUILD_TERMINOLOGY_IF_EXISTS = False # Just for initializing. Parameter is handled by user prompt
+
 INPUT_FILE = Path(INPUT_FOLDER_NAME) / INPUT_FILE_NAME
 OUTPUT_FILE = Path(OUTPUT_FOLDER_NAME) / INPUT_FILE_NAME
 
