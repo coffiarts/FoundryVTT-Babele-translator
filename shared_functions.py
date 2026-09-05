@@ -181,7 +181,16 @@ def validate_progress_info():
 
     if terminology_completed and translation_completed:
 
-        resume_batch = None
+        force_new_run = prompt_for_force_new_run()
+
+        if force_new_run:
+            cleanup_progress_files()
+
+            return None, None
+
+        else:
+
+            return progress_info, None
 
     else:
 
@@ -200,7 +209,7 @@ def validate_progress_info():
                 resume_batch = batch_progress_info
                 break
 
-    return progress_info, resume_batch
+        return progress_info, resume_batch
 
 
 # ------------------------------------------------------------
@@ -1050,4 +1059,30 @@ def prompt_for_terminology_rebuild():
         ).strip().upper()
 
         return (answer == "Y")
+
+
+# ------------------------------------------------------------
+# Function: Prompt for force new run
+# ------------------------------------------------------------
+def prompt_for_force_new_run():
+
+    text_if_output_still_exists = (
+        f"A translated output file can still be found at: {OUTPUT_FILE}\n"
+        if OUTPUT_FILE.exists()
+        else ""
+    )
+
+    answer = input(
+        f"\n{MAGENTA}=== REPLACE PREVIOUS RESULTS? ===\n"
+        f"The last run for this file is marked as fully {COMPLETED}.\n"
+        f"{text_if_output_still_exists}"
+        "Do you want to discard the results and start a complete, FRESH translation?\n"
+        "Or do you want to keep them and just rerun Post-Processing steps (integrity checks and rebuilding of the output file)?\n"
+        "(y) = Discard and replace previous results.\n"
+        f"(n) or (Enter): No, just rerun Post-Processing\n"
+        f"> {COLOR_RESET}"
+    ).strip().upper()
+
+    return (answer == "Y")
+
 

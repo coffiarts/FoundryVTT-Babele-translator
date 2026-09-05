@@ -40,15 +40,16 @@ REBUILD_TERMINOLOGY_IF_EXISTS = prompt_for_terminology_rebuild()
 
 try:
 
+    progress_info, resume_batch = validate_progress_info()
+
     run_mode = determine_run_mode()
+
     print(f"\n{YELLOW}Run mode: {run_mode}{COLOR_RESET}\n")
 
 except ValueError as e:
 
     print(f"{RED}❌ {e.args[0]}{COLOR_RESET}")
     exit()
-
-global_timer_start = time.perf_counter()
 
 if run_mode == NEW_RUN:
 
@@ -66,8 +67,6 @@ else:
     # ---------------------------------------------------
     try:
 
-        progress_info, resume_batch = validate_progress_info()
-
         if resume_batch is not None:
             starting_text = load_translatables_for_batch(resume_batch, limit=1)[0]["original"][:100]
             print(f"Resuming from Batch with id={resume_batch["id"]} [Terminology: {resume_batch[TERMINOLOGY_STATUS]} / Translation: {resume_batch[TRANSLATION_STATUS]}] - starting with: \"{starting_text} ...\"")
@@ -76,6 +75,12 @@ else:
 
         print(f"{RED}❌ {e.args[0]}{COLOR_RESET}")
         exit()
+
+
+# ------------------------------------------------------------
+# Start global timer
+# ------------------------------------------------------------
+global_timer_start = time.perf_counter()
 
 
 # ---------------------------------------------------
