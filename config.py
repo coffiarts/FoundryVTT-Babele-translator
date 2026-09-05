@@ -273,7 +273,7 @@ PLACEHOLDERS_FILE_NAME = "03-placeholders.json"
 BATCHES_FILE_NAME = "04-batches.json"
 TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME = "05-translations-with-placeholders.json"
 TRANSLATIONS_FINAL_FILE_NAME = "06-translations-final.json"
-ERRORS_FILE_NAME = "99-errors.json"
+POST_MORTEM_DUMP_FILE_NAME = "99-post-mortem-dump.json"
 
 APIKEY_FILE_NAME = "openai_api_key.txt"
 
@@ -296,7 +296,7 @@ BATCHES_FILE = None  # Just for initializing. Parameter is handled by user promp
 TERMINOLOGY_FILE = None  # Just for initializing. Parameter is handled by user prompt
 TRANSLATIONS_WITH_PLACEHOLDERS_FILE = None  # Just for initializing. Parameter is handled by user prompt
 TRANSLATIONS_FINAL_FILE = None  # Just for initializing. Parameter is handled by user prompt
-ERRORS_FILE = None  # Just for initializing. Parameter is handled by user prompt
+POST_MORTEM_DUMP_FILE = None  # Just for initializing. Parameter is handled by user prompt
 REVIEW_ITEMS_FILE = None  # Just for initializing. Parameter is handled by user prompt
 
 APIKEY_FILE = Path(SECRETS_FOLDER_NAME) / APIKEY_FILE_NAME

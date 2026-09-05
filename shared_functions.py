@@ -737,7 +737,7 @@ def post_mortem_dump(
 ):
 
     with open(
-            config.ERRORS_FILE,
+            config.POST_MORTEM_DUMP_FILE,
             "w",
             encoding="utf-8"
     ) as file:
@@ -785,13 +785,13 @@ def post_mortem_dump(
 
             file.write(
                 "====================================================\n"
-                "RAW RESPONSE METADATA\n"
+                "RAW RESPONSE\n"
                 "====================================================\n\n"
             )
 
             file.write(
                 json.dumps(
-                    raw_response,
+                    to_prettified_json(raw_response),
                     indent=2,
                     ensure_ascii=False
                 )
@@ -858,7 +858,7 @@ def post_mortem_dump(
     )
 
     print(
-        f"{config.RED}{config.ERRORS_FILE}{config.COLOR_RESET}"
+        f"{config.RED}{config.POST_MORTEM_DUMP_FILE}{config.COLOR_RESET}"
     )
 
 # ------------------------------------------------------------
@@ -1176,7 +1176,7 @@ def init_dynamic_paths(input_file_name):
     config.TERMINOLOGY_FILE = Path(config.TERMINOLOGY_FOLDER_NAME) / config.TERMINOLOGY_FILE_NAME
     config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE = Path(progress_subfolder_name) / config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME
     config.TRANSLATIONS_FINAL_FILE = Path(progress_subfolder_name) / config.TRANSLATIONS_FINAL_FILE_NAME
-    config.ERRORS_FILE = Path(progress_subfolder_name) / config.ERRORS_FILE_NAME
+    config.POST_MORTEM_DUMP_FILE = Path(progress_subfolder_name) / config.POST_MORTEM_DUMP_FILE_NAME
     config.REVIEW_ITEMS_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.REVIEW_ITEMS_FILE_NAME
 
 
