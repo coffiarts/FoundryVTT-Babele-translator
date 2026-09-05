@@ -62,8 +62,10 @@ else:
     try:
 
         progress_info, resume_batch = validate_progress_info()
-        starting_text = load_translatables_for_batch(resume_batch, limit=1)[0]["original"][:100]
-        print(f"Resuming from Batch with id={resume_batch["id"]} [Terminology: {resume_batch[TERMINOLOGY_STATUS]} / Translation: {resume_batch[TRANSLATION_STATUS]}] - starting with: \"{starting_text} ...\"")
+
+        if resume_batch is not None:
+            starting_text = load_translatables_for_batch(resume_batch, limit=1)[0]["original"][:100]
+            print(f"Resuming from Batch with id={resume_batch["id"]} [Terminology: {resume_batch[TERMINOLOGY_STATUS]} / Translation: {resume_batch[TRANSLATION_STATUS]}] - starting with: \"{starting_text} ...\"")
 
     except ValueError as e:
 
@@ -376,206 +378,227 @@ else:
 # ---------------------------------------------------
 print(f"\n=== BEGIN BATCH PROCESSING LOOP ... ===")
 
-translations_with_placeholders = []
+# In Resume mode with all Translation Batches already completed,
+# reconstruct translations_with_placeholders from file and skip
+# directly to post-processing.
 
-for batch in batches:
+if run_mode == RESUME and resume_batch is None:
+
+    print(
+        f"{GREEN}All Translation processing already completed."
+        f" Continuing with post-processing only.{COLOR_RESET}"
+    )
+
+    translations_with_placeholders = load_json_input(
+        TRANSLATIONS_WITH_PLACEHOLDERS_FILE
+    )
+
+else:
 
     # ---------------------------------------------------
-    # ABORT IF TERMINOLOGY IS MISSING
+    # BEGIN BATCH TRANSLATION LOOP
     # ---------------------------------------------------
-    if batch[TERMINOLOGY_STATUS] != COMPLETED:
 
-        raise ValueError(
-            "❌ Master terminology has not been completed yet. "
-            "Translation cannot start."
+    translations_with_placeholders = []
+
+    for batch in batches:
+
+        # ---------------------------------------------------
+        # ABORT IF TERMINOLOGY IS MISSING
+        # ---------------------------------------------------
+        if batch[TERMINOLOGY_STATUS] != COMPLETED:
+
+            raise ValueError(
+                "❌ Master terminology has not been completed yet. "
+                "Translation cannot start."
+            )
+
+        # In RUN_MODE = RESUME, skip all Batches until current batch is the resume_batch
+        if run_mode == RESUME:
+
+            if resume_batch is not None and batch["id"] != resume_batch["id"]:
+
+                already_translated = load_translations_for_batch(batch)
+                translations_with_placeholders.extend(already_translated)
+
+                print(f"\n{GREEN}=== BATCH {batch['id'] + 1}/{len(batches)} SKIPPED (already completed) ==={COLOR_RESET}")
+                print(f"Resusint {len(already_translated)} already translated texts.")
+                continue
+
+            else:
+
+                resume_batch = None
+
+
+        # ---------------------------------------------------
+        # ASSEMBLE BATCH PAYLOAD
+        # ---------------------------------------------------
+        print(f"\n=== ASSEMBLE BATCH PAYLOAD ===")
+
+        batch_payload = []
+
+        batch_translatables = (
+            load_translatables_for_batch(
+            batch,
+            with_placeholders=True
+        ))
+
+        print(f"Batch {batch['id'] + 1}/{len(batches)}: {len(batch_translatables)} translatables loaded.")
+
+        # -------
+        # Tests:
+        # -------
+        test_assemble_batch_payload(batch, batch_translatables)
+
+
+        # ---------------------------------------------------
+        # BEGIN TRANSLATABLES LOOP ...
+        # ---------------------------------------------------
+        for translatable in batch_translatables:
+
+            batch_payload.append({
+                "id": translatable["id"],
+                "text": translatable["original"]
+            })
+
+
+        # ---------------------------------------------------
+        # ... END OF TRANSLATABLES LOOP
+        # ---------------------------------------------------
+        batch_payload_chars = total_char_count(batch_payload, "text")
+        print(f"Batch {batch["id"] + 1}/{len(batches)}: Payload assembled wth {batch_payload_chars} chars")
+
+
+        # ---------------------------------------------------
+        # ENRICH INSTRUCTIONS WITH TERMINOLOGY
+        # ---------------------------------------------------
+        print(f"\n=== ENRICH INSTRUCTIONS WITH TERMINOLOGY ... ===")
+
+        # Extract batch-specific terminology from Master Terminology
+        batch_text = "\n".join(
+            translatable["original"]
+            for translatable in batch_translatables
         )
 
-    # In RUN_MODE = RESUME, skip all Batches until current batch is the resume_batch
-    if run_mode == RESUME:
+        batch_text_lower = batch_text.lower()
 
-        if resume_batch is not None and batch["id"] != resume_batch["id"]:
+        batch_relevant_terms = [
+            term
+            for term in master_terminology["terms"]
+            if term["original"].lower() in batch_text_lower
+        ]
 
-            already_translated = load_translations_for_batch(batch)
-            translations_with_placeholders.extend(already_translated)
+        print(f"Found {len(batch_relevant_terms)} relevant terms in Master Terminology.")
 
-            print(f"\n{GREEN}=== BATCH {batch['id'] + 1}/{len(batches)} SKIPPED (already completed) ==={COLOR_RESET}")
-            print(f"Resusint {len(already_translated)} already translated texts.")
-            continue
+        batch_specific_terminology = {
+            "terms": batch_relevant_terms
+        }
+
+        batch_specific_terminology_json = to_prettified_json(
+            batch_specific_terminology
+        )
+
+        instructions = (
+                TRANSLATION_INSTRUCTIONS
+                + "\n\n"
+                + "=== TERMINOLOGY DATABASE ===\n"
+                + batch_specific_terminology_json
+                + "\n\n"
+                + "=== END TERMINOLOGY DATABASE ===\n"
+        )
+
+
+        # ---------------------------------------------------
+        # TRANSLATE BATCH
+        # ---------------------------------------------------
+        batch[TRANSLATION_STATUS] = PROCESSING
+        save_batch(batch, batches, progress_info)
+
+        print(f"\n=== TRANSLATION OF BATCH {batch['id'] + 1}/{len(batches)}: [{batch[TRANSLATION_STATUS]}]... ===")
+
+        if MOCK_API_CALL:
+
+            print(f"\n{YELLOW}=== MOCK MODE IS ON ===")
+            print(f"Translations are just copies of the input text.{COLOR_RESET}\n")
+
+            for translatable in batch_payload:
+                translations_with_placeholders.append({
+                    "id": translatable["id"],
+                    "translation": translatable["text"]
+                })
 
         else:
 
-            resume_batch = None
+            api_timer_start = time.perf_counter()
 
-
-    # ---------------------------------------------------
-    # ASSEMBLE BATCH PAYLOAD
-    # ---------------------------------------------------
-    print(f"\n=== ASSEMBLE BATCH PAYLOAD ===")
-
-    batch_payload = []
-
-    batch_translatables = (
-        load_translatables_for_batch(
-        batch,
-        with_placeholders=True
-    ))
-
-    print(f"Batch {batch['id'] + 1}/{len(batches)}: {len(batch_translatables)} translatables loaded.")
-
-    # -------
-    # Tests:
-    # -------
-    test_assemble_batch_payload(batch, batch_translatables)
-
-
-    # ---------------------------------------------------
-    # BEGIN TRANSLATABLES LOOP ...
-    # ---------------------------------------------------
-    for translatable in batch_translatables:
-
-        batch_payload.append({
-            "id": translatable["id"],
-            "text": translatable["original"]
-        })
-
-
-    # ---------------------------------------------------
-    # ... END OF TRANSLATABLES LOOP
-    # ---------------------------------------------------
-    batch_payload_chars = total_char_count(batch_payload, "text")
-    print(f"Batch {batch["id"] + 1}/{len(batches)}: Payload assembled wth {batch_payload_chars} chars")
-
-
-    # ---------------------------------------------------
-    # ENRICH INSTRUCTIONS WITH TERMINOLOGY
-    # ---------------------------------------------------
-    print(f"\n=== ENRICH INSTRUCTIONS WITH TERMINOLOGY ... ===")
-
-    # Extract batch-specific terminology from Master Terminology
-    batch_text = "\n".join(
-        translatable["original"]
-        for translatable in batch_translatables
-    )
-
-    batch_text_lower = batch_text.lower()
-
-    batch_relevant_terms = [
-        term
-        for term in master_terminology["terms"]
-        if term["original"].lower() in batch_text_lower
-    ]
-
-    print(f"Found {len(batch_relevant_terms)} relevant terms in Master Terminology.")
-
-    batch_specific_terminology = {
-        "terms": batch_relevant_terms
-    }
-
-    batch_specific_terminology_json = to_prettified_json(
-        batch_specific_terminology
-    )
-
-    instructions = (
-            TRANSLATION_INSTRUCTIONS
-            + "\n\n"
-            + "=== TERMINOLOGY DATABASE ===\n"
-            + batch_specific_terminology_json
-            + "\n\n"
-            + "=== END TERMINOLOGY DATABASE ===\n"
-    )
-
-
-    # ---------------------------------------------------
-    # TRANSLATE BATCH
-    # ---------------------------------------------------
-    batch[TRANSLATION_STATUS] = PROCESSING
-    save_batch(batch, batches, progress_info)
-
-    print(f"\n=== TRANSLATION OF BATCH {batch['id'] + 1}/{len(batches)}: [{batch[TRANSLATION_STATUS]}]... ===")
-
-    if MOCK_API_CALL:
-
-        print(f"\n{YELLOW}=== MOCK MODE IS ON ===")
-        print(f"Translations are just copies of the input text.{COLOR_RESET}\n")
-
-        for translatable in batch_payload:
-            translations_with_placeholders.append({
-                "id": translatable["id"],
-                "translation": translatable["text"]
-            })
-
-    else:
-
-        api_timer_start = time.perf_counter()
-
-        response = client.responses.create(
-            model = LLM_MODEL,
-            instructions = instructions,
-            input = json.dumps(
-                batch_payload,
-                ensure_ascii=False
-            )
-        )
-
-        try:
-
-            new_translations = json.loads(response.output_text)
-
-            print(f"\n=== COMPLETENESS CHECK FOR BATCH {batch['id'] + 1}/{len(batches)}... ===")
-            verify_translation_completeness(batch, len(batches), batch_payload, new_translations)
-            print(f"... completeness check: {GREEN}PASSED{COLOR_RESET}\n")
-
-            translations_with_placeholders.extend(new_translations)
-
-        except Exception as e:
-
-            batch[TRANSLATION_STATUS] = FAILED
-            save_batch(batch, batches, progress_info)
-
-            print(f"{RED}{e.args[0]}{COLOR_RESET}")
-
-            post_mortem_dump(
-                title = "FATAL ERROR",
-                details = (
-                    f"{type(e).__name__}\n"
-                    f"{str(e)}"
-                ),
-                response_metadata = None,
-                raw_response = response.output_text,
-                batch_payload = batch_payload,
-                translations_with_placeholders = translations_with_placeholders
+            response = client.responses.create(
+                model = LLM_MODEL,
+                instructions = instructions,
+                input = json.dumps(
+                    batch_payload,
+                    ensure_ascii=False
+                )
             )
 
-            raise
+            try:
+
+                new_translations = json.loads(response.output_text)
+
+                print(f"\n=== COMPLETENESS CHECK FOR BATCH {batch['id'] + 1}/{len(batches)}... ===")
+                verify_translation_completeness(batch, len(batches), batch_payload, new_translations)
+                print(f"... completeness check: {GREEN}PASSED{COLOR_RESET}\n")
+
+                translations_with_placeholders.extend(new_translations)
+
+            except Exception as e:
+
+                batch[TRANSLATION_STATUS] = FAILED
+                save_batch(batch, batches, progress_info)
+
+                print(f"{RED}{e.args[0]}{COLOR_RESET}")
+
+                post_mortem_dump(
+                    title = "FATAL ERROR",
+                    details = (
+                        f"{type(e).__name__}\n"
+                        f"{str(e)}"
+                    ),
+                    response_metadata = None,
+                    raw_response = response.output_text,
+                    batch_payload = batch_payload,
+                    translations_with_placeholders = translations_with_placeholders
+                )
+
+                raise
 
 
-        api_timer_end = time.perf_counter()
+            api_timer_end = time.perf_counter()
 
-        print(
-            f"Batch {batch["id"] + 1}/{len(batches)} API duration: "
-            f"{BLUE}{api_timer_end - api_timer_start:.2f} seconds{COLOR_RESET}"
-        )
-
-
-    # ---------------------------------------------------
-    # SAVE TRANSLATIONS (STILL WITH PLACEHOLDERS)
-    # ---------------------------------------------------
-    print(f"\n=== SAVING {len(translations_with_placeholders)} TRANSLATIONS (STILL WITH PLACEHOLDERS) ===")
-    save_json_output(translations_with_placeholders, TRANSLATIONS_WITH_PLACEHOLDERS_FILE)
-
-    # -------
-    # Tests:
-    # -------
-    loaded_translations_with_placeholders = load_json_input(TRANSLATIONS_WITH_PLACEHOLDERS_FILE)
-    test_save_to_file(translations_with_placeholders, loaded_translations_with_placeholders)
+            print(
+                f"Batch {batch["id"] + 1}/{len(batches)} API duration: "
+                f"{BLUE}{api_timer_end - api_timer_start:.2f} seconds{COLOR_RESET}"
+            )
 
 
-    # ---------------------------------------------------
-    # SET BATCH & PROGRESS INFO TO COMPLETED
-    # ---------------------------------------------------
-    batch[TRANSLATION_STATUS] = COMPLETED
-    save_batch(batch, batches, progress_info)
-    print(f"\n{GREEN}=== ... TRANSLATION OF BATCH {batch["id"] + 1}/{len(batches)}: [{batch[TRANSLATION_STATUS]}] ==={COLOR_RESET}")
+        # ---------------------------------------------------
+        # SAVE TRANSLATIONS (STILL WITH PLACEHOLDERS)
+        # ---------------------------------------------------
+        print(f"\n=== SAVING {len(translations_with_placeholders)} TRANSLATIONS (STILL WITH PLACEHOLDERS) ===")
+        save_json_output(translations_with_placeholders, TRANSLATIONS_WITH_PLACEHOLDERS_FILE)
+
+        # -------
+        # Tests:
+        # -------
+        loaded_translations_with_placeholders = load_json_input(TRANSLATIONS_WITH_PLACEHOLDERS_FILE)
+        test_save_to_file(translations_with_placeholders, loaded_translations_with_placeholders)
+
+
+        # ---------------------------------------------------
+        # SET BATCH & PROGRESS INFO TO COMPLETED
+        # ---------------------------------------------------
+        batch[TRANSLATION_STATUS] = COMPLETED
+        save_batch(batch, batches, progress_info)
+        print(f"\n{GREEN}=== ... TRANSLATION OF BATCH {batch["id"] + 1}/{len(batches)}: [{batch[TRANSLATION_STATUS]}] ==={COLOR_RESET}")
 
 
 # ---------------------------------------------------
@@ -629,11 +652,11 @@ if TRANSLATIONS_FINAL_FILE.exists():
 
     translations_final = load_translations_final()
     print(f"Picked up {len(translations_final)} translations from previous run:")
-    print(f"{
-    to_multiline_text(
-        input=translations_final,
-        value_char_limit=50
-    )}")
+    # print(f"{
+    # to_multiline_text(
+    #     input=translations_final,
+    #     value_char_limit=50
+    # )}")
 
 
 for translation_with_placeholders in translations_with_placeholders:

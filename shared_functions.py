@@ -181,11 +181,7 @@ def validate_progress_info():
 
     if terminology_completed and translation_completed:
 
-        raise ValueError(
-            "Nothing to resume: "
-            f"Picking up this process is not necessary. All {len(progress_info["batches"])} Batches already marked as {COMPLETED}.\n"
-            f"To run a fresh translation, please delete contents of folder '{PROGRESS_FOLDER_NAME}'."
-        )
+        resume_batch = None
 
     else:
 
@@ -204,7 +200,7 @@ def validate_progress_info():
                 resume_batch = batch_progress_info
                 break
 
-        return progress_info, resume_batch
+    return progress_info, resume_batch
 
 
 # ------------------------------------------------------------
@@ -887,14 +883,17 @@ def identify_review_items(
         for translation in translations_with_placeholders
     }
 
+    all_placeholders = load_placeholders()
+
     for translatable in translatables_with_placeholders:
 
         new_review_items = verify_placeholder_integrity(
-                len(review_items),
-                translatable["original"],
-                translations_by_id[
+                next_id=len(review_items),
+                original_text_with_placeholders=translatable["original"],
+                translated_text=translations_by_id[
                     translatable["id"]
-                ]["translation"]
+                ]["translation"],
+                all_placeholders=all_placeholders
         )
 
         review_items.extend(new_review_items)
@@ -909,6 +908,7 @@ def verify_placeholder_integrity(
         next_id,
         original_text_with_placeholders,
         translated_text,
+        all_placeholders,
         trailing_chars=300):
 
     new_review_items = []
@@ -950,6 +950,7 @@ def verify_placeholder_integrity(
                 "type": PLACEHOLDER_TRANSLATION_ERROR,
                 "details": {
                     "placeholder": placeholder,
+                    "original_value": all_placeholders[placeholder],
                     "count": count,
                     "original_context":
                         "... " + original_text_with_placeholders[start:end] + " ...",
