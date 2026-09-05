@@ -74,7 +74,7 @@ else:
 # ---------------------------------------------------
 # IMPORT INPUT FILE
 # ---------------------------------------------------
-print(f"\n=== IMPORT INPUT FILE (JSON exported from FoundryVTT) ===")
+print(f"\n=== IMPORT INPUT FILE: {INPUT_FILE} ===")
 babele_data = load_json_input(INPUT_FILE)
 
 
@@ -380,7 +380,6 @@ translations_with_placeholders = []
 
 for batch in batches:
 
-
     # ---------------------------------------------------
     # ABORT IF TERMINOLOGY IS MISSING
     # ---------------------------------------------------
@@ -396,7 +395,11 @@ for batch in batches:
 
         if resume_batch is not None and batch["id"] != resume_batch["id"]:
 
+            already_translated = load_translations_for_batch(batch)
+            translations_with_placeholders.extend(already_translated)
+
             print(f"\n{GREEN}=== BATCH {batch['id'] + 1}/{len(batches)} SKIPPED (already completed) ==={COLOR_RESET}")
+            print(f"Resusint {len(already_translated)} already translated texts.")
             continue
 
         else:
@@ -517,12 +520,19 @@ for batch in batches:
         try:
 
             new_translations = json.loads(response.output_text)
+
+            print(f"\n=== COMPLETENESS CHECK FOR BATCH {batch['id'] + 1}/{len(batches)}... ===")
+            verify_translation_completeness(batch, len(batches), batch_payload, new_translations)
+            print(f"... completeness check: {GREEN}PASSED{COLOR_RESET}\n")
+
             translations_with_placeholders.extend(new_translations)
 
         except Exception as e:
 
             batch[TRANSLATION_STATUS] = FAILED
             save_batch(batch, batches, progress_info)
+
+            print(f"{RED}{e.args[0]}{COLOR_RESET}")
 
             post_mortem_dump(
                 title = "FATAL ERROR",

@@ -230,7 +230,7 @@ def validate_status_sequence(
             if batch_progress_info[status_phase] == COMPLETED:
 
                 raise ValueError(
-                    f"❌ Corrupt ProgressInfo: "
+                    f"Corrupt ProgressInfo: "
                     f"{status_phase}="
                     f"{COMPLETED} found after non-"
                     f"{COMPLETED} batch "
@@ -903,7 +903,7 @@ def identify_review_items(
 
 
 # ------------------------------------------------------------
-# Function: Verify placeholder integrity
+# Function: Verify Placeholder Integrity
 # ------------------------------------------------------------
 def verify_placeholder_integrity(
         next_id,
@@ -962,6 +962,37 @@ def verify_placeholder_integrity(
             next_id = next_id + 1
 
     return new_review_items
+
+
+# ------------------------------------------------------------
+# Function: Verify Translation Completeness
+# ------------------------------------------------------------
+def verify_translation_completeness(batch, batches_cnt, batch_payload, translations):
+    expected_ids = {
+        item["id"]
+        for item in batch_payload
+    }
+
+    returned_ids = {
+        item["id"]
+        for item in translations
+    }
+
+    missing_ids = expected_ids - returned_ids
+    extra_ids = returned_ids - expected_ids
+
+    if missing_ids or extra_ids:
+        raise ValueError(
+            f"❌ Mismatch between Translatables and Translations in {batch['id'] + 1}/{batches_cnt}:\n"
+            f"Missing Translations (IDs) {missing_ids}.\n"
+            f"Unexpected Translations (IDs) {extra_ids}.\n"
+            f"Aborting process.\n"
+            f"Please check the following files for details about the missing/extra texts:\n"
+            f"- {TRANSLATABLES_WITH_PLACEHOLDERS_FILE}:\n"
+            f"- {TRANSLATIONS_WITH_PLACEHOLDERS_FILE}:\n"
+            f"This is usually a temporary API failure. Just resume the process to try again (it will automatcally resume from this Batch).\n"
+        )
+
 
 
 # ------------------------------------------------------------

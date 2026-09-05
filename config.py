@@ -1,23 +1,24 @@
 import os
 from pathlib import Path
 
-INPUT_FILE_NAME = "dnd-test-text.json"
+INPUT_FILE_NAME = "dnd-phandelver-below.pbso-bestiary.json"
 
 REBUILD_TERMINOLOGY_IF_EXISTS = False
 
 MOCK_API_CALL = False # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
 
-# ------------------------------------------------------------
-# Core Configuration
-# The following params are Resume-relevant:
-# They must not change in between incremental runs for the same
-# input file, because they control how text is being preprocessed.
-# See also: get_resume_relevant_config()
-# ------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --- RESUME-RELEVANT CORE CONFIGURATION
+# --- The following params must not changed in between incremental
+# --- runs for the same input file, because they control how text
+# -- is being preprocessed and Batches are built
+# --- See also: get_resume_relevant_config()
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
 
-MAX_BATCH_SIZE = 1000
+MAX_BATCH_SIZE = 50000
 
-# -----------------------------------------------------------------
 # TRANSLATABLE FIELDS
 # Identifies translatable texts by their direct attribute names.
 # If any plain attributes matching these names are found,
@@ -28,9 +29,8 @@ MAX_BATCH_SIZE = 1000
 #       "name": "Bond",
 # Will be translated to:
 #   "entries": {
-# #     "Bond": {
-# #       "name": "Bindung",
-# # -----------------------------------------------------------------
+#     "Bond": {
+#       "name": "Bindung",
 TRANSLATABLE_FIELDS = {
     "text",
     "name",
@@ -39,7 +39,6 @@ TRANSLATABLE_FIELDS = {
     "label"
 }
 
-# -----------------------------------------------------------------
 # TRANSLATABLE CONTAINERS
 # Identifies translatable texts by their parent's name.
 # If any nodes (with children) matching these names are found,
@@ -54,18 +53,27 @@ TRANSLATABLE_FIELDS = {
 #     "1-1": "Ergebnis 1",
 #     "2-2": "Ergebnis 2",
 #     "3-3": "Ergebnis 3:
-# -----------------------------------------------------------------
 TRANSLATABLE_CONTAINERS = {
     "folders",
     "results"
 }
 
+# Regular Expressions for identifying anything technical inside the translatable text that should not be touched
+# by the translation and must therefor be masked temporarily by placeholders
 FOUNDRY_SYNTAX_PATTERNS = {
     r'@(UUID|Embed|Compendium)\[[^\]]*\]',
     r'\[\[[^\]]*\]\]'
 }
 
+# The fixed pattern used for the numbered placeholders that temporarily replace text chunks identified
+# by FOUNDRY_SYNTAX_PATTERNS
 PLACEHOLDER_PATTERN = r'<<<FOUNDRY_\d{6}>>>' # MUST contain \d{<number>} to represent the increment number of n digits length
+
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --- END OF RESUME-RELEVANT CORE CONFIGURATION
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
 
 
 # ------------------------------------------------------------
