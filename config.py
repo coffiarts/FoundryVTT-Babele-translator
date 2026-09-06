@@ -1,5 +1,20 @@
 from pathlib import Path
 
+# ------------------------------------------------------------
+# Language to translate from/to
+# ------------------------------------------------------------
+
+SOURCE_LANGUAGE = {
+    "code": "en",
+    "name": "English"
+}
+
+# Some other supported languages (quickly tested): fr/French, it/Italian, es/Spanish, ja/Japanese
+TARGET_LANGUAGE = {
+    "code": "de",
+    "name": "German" # Always use the english name here
+}
+
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 # --- RESUME-RELEVANT CORE CONFIGURATION
@@ -77,27 +92,27 @@ PLACEHOLDER_PATTERN = r'<<<PLACEHOLDER_\d{6}>>>' # MUST contain \d{<number>} to 
 
 LLM_MODEL = "gpt-5.4-mini"
 
-TRANSLATION_INSTRUCTIONS = """
-Translate every text to German.
+TRANSLATION_INSTRUCTIONS = f"""
+Translate every text to {TARGET_LANGUAGE["name"]}.
 
 Return ONLY valid JSON.
 
 Input format:
 
 [
-  {
+  {{
     "id": 123,
     "text": "some text"
-  }
+  }}
 ]
 
 Output format:
 
 [
-  {
+  {{
     "id": 123,
     "translation": "übersetzter Text"
-  }
+  }}
 ]
 
 Rules:
@@ -110,26 +125,28 @@ Rules:
 A placeholder always belongs to the label that follows it.
 
 When translating, the label may be translated and moved
-to a different position in the sentence if German grammar
+to a different position in the sentence if {TARGET_LANGUAGE["name"]} grammar
 requires it.
 
 However, the placeholder must move together with the label.
 
 Input:
-They are loyal to <<<FOUNDRY_000001>>>{King Grol}.
+They are loyal to <<<FOUNDRY_000001>>>{{King Grol}}.
+
+German example ...
 
 Correct output:
-Sie sind <<<FOUNDRY_000001>>>{König Grol} gegenüber loyal.
+Sie sind <<<FOUNDRY_000001>>>{{König Grol}} gegenüber loyal.
 
 Incorrect output:
 Sie sind König Grol gegenüber loyal.
 """
 
-TERMINOLOGY_INSTRUCTIONS = """
-You are a terminology analyst for a German translation of a
+TERMINOLOGY_INSTRUCTIONS = f"""
+You are a terminology analyst for a {TARGET_LANGUAGE["name"]} translation of a
 D&D 5e fantasy role-playing adventure.
 
-Analyze the supplied English text and identify only terms that
+Analyze the supplied {SOURCE_LANGUAGE["name"]} text and identify only terms that
 are likely to require consistent translation across the adventure.
 
 Prioritize:
@@ -137,7 +154,7 @@ Prioritize:
 - creature and monster names or types
 - established fantasy and setting terminology
 - names of places, people, factions, organizations, etc.
-- terms whose German grammatical gender, number, or inflection
+- terms whose {TARGET_LANGUAGE["name"]} grammatical gender, number, or inflection
   could cause recurring translation errors
 - terms whose translation is ambiguous or likely to be inconsistent
 
@@ -151,8 +168,8 @@ Do not translate or localize a proper name unless the source
 text itself clearly indicates that it is a translatable descriptive name.
 
 For each selected term provide:
-- the original English term
-- your proposed German translation
+- the original {SOURCE_LANGUAGE["name"]} term
+- your proposed {TARGET_LANGUAGE["name"]} translation
 - grammatical gender and number
 - whether it is a proper name
 - a short note explaining an important translation decision,
@@ -182,7 +199,7 @@ TERMINOLOGY_OUTPUT_STRUCTURE = {
                             "original": {
                                 "type": "string"
                             },
-                            "proposedGerman": {
+                            "proposedTranslation": {
                                 "type": "string"
                             },
                             "gender": {
@@ -200,7 +217,7 @@ TERMINOLOGY_OUTPUT_STRUCTURE = {
                         },
                         "required": [
                             "original",
-                            "proposedGerman",
+                            "proposedTranslation",
                             "gender",
                             "number",
                             "properName",
@@ -259,12 +276,14 @@ NO = "N"
 
 # ---------------------------------------------------------------
 # Folders and file names (usually no reason to change any of these)
+# If you adjust this, never add language suffixes here (like input/en),
+# because these will be added dynamically by the application.
 # ---------------------------------------------------------------
 INPUT_FOLDER_NAME = "input"
+OUTPUT_FOLDER_NAME = "output"
 PROGRESS_FOLDER_NAME = "progress"
 TERMINOLOGY_FOLDER_NAME = "terminology"
 SECRETS_FOLDER_NAME = "local_secret_do_not_commit"
-OUTPUT_FOLDER_NAME = "output"
 
 PROGRESS_INFO_FILE_NAME = "00-progress-info.json"
 TRANSLATABLES_FILE_NAME = "01-translatables.json"

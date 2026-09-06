@@ -32,6 +32,7 @@ fn.prompt_for_input_file()
 print("\n")
 print(f"===========================================================")
 print(f"=== PROCESSING FILE: {config.INPUT_FILE}")
+print(f"=== TRANSLATION: {config.SOURCE_LANGUAGE["name"]} => {config.TARGET_LANGUAGE["name"]}")
 print(f"===========================================================")
 
 if config.MOCK_MODE:

@@ -1113,7 +1113,7 @@ def prompt_for_force_new_run():
 # ------------------------------------------------------------
 def prompt_for_input_file():
 
-    global INPUT_FILE_NAME
+    config.INPUT_FOLDER_NAME = Path(config.INPUT_FOLDER_NAME) / config.SOURCE_LANGUAGE["code"]
 
     json_files = sorted(
         [
@@ -1125,7 +1125,7 @@ def prompt_for_input_file():
     print(
         f"\n{config.MAGENTA}"
         f"=== SELECT INPUT FILE (from subfolder: {config.INPUT_FOLDER_NAME}) ==="
-        f"\nUse parameter config.py->INPUT_FOLDER_NAME to switch to another subfolder."
+        f"\nUse parameter config.py->INPUT_FOLDER_NAME to switch to another source folder."
         f"{config.COLOR_RESET}")
 
     for i, file_name in enumerate(json_files, start=1):
@@ -1155,30 +1155,37 @@ def prompt_for_input_file():
 def init_dynamic_paths(input_file_name):
 
     config.INPUT_FILE_NAME = input_file_name
-    config.INPUT_FILE = Path(config.INPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
-    config.REVIEW_ITEMS_FILE_NAME = f"{config.INPUT_FILE_NAME.removesuffix(".json")}-review-items.json"
-    config.OUTPUT_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
-    config.TERMINOLOGY_FILE_NAME = f"{config.INPUT_FILE_NAME.removesuffix(".json")}-terminology.json"
 
-    # create subfolders if necessary
-    progress_subfolder_name = Path(config.PROGRESS_FOLDER_NAME) / config.INPUT_FILE_NAME.removesuffix(".json")
-    if not os.path.exists(config.PROGRESS_FOLDER_NAME):
-        os.makedirs(config.PROGRESS_FOLDER_NAME)
-    if not os.path.exists(progress_subfolder_name):
-        os.makedirs(progress_subfolder_name)
+    # Adapt subfolder names to languages and input filename
+    config.OUTPUT_FOLDER_NAME = Path(config.OUTPUT_FOLDER_NAME) / config.TARGET_LANGUAGE["code"]
+    config.PROGRESS_FOLDER_NAME = Path(config.PROGRESS_FOLDER_NAME) / config.TARGET_LANGUAGE["code"] / config.INPUT_FILE_NAME.removesuffix(".json")
+    config.TERMINOLOGY_FOLDER_NAME = Path(config.TERMINOLOGY_FOLDER_NAME) / config.TARGET_LANGUAGE["code"]
+
+    # Create folders where necessary
     if not os.path.exists(config.OUTPUT_FOLDER_NAME):
         os.makedirs(config.OUTPUT_FOLDER_NAME)
+    if not os.path.exists(config.PROGRESS_FOLDER_NAME):
+        os.makedirs(config.PROGRESS_FOLDER_NAME)
+    if not os.path.exists(config.TERMINOLOGY_FOLDER_NAME):
+        os.makedirs(config.TERMINOLOGY_FOLDER_NAME)
 
-    config.PROGRESS_INFO_FILE = Path(progress_subfolder_name) / config.PROGRESS_INFO_FILE_NAME
-    config.TRANSLATABLES_FILE = Path(progress_subfolder_name) / config.TRANSLATABLES_FILE_NAME
-    config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE = Path(progress_subfolder_name) / config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME
-    config.PLACEHOLDERS_FILE = Path(progress_subfolder_name) / config.PLACEHOLDERS_FILE_NAME
-    config.BATCHES_FILE = Path(progress_subfolder_name) / config.BATCHES_FILE_NAME
+    # Adapt specific filenames to input filename
+    config.TERMINOLOGY_FILE_NAME = f"{config.INPUT_FILE_NAME.removesuffix(".json")}-terminology.json"
+    config.REVIEW_ITEMS_FILE_NAME = f"{config.INPUT_FILE_NAME.removesuffix(".json")}-review-items.json"
+
+    # Create all file references based on adapted paths and names
+    config.INPUT_FILE = Path(config.INPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
+    config.OUTPUT_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
+    config.PROGRESS_INFO_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.PROGRESS_INFO_FILE_NAME
     config.TERMINOLOGY_FILE = Path(config.TERMINOLOGY_FOLDER_NAME) / config.TERMINOLOGY_FILE_NAME
-    config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE = Path(progress_subfolder_name) / config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME
-    config.TRANSLATIONS_FINAL_FILE = Path(progress_subfolder_name) / config.TRANSLATIONS_FINAL_FILE_NAME
-    config.POST_MORTEM_DUMP_FILE = Path(progress_subfolder_name) / config.POST_MORTEM_DUMP_FILE_NAME
     config.REVIEW_ITEMS_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.REVIEW_ITEMS_FILE_NAME
+    config.TRANSLATABLES_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.TRANSLATABLES_FILE_NAME
+    config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME
+    config.PLACEHOLDERS_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.PLACEHOLDERS_FILE_NAME
+    config.BATCHES_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.BATCHES_FILE_NAME
+    config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME
+    config.TRANSLATIONS_FINAL_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.TRANSLATIONS_FINAL_FILE_NAME
+    config.POST_MORTEM_DUMP_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.POST_MORTEM_DUMP_FILE_NAME
 
 
 # ------------------------------------------------------------
