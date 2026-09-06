@@ -54,7 +54,7 @@ def test_save_to_file(saved_data, loaded_data):
 def test_create_translatables_with_placeholders(translatables_with_placeholders):
 
     all_text = "\n".join(
-        translatable["original"]
+        translatable["text"]
         for translatable in translatables_with_placeholders
     )
     remainders = fn.find_patterns(all_text, config.PROTECTED_SYNTAX_PATTERNS, leading_trailing_chars=100)
@@ -79,7 +79,7 @@ def test_create_translatables_with_placeholders(translatables_with_placeholders)
     #         translatable
     #         for translatable in translatables_with_placeholders
     #         if any(
-    #             placeholder in translatable["original"]
+    #             placeholder in translatable["text"]
     #             for placeholder in placeholders
     #         )
     #     ])}"

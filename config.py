@@ -27,6 +27,8 @@ TARGET_LANGUAGE = {
 
 MOCK_MODE = False # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
 
+GAME_SYSTEM_CONTEXT = "D&D 5e" # Used in translation instructions. Free prompt-style. Always use the english name here, optionally enrich it by a translation, like: "The Dark Eye (aka 'Das Schwarze Auge')
+
 MAX_BATCH_SIZE = 50000
 
 # TRANSLATABLE FIELDS
@@ -144,13 +146,13 @@ Sie sind König Grol gegenüber loyal.
 
 TERMINOLOGY_INSTRUCTIONS = f"""
 You are a terminology analyst for a {TARGET_LANGUAGE["name"]} translation of a
-D&D 5e fantasy role-playing adventure.
+{GAME_SYSTEM_CONTEXT} fantasy role-playing adventure.
 
 Analyze the supplied {SOURCE_LANGUAGE["name"]} text and identify only terms that
 are likely to require consistent translation across the adventure.
 
 Prioritize:
-- D&D rules terminology
+- {GAME_SYSTEM_CONTEXT} rules terminology
 - creature and monster names or types
 - established fantasy and setting terminology
 - names of places, people, factions, organizations, etc.
@@ -176,7 +178,7 @@ For each selected term provide:
   ambiguity, or grammatical consideration
 
 The proposed translations are suggestions only. Do not assume
-that they are official D&D terminology.
+that they are official {GAME_SYSTEM_CONTEXT} terminology.
 
 Use English for all metadata and notes.
 
@@ -269,6 +271,7 @@ COLOR_RESET  = "\033[0m"
 
 # Error Types
 PLACEHOLDER_TRANSLATION_ERROR = "PLACEHOLDER_TRANSLATION_ERROR"
+ABORTED_BY_USER_ERROR = "Aborted by user."
 
 # Other
 YES = "Y"

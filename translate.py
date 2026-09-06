@@ -1,8 +1,10 @@
+
 import config
 import shared_functions as fn
 import unit_tests
 import json
 import time
+from datetime import datetime
 from pathlib import Path
 from openai import OpenAI
 
@@ -92,7 +94,7 @@ elif run_mode == config.RESUME:
         fn.validate_resume_relevant_config(progress_info)
 
         if resume_batch is not None:
-            starting_text = fn.load_translatables_for_batch(resume_batch, limit=1)[0]["original"][:100]
+            starting_text = fn.load_translatables_for_batch(resume_batch, limit=1)[0]["text"][:100]
             print(f"Resuming from Batch with id={resume_batch["id"]} [Terminology: {resume_batch[config.TERMINOLOGY_STATUS]} / Translation: {resume_batch[config.TRANSLATION_STATUS]}] - starting with: \"{starting_text} ...\"")
 
     except ValueError as e:
@@ -356,7 +358,7 @@ if run_mode != config.POSTPROCESSING_ONLY:
             )
 
             batch_payload = "\n\n".join(
-                translatable["original"]
+                translatable["text"]
                 for translatable in batch_translatables
             )
 
@@ -532,7 +534,7 @@ if run_mode != config.POSTPROCESSING_ONLY:
             for translatable in batch_translatables:
                 batch_payload.append({
                     "id": translatable["id"],
-                    "text": translatable["original"]
+                    "text": translatable["text"]
                 })
 
             # ---------------------------------------------------
@@ -548,7 +550,7 @@ if run_mode != config.POSTPROCESSING_ONLY:
 
             # Extract batch-specific terminology from Master Terminology
             batch_text = "\n".join(
-                translatable["original"]
+                translatable["text"]
                 for translatable in batch_translatables
             )
 
@@ -620,7 +622,34 @@ if run_mode != config.POSTPROCESSING_ONLY:
                     fn.verify_translation_completeness(batch, len(batches), batch_payload, new_translations)
                     print(f"... completeness check: {config.GREEN}PASSED{config.COLOR_RESET}\n")
 
-                    translations_with_placeholders.extend(new_translations)
+                    # ---------------------------------------------------
+                    # PRE-CHECK PLACEHOLDERS (AND CONFIRM IF ANY)
+                    # ---------------------------------------------------
+                    print(f"\n=== PRE-CHECK PLACEHOLDERS IN TRANSLATION FOR BATCH {batch['id'] + 1}/{len(batches)} ===")
+                    expected_placeholder_errors = fn.identify_review_items(
+                        batch_payload,
+                        new_translations
+                    )
+
+                    if len(expected_placeholder_errors) == 0:
+                        print(f"{config.GREEN}No Placeholder translation issue(s) identified in Batch{config.COLOR_RESET}")
+
+                        translations_with_placeholders.extend(new_translations)
+
+                    else:
+
+                        # In case of errors, ask the user what to do with this Batch
+                        print(
+                            f"{config.YELLOW}"
+                            f"{fn.to_prettified_json(expected_placeholder_errors)}"
+                            f"\nWARNING - Confirmation required: Batch {batch['id'] + 1}/{len(batches)} contains {len(expected_placeholder_errors)} placeholder translation error(s) - see above."
+                            f"{config.COLOR_RESET}"
+                        )
+
+                        if not fn.confirm_batch_nonfatal_errors():
+                            raise Exception(config.ABORTED_BY_USER_ERROR)
+                        else:
+                            translations_with_placeholders.extend(new_translations)
 
                 except Exception as e:
 
@@ -718,11 +747,12 @@ if config.TRANSLATIONS_FINAL_FILE.exists():
 # ---------------------------------------------------
 # VALIDATE PLACEHOLDERS => REVIEW ITEMS
 # ---------------------------------------------------
+print(f"\n=== VALIDATE PLACEHOLDERS ===")
+
 review_items = fn.identify_review_items(
     translatables_with_placeholders,
     translations_with_placeholders
 )
-print(f"\n=== VALIDATE PLACEHOLDERS ===")
 
 print(
     f"{config.GREEN if len(review_items) == 0 else config.YELLOW}"
@@ -744,8 +774,8 @@ else:
 if (len(review_items) > 0):
     print(
         f"{config.GREEN if len(review_items) == 0 else config.YELLOW}"
-        f"Post-review item(s) written to {config.REVIEW_ITEMS_FILE}:\n"
-        f"{fn.to_prettified_json(review_items)}"
+        f"{len(review_items)} Post-review item(s) written to {config.REVIEW_ITEMS_FILE}"
+        # f"\n{fn.to_prettified_json(review_items)}"
         f"{config.COLOR_RESET}"
     )
 
@@ -818,5 +848,6 @@ if config.MOCK_MODE:
 
 else:
 
-    print(f"\n{config.GREEN}=== PROCESS COMPLETED SUCCESSFULLY ==={config.COLOR_RESET}")
+    current_time = datetime.now().strftime("%H:%M:%S")
+    print(f"\n{config.GREEN}=== PROCESS COMPLETED SUCCESSFULLY (time: {current_time}) ==={config.COLOR_RESET}")
 

@@ -250,7 +250,7 @@ def build_batches(translatables_with_placeholders):
 
     for translatable in translatables_with_placeholders:
 
-        text_size = len(translatable["original"])
+        text_size = len(translatable["text"])
 
         # No Translatable must exceed the Batch size limit by itself, this requires an abort.
         if text_size > config.MAX_BATCH_SIZE:
@@ -449,7 +449,7 @@ def extract_translatables_from_input(input, translatables, current_path):
                 translatables.append({
                     "id": len(translatables),
                     "path": current_path + [key],
-                    "original": item
+                    "text": item
                 })
 
             elif (
@@ -464,7 +464,7 @@ def extract_translatables_from_input(input, translatables, current_path):
                         translatables.append({
                             "id": len(translatables),
                             "path": current_path + [key, sub_key],
-                            "original": sub_item
+                            "text": sub_item
                         })
 
             elif isinstance(item, (dict, list)):
@@ -523,10 +523,10 @@ def protect_with_placeholders(translatables):
 
         for pattern in config.PROTECTED_SYNTAX_PATTERNS:
 
-            translatable_to_protect["original"] = re.sub(
+            translatable_to_protect["text"] = re.sub(
                 pattern,
                 create_and_register_placeholder,
-                translatable_to_protect["original"]
+                translatable_to_protect["text"]
             )
 
         translatables_with_placeholders.append(translatable_to_protect)
@@ -664,7 +664,7 @@ def determine_run_mode():
     if find_resume_batch(progress_info) is None:
 
         # Run is already complete. So we need to ask the user what they want:
-        if prompt_for_force_new_run():
+        if confirm_force_new_run():
 
             return config.NEW_RUN
 
@@ -916,7 +916,7 @@ def identify_review_items(
 
         new_review_items = verify_placeholder_integrity(
                 next_id=len(review_items),
-                original_text_with_placeholders=translatable["original"],
+                original_text_with_placeholders=translatable["text"],
                 translated_text=translations_by_id[
                     translatable["id"]
                 ]["translation"],
@@ -1071,7 +1071,7 @@ def prompt_for_terminology_rebuild():
             f"\n{config.MAGENTA}=== REBUILD TERMINOLOGY? ===\n"
             f"Existing Terminology for this input file already exists at: {config.TERMINOLOGY_FILE}\n"
             "Do you want to rebuild it online before translating?\n"
-            f"({config.YES.lower()}) = Rebuild from scratch \n"
+            f"({config.YES.lower()}): Rebuild from scratch \n"
             f"({config.NO.lower()}) or (Enter): No, reuse existing Terminology (or continue, in case of aborts)\n"
             f"?> {config.COLOR_RESET}"
         ).strip().lower()
@@ -1082,9 +1082,9 @@ def prompt_for_terminology_rebuild():
 
 
 # ------------------------------------------------------------
-# Function: Prompt for force new run
+# Function: Prompt confirmation for force new run
 # ------------------------------------------------------------
-def prompt_for_force_new_run():
+def confirm_force_new_run():
 
     text_if_output_still_exists = (
         f"A translated output file can still be found at: {config.OUTPUT_FILE}\n"
@@ -1098,9 +1098,26 @@ def prompt_for_force_new_run():
         f"{text_if_output_still_exists}"
         "Do you want to discard the results and start a complete, FRESH translation?\n"
         "Or do you want to keep them and just rerun Post-Processing steps (integrity checks and rebuilding of the output file)?\n"
-        f"({config.YES.lower()}) = Discard and replace previous results.\n"
+        f"({config.YES.lower()}): Discard and replace previous results.\n"
         f"({config.NO.lower()}) or (Enter): No, just rerun Post-Processing (this will also skip Terminology rebuild!)\n"
         f"?> {config.COLOR_RESET}"
+    ).strip().lower()
+
+    normalized_answer = True if answer == config.YES.lower() else False
+
+    return normalized_answer
+
+
+# ------------------------------------------------------------
+# Function: Prompt confirmation for keeping batch on non-fatal errors
+# ------------------------------------------------------------
+def confirm_batch_nonfatal_errors():
+
+    answer = input(
+        f"\n{config.YELLOW}=== DO YOU WANT TO KEEP THIS BATCH ANYWAY? ===\n{config.COLOR_RESET}"
+        f"({config.GREEN}{config.YES.lower()}): Yes, keep it and export errors as Review Items for later.{config.COLOR_RESET}\n"
+        f"({config.RED}{config.NO.lower()}) or (Enter): No, abort. I will restart the process myself to retry from this Batch.{config.COLOR_RESET}\n"
+        f"{config.YELLOW}?> {config.COLOR_RESET}"
     ).strip().lower()
 
     normalized_answer = True if answer == config.YES.lower() else False
@@ -1126,7 +1143,7 @@ def prompt_for_input_file():
         f"\n{config.MAGENTA}"
         f"=== SELECT INPUT FILE (from subfolder: {config.INPUT_FOLDER_NAME}) ==="
         f"\nUse parameter config.py->INPUT_FOLDER_NAME to switch to another source folder."
-        f"{config.COLOR_RESET}")
+        f"{config.COLOR_RESET}\n")
 
     for i, file_name in enumerate(json_files, start=1):
         print(f"{i}. {file_name}")
