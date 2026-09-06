@@ -1,5 +1,3 @@
-from calendar import c
-
 import config
 import json
 import os
