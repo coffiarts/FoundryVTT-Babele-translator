@@ -482,12 +482,20 @@ def extract_translatables_from_input(input, translatables, current_path):
                             "text": sub_item
                         })
 
+                    elif isinstance(sub_item, dict):
+
+                        extract_translatables_from_input(
+                            sub_item,
+                            translatables,
+                            current_path + [key, sub_key]
+                        )
+
             elif isinstance(item, (dict, list)):
 
                 extract_translatables_from_input(
                     item,
                     translatables,
-                    current_path+ [key]
+                    current_path + [key]
                 )
 
     elif isinstance(input, list):
