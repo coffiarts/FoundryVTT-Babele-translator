@@ -599,6 +599,7 @@ def apply_translations(
 def get_resume_relevant_config():
 
     return {
+        "GAME_SYSTEM_CONTEXT" : config.GAME_SYSTEM_CONTEXT,
         "MAX_BATCH_SIZE": config.MAX_BATCH_SIZE,
         "TRANSLATABLE_FIELDS": sorted(config.TRANSLATABLE_FIELDS),
         "TRANSLATABLE_CONTAINERS": sorted(config.TRANSLATABLE_CONTAINERS),
