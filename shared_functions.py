@@ -1,3 +1,5 @@
+from calendar import c
+
 import config
 import json
 import os
@@ -99,21 +101,36 @@ def to_multiline_text(input, value_char_limit=None, row_limit=None):
     text = ""
     counter = 0
 
-    for key, value in input.items():
-
-        label = key
-
-        if row_limit is not None and ++counter > row_limit:
-            break
-
+    def convert_to_text(label, text: str, value) -> str:
         print_value = value if value_char_limit is None else f"{value[:value_char_limit]} ..."
-        text += f"\n{label}: {print_value}"
+        text += f"{label}: {print_value}\n"
 
-    if row_limit is not None:
-        text += "...\n"
+        if row_limit is not None:
+            text += "...\n"
+        return text
+
+    if type(input) == dict:
+        for key, value in input.items():
+
+            label = key
+
+            if row_limit is not None and ++counter > row_limit:
+                break
+
+            text = convert_to_text(label, text, value)
+
+    elif type(input) == list:
+
+        for key, value in enumerate(input):
+
+            label = key
+
+            if row_limit is not None and ++counter > row_limit:
+                break
+
+            text = convert_to_text(label, text, value)
 
     return text
-
 
 
 # ------------------------------------------------------------
@@ -691,7 +708,6 @@ def cleanup_progress_files():
         config.BATCHES_FILE,
         config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE,
         config.TRANSLATIONS_FINAL_FILE,
-        config.REVIEW_ITEMS_FILE,
         config.POST_MORTEM_DUMP_FILE
     ]:
 
@@ -745,7 +761,7 @@ def post_mortem_dump(
     ) as file:
 
         file.write(
-            "====================================================\n"
+            separator()
         )
 
         file.write(
@@ -753,7 +769,7 @@ def post_mortem_dump(
         )
 
         file.write(
-            "====================================================\n\n"
+            separator(extra_line_breaks=2)
         )
 
         file.write(
@@ -856,12 +872,61 @@ def post_mortem_dump(
             file.write("\n\n")
 
     print(
-        f"\n❌{config.RED}POST-MORTEM DUMP WRITTEN TO:{config.COLOR_RESET}"
+        f"\n❌{config.RED}POST-MORTEM DUMP WRITTEN TO:{config.RESET}"
     )
 
     print(
-        f"{config.RED}{config.POST_MORTEM_DUMP_FILE}{config.COLOR_RESET}"
+        f"{config.RED}{config.POST_MORTEM_DUMP_FILE}{config.RESET}"
     )
+
+
+# ------------------------------------------------------------
+# Function: Header Separator Line
+# Returns a unified string for it - self-explaining
+# ------------------------------------------------------------
+def separator(extra_line_breaks=0) -> str:
+    return f"==============================================================================={"\n" * extra_line_breaks}"
+
+
+# ------------------------------------------------------------
+# Function: Header Title Line
+# Returns a unified string for it - self-explaining
+# ------------------------------------------------------------
+def log_header(text, batch_id=None, batch_cnt=None, color=None) -> str:
+
+    batch_prefix = (
+        f"Batch {batch_id}/{batch_cnt}: "
+        if batch_id is not None and batch_cnt is not None
+        else ""
+    )
+
+    format_prefix = ("" if color is None else color)
+    format_postfix = ("" if color is None else config.RESET)
+
+    return f"\n{format_prefix}"\
+           f"{separator(extra_line_breaks=1)}"\
+           f"=== {batch_prefix}{text}\n"\
+           f"{separator(extra_line_breaks=1)}"\
+           f"{format_postfix}"
+
+
+# ------------------------------------------------------------
+# Function: Simple Log Line
+# Returns a unified string for it - self-explaining
+# ------------------------------------------------------------
+def log(text, batch_id=None, batch_cnt=None, color=None) -> str:
+
+    batch_prefix = (
+        f"Batch {batch_id}/{batch_cnt}: "
+        if batch_id is not None and batch_cnt is not None
+        else ""
+    )
+
+    format_prefix = ("" if color is None else color)
+    format_postfix = ("" if color is None else config.RESET)
+
+    return f"{format_prefix}{batch_prefix}{text}{format_postfix}"
+
 
 # ------------------------------------------------------------
 # Function: Save Batch
@@ -937,7 +1002,7 @@ def verify_placeholder_integrity(
         original_text_with_placeholders,
         translated_text,
         all_placeholders,
-        trailing_chars=300):
+        trailing_chars=500):
 
     new_review_items = []
 
@@ -1069,12 +1134,13 @@ def prompt_for_terminology_rebuild():
 
     if config.TERMINOLOGY_FILE.exists():
         answer = input(
-            f"\n{config.MAGENTA}=== REBUILD TERMINOLOGY? ===\n"
+            f"\n{config.MAGENTA}"
+            f"=== REBUILD TERMINOLOGY? ===\n"
             f"Existing Terminology for this input file already exists at: {config.TERMINOLOGY_FILE}\n"
             "Do you want to rebuild it online before translating?\n"
             f"({config.YES.lower()}): Rebuild from scratch \n"
             f"({config.NO.lower()}) or (Enter): No, reuse existing Terminology (or continue, in case of aborts)\n"
-            f"?> {config.COLOR_RESET}"
+            f"?>{config.RESET} "
         ).strip().lower()
 
         normalized_answer = True if answer == config.YES.lower() else False
@@ -1101,7 +1167,7 @@ def confirm_force_new_run():
         "Or do you want to keep them and just rerun Post-Processing steps (integrity checks and rebuilding of the output file)?\n"
         f"({config.YES.lower()}): Discard and replace previous results.\n"
         f"({config.NO.lower()}) or (Enter): No, just rerun Post-Processing (this will also skip Terminology rebuild!)\n"
-        f"?> {config.COLOR_RESET}"
+        f"?>{config.RESET} "
     ).strip().lower()
 
     normalized_answer = True if answer == config.YES.lower() else False
@@ -1115,10 +1181,10 @@ def confirm_force_new_run():
 def confirm_batch_nonfatal_errors():
 
     answer = input(
-        f"\n{config.YELLOW}=== DO YOU WANT TO KEEP THIS BATCH ANYWAY? ===\n{config.COLOR_RESET}"
-        f"({config.GREEN}{config.YES.lower()}): Yes, keep it and export errors as Review Items for later.{config.COLOR_RESET}\n"
-        f"({config.RED}{config.NO.lower()}) or (Enter): No, abort. I will restart the process myself to retry from this Batch.{config.COLOR_RESET}\n"
-        f"{config.YELLOW}?> {config.COLOR_RESET}"
+        f"\n{config.YELLOW}=== DO YOU WANT TO KEEP THIS BATCH ANYWAY? ===\n{config.RESET}"
+        f"({config.GREEN}{config.YES.lower()}): Yes, keep it and export errors as Review Items for later.{config.RESET}\n"
+        f"({config.RED}{config.NO.lower()}) or (Enter): No, abort. I will restart the process myself to retry from this Batch.{config.RESET}\n"
+        f"{config.YELLOW}?>{config.RESET} "
     ).strip().lower()
 
     normalized_answer = True if answer == config.YES.lower() else False
@@ -1144,7 +1210,7 @@ def prompt_for_input_file():
         f"\n{config.MAGENTA}"
         f"=== SELECT INPUT FILE (from subfolder: {config.INPUT_FOLDER_NAME}) ==="
         f"\nUse parameter config.py->INPUT_FOLDER_NAME to switch to another source folder."
-        f"{config.COLOR_RESET}\n")
+        f"{config.RESET}\n")
 
     for i, file_name in enumerate(json_files, start=1):
         print(f"{i}. {file_name}")
@@ -1164,7 +1230,7 @@ def prompt_for_input_file():
         except ValueError:
             pass
 
-        print(f"{config.RED}Invalid selection.{config.COLOR_RESET}")
+        print(f"{config.RED}Invalid selection.{config.RESET}")
 
 
 # ------------------------------------------------------------

@@ -36,7 +36,7 @@ def test_save_to_file(saved_data, loaded_data):
     result = check_result(len(saved_data) == len(loaded_data))
     print(
         f"UNIT TEST - Saved vs. Loaded count identical ({len(saved_data)} == {len(loaded_data)}): "
-        f"{result["color"]}{result["status"]}{config.COLOR_RESET}"
+        f"{result["color"]}{result["status"]}{config.RESET}"
     )
     if result["status"] == config.FAILED:
         exit("Terminated with Unit Test Failure!")
@@ -61,11 +61,11 @@ def test_create_translatables_with_placeholders(translatables_with_placeholders)
     result = check_result(len(remainders) == 0)
     print(
         f"UNIT TEST - No of remaining foundry syntax matches == 0 ({len(remainders)}): "
-        f"{result["color"]}{(result["status"])}{config.COLOR_RESET}"
+        f"{result["color"]}{(result["status"])}{config.RESET}"
     )
     if result["status"] == config.FAILED:
         print(
-            f"{result["color"]}{config.to_prettified_json(remainders)}{config.COLOR_RESET}"
+            f"{result["color"]}{fn.to_prettified_json(remainders)}{config.RESET}"
         )
         exit("Terminated with Unit Test Failure!")
 
@@ -91,7 +91,7 @@ def test_assemble_batch_payload(batch, batch_translatables):
     result = check_result(len(batch_translatables) == len(batch["translatable_ids"]))
     print(
         f"UNIT TEST - Translatables count in Batch identical to Loaded ({len(batch["translatable_ids"])} == {len(batch_translatables)}): "
-        f"{result["color"]}{result["status"]}{config.COLOR_RESET}"
+        f"{result["color"]}{result["status"]}{config.RESET}"
     )
     if result["status"] == config.FAILED:
         exit("Terminated with Unit Test Failure!")
