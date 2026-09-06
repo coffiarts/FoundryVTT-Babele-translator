@@ -138,7 +138,7 @@ def to_multiline_text(input, value_char_limit=None, row_limit=None):
 # ------------------------------------------------------------
 def init_progress_info():
 
-    print("Creating new Progress Info ...")
+    print(log("Creating new Progress Info ..."))
 
     current_config = get_resume_relevant_config()
 
@@ -149,7 +149,7 @@ def init_progress_info():
 
     save_json_output(data=progress_info, output_file=config.PROGRESS_INFO_FILE)
 
-    print(f"... Done. New Progress Info is now tracked by file {config.PROGRESS_INFO_FILE}")
+    print(log(f"... Done. New Progress Info is now tracked by file {config.PROGRESS_INFO_FILE}"))
 
     return progress_info
 
@@ -167,7 +167,7 @@ def init_progress_info():
 # ------------------------------------------------------------
 def validate_progress_info(progress_info=None):
 
-    print("Validating existing Progress Info ...")
+    print(log("Validating existing Progress Info ..."))
 
     if progress_info is None:
         progress_info = load_json_input(config.PROGRESS_INFO_FILE)
@@ -180,20 +180,20 @@ def validate_progress_info(progress_info=None):
             config.TERMINOLOGY_STATUS
         )
 
-        print(f"Terminology loop completed: {terminology_completed}")
+        print(log(f"Terminology loop completed: {terminology_completed}"))
 
         translation_completed = validate_status_sequence(
             progress_info["batches"],
             config.TRANSLATION_STATUS
         )
 
-        print(f"Translation loop completed: {translation_completed}")
+        print(log(f"Translation loop completed: {translation_completed}"))
 
     except ValueError:
 
         raise
 
-    print("... valid.")
+    print(log("... valid."))
 
     resume_batch = find_resume_batch(
         progress_info
@@ -301,7 +301,7 @@ def build_batches(translatables_with_placeholders):
 
     else:
 
-        print(f"Built {len(batches)} Batches from {len(translatables_with_placeholders)} Translatables")
+        print(log(f"Built {len(batches)} Batches from {len(translatables_with_placeholders)} Translatables"))
 
         return batches
 
@@ -546,7 +546,7 @@ def protect_with_placeholders(translatables):
 
         translatables_with_placeholders.append(translatable_to_protect)
 
-    print(f"Extracted {len(placeholders)} new protective placeholders from {len(translatables)} translatables")
+    print(log(f"Extracted {len(placeholders)} new protective placeholders from {len(translatables)} translatables"))
 
     return translatables_with_placeholders, placeholders
 
@@ -696,7 +696,7 @@ def determine_run_mode():
 # ------------------------------------------------------------
 def cleanup_progress_files():
 
-    print("Cleaning up progress files from previous runs (if any) ...")
+    print(log("Cleaning up progress files from previous runs (if any) ..."))
 
     for file in [
         config.PROGRESS_INFO_FILE,
@@ -712,9 +712,9 @@ def cleanup_progress_files():
         if file.exists():
             file.unlink()
 
-            print(f"... Deleted: {file}")
+            print(log(f"... Deleted: {file}"))
 
-    print("Done.")
+    print(log("Done."))
 
 
 # ------------------------------------------------------------
@@ -773,9 +773,7 @@ def post_mortem_dump(
         file.write(
             f"{details}\n\n"
         )
-        print(
-            f"Response metadata: {response_metadata}"
-        )
+        print(log(f"Response metadata: {response_metadata}"))
 
         if response_metadata is not None:
 
@@ -869,13 +867,8 @@ def post_mortem_dump(
 
             file.write("\n\n")
 
-    print(
-        f"\n❌{config.RED}POST-MORTEM DUMP WRITTEN TO:{config.RESET}"
-    )
-
-    print(
-        f"{config.RED}{config.POST_MORTEM_DUMP_FILE}{config.RESET}"
-    )
+    print(log_header(f"❌POST-MORTEM DUMP WRITTEN TO: {config.POST_MORTEM_DUMP_FILE}",
+                     color=config.RED))
 
 
 # ------------------------------------------------------------
@@ -893,7 +886,7 @@ def separator(extra_line_breaks=0) -> str:
 def log_header(text, batch_id=None, batch_cnt=None, color=None) -> str:
 
     batch_prefix = (
-        f"Batch {batch_id}/{batch_cnt}: "
+        f"Batch {batch_id+1}/{batch_cnt}: "
         if batch_id is not None and batch_cnt is not None
         else ""
     )
@@ -915,7 +908,7 @@ def log_header(text, batch_id=None, batch_cnt=None, color=None) -> str:
 def log(text, batch_id=None, batch_cnt=None, color=None) -> str:
 
     batch_prefix = (
-        f"Batch {batch_id}/{batch_cnt}: "
+        f"Batch {batch_id+1}/{batch_cnt}: "
         if batch_id is not None and batch_cnt is not None
         else ""
     )
@@ -1204,14 +1197,11 @@ def prompt_for_input_file():
         ]
     )
 
-    print(
-        f"\n{config.MAGENTA}"
-        f"=== SELECT INPUT FILE (from subfolder: {config.INPUT_FOLDER_NAME}) ==="
-        f"\nUse parameter config.py->INPUT_FOLDER_NAME to switch to another source folder."
-        f"{config.RESET}\n")
+    print(log_header(f"SELECT INPUT FILE (from subfolder: {config.INPUT_FOLDER_NAME})", color=config.MAGENTA))
+    print(log(f"Use parameter config.py->INPUT_FOLDER_NAME to switch to another source folder.",color=config.MAGENTA))
 
     for i, file_name in enumerate(json_files, start=1):
-        print(f"{i}. {file_name}")
+        print(log(f"{i}. {file_name}"))
 
     while True:
 
@@ -1228,7 +1218,7 @@ def prompt_for_input_file():
         except ValueError:
             pass
 
-        print(f"{config.RED}Invalid selection.{config.RESET}")
+        print(log(f"{config.RED}Invalid selection.{config.RESET}"))
 
 
 # ------------------------------------------------------------

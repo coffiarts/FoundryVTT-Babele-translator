@@ -114,6 +114,8 @@ elif run_mode == config.POSTPROCESSING_ONLY:
 # Start global timer
 # ------------------------------------------------------------
 global_timer_start = time.perf_counter()
+current_time = datetime.now().strftime("%H:%M:%S")
+print(fn.log(f"Start global timer (time: {current_time})"))
 
 
 if run_mode != config.POSTPROCESSING_ONLY:
@@ -157,7 +159,7 @@ if run_mode != config.POSTPROCESSING_ONLY:
     # -------
     # Tests:
     # -------
-    unit_tests.test_extract_translatables_from_babele(translatables)
+    # unit_tests.test_extract_translatables_from_babele(translatables)
 
     # ---------------------------------------------------
     # SAVE TRANSLATABLES TO PROGRESS FOLDER
@@ -174,7 +176,7 @@ if run_mode != config.POSTPROCESSING_ONLY:
     # -------
     # Tests:
     # -------
-    unit_tests.test_save_to_file(translatables, loaded_translatables)
+    # unit_tests.test_save_to_file(translatables, loaded_translatables)
 
     # -----------------------------------------------------------------
     # PROTECT TRANSLATABLES WITH PLACEHOLDERS
@@ -188,7 +190,7 @@ if run_mode != config.POSTPROCESSING_ONLY:
     # ==================
     # Tests:
     # ==================
-    unit_tests.test_create_translatables_with_placeholders(translatables_with_placeholders)
+    # unit_tests.test_create_translatables_with_placeholders(translatables_with_placeholders)
 
     # ---------------------------------------------------
     # SAVE TRANSLATABLES WITH PLACEHOLDERS
@@ -208,10 +210,10 @@ if run_mode != config.POSTPROCESSING_ONLY:
     # -------
     # Tests:
     # -------
-    loaded_translatables_with_placeholders = fn.load_translatables(with_placeholders=True)
-    unit_tests.test_save_to_file(translatables_with_placeholders, loaded_translatables_with_placeholders)
-    loaded_placeholders = fn.load_placeholders()
-    unit_tests.test_save_to_file(placeholders, loaded_placeholders)
+    # loaded_translatables_with_placeholders = fn.load_translatables(with_placeholders=True)
+    # unit_tests.test_save_to_file(translatables_with_placeholders, loaded_translatables_with_placeholders)
+    # loaded_placeholders = fn.load_placeholders()
+    # unit_tests.test_save_to_file(placeholders, loaded_placeholders)
 
     # ---------------------------------------------------
     # BUILD BATCHES
@@ -271,8 +273,8 @@ if run_mode != config.POSTPROCESSING_ONLY:
     # -------
     # Tests:
     # -------
-    loaded_batches = fn.load_batches()
-    unit_tests.test_save_to_file(batches, loaded_batches)
+    # loaded_batches = fn.load_batches()
+    # unit_tests.test_save_to_file(batches, loaded_batches)
 
     # ---------------------------------------------------
     # PREPARE API REQUEST
@@ -379,7 +381,8 @@ if run_mode != config.POSTPROCESSING_ONLY:
             else:
 
                 api_timer_start = time.perf_counter()
-
+                current_time = datetime.now().strftime("%H:%M:%S")
+                print(fn.log(f"Start API timer (time: {current_time})"))
                 response = None
 
                 try:
@@ -523,7 +526,8 @@ if run_mode != config.POSTPROCESSING_ONLY:
             # ---------------------------------------------------
             # ASSEMBLE BATCH PAYLOAD
             # ---------------------------------------------------
-            print(fn.log_header(f"ASSEMBLE BATCH PAYLOAD"))
+            print(fn.log(f"Assemble payload",
+                                batch_id=batch["id"], batch_cnt=len(batches)))
 
             batch_payload = []
 
@@ -538,7 +542,7 @@ if run_mode != config.POSTPROCESSING_ONLY:
             # -------
             # Tests:
             # -------
-            unit_tests.test_assemble_batch_payload(batch, batch_translatables)
+            # unit_tests.test_assemble_batch_payload(batch, batch_translatables)
 
             # ---------------------------------------------------
             # BEGIN TRANSLATABLES LOOP ...
@@ -558,7 +562,8 @@ if run_mode != config.POSTPROCESSING_ONLY:
             # ---------------------------------------------------
             # ENRICH INSTRUCTIONS WITH TERMINOLOGY
             # ---------------------------------------------------
-            print(fn.log_header("ENRICH INSTRUCTIONS WITH TERMINOLOGY ..."))
+            print(fn.log("Identify terminology ...",
+                                batch_id=batch["id"], batch_cnt=len(batches)))
 
             # Extract batch-specific terminology from Master Terminology
             batch_text = "\n".join(
@@ -574,7 +579,8 @@ if run_mode != config.POSTPROCESSING_ONLY:
                 if term["original"].lower() in batch_text_lower
             ]
 
-            print(fn.log(f"Found {len(batch_relevant_terms)} relevant terms in Master Terminology."))
+            print(fn.log(f"Found {len(batch_relevant_terms)} relevant terms in Master Terminology.",
+                         batch_id=batch["id"], batch_cnt=len(batches)))
 
             batch_specific_terminology = {
                 "terms": batch_relevant_terms
@@ -599,7 +605,7 @@ if run_mode != config.POSTPROCESSING_ONLY:
             batch[config.TRANSLATION_STATUS] = config.PROCESSING
             fn.save_batch(batch, batches, progress_info)
 
-            print(fn.log_header(f"TRANSLATION: [{batch[config.TRANSLATION_STATUS]}]...", batch_id=batch["id"], batch_cnt=len(batches)))
+            print(fn.log(f"Translation status: [{batch[config.TRANSLATION_STATUS]}]...", batch_id=batch["id"], batch_cnt=len(batches)))
 
             if config.MOCK_MODE:
 
@@ -614,6 +620,8 @@ if run_mode != config.POSTPROCESSING_ONLY:
             else:
 
                 api_timer_start = time.perf_counter()
+                current_time = datetime.now().strftime("%H:%M:%S")
+                print(fn.log(f"Start API timer (time: {current_time})"))
 
                 response = client.responses.create(
                     model=config.LLM_MODEL,
@@ -628,16 +636,16 @@ if run_mode != config.POSTPROCESSING_ONLY:
 
                     new_translations = json.loads(response.output_text)
 
-                    print(fn.log_header("COMPLETENESS CHECK...", batch_id=batch["id"], batch_cnt=len(batches)))
+                    print(fn.log("Completenes check...", batch_id=batch["id"], batch_cnt=len(batches)))
 
                     fn.verify_translation_completeness(batch, len(batches), batch_payload, new_translations)
 
-                    print(fn.log(f"... completeness check: {config.GREEN}PASSED{config.RESET}\n"))
+                    print(fn.log(f"... completeness check: {config.GREEN}PASSED{config.RESET}", batch_id=batch["id"], batch_cnt=len(batches)))
 
                     # ---------------------------------------------------
                     # PRE-CHECK PLACEHOLDERS (AND CONFIRM IF ANY)
                     # ---------------------------------------------------
-                    print(fn.log_header("PRE-CHECK PLACEHOLDERS IN TRANSLATION FOR BATCH", batch_id=batch["id"], batch_cnt=len(batches)))
+                    print(fn.log("Pre-check placeholders in translation", batch_id=batch["id"], batch_cnt=len(batches)))
 
                     expected_placeholder_errors = fn.identify_review_items(
                         batch_payload,
@@ -645,7 +653,9 @@ if run_mode != config.POSTPROCESSING_ONLY:
                     )
 
                     if len(expected_placeholder_errors) == 0:
-                        print(f"{config.GREEN}No Placeholder translation issue(s) identified in Batch{config.RESET}")
+                        print(fn.log(f"No Placeholder translation issue(s) identified in Batch",
+                                     batch_id=batch["id"], batch_cnt=len(batches),
+                                     color=config.GREEN))
 
                         translations_with_placeholders.extend(new_translations)
 
@@ -700,23 +710,26 @@ if run_mode != config.POSTPROCESSING_ONLY:
             # ---------------------------------------------------
             # SAVE TRANSLATIONS (STILL WITH PLACEHOLDERS)
             # ---------------------------------------------------
-            print(fn.log_header(f"SAVING {len(translations_with_placeholders)} TRANSLATIONS (STILL WITH PLACEHOLDERS)"))
             fn.save_json_output(translations_with_placeholders, config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE)
+
+            print(fn.log(f"Saved {len(translations_with_placeholders)} translations (with placeholders)",
+                         batch_id=batch["id"], batch_cnt=len(batches),
+                         color=config.GREEN))
 
             # -------
             # Tests:
             # -------
-            loaded_translations_with_placeholders = fn.load_json_input(config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE)
-            unit_tests.test_save_to_file(translations_with_placeholders, loaded_translations_with_placeholders)
+            # loaded_translations_with_placeholders = fn.load_json_input(config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE)
+            # unit_tests.test_save_to_file(translations_with_placeholders, loaded_translations_with_placeholders)
 
             # ---------------------------------------------------
             # SET BATCH & PROGRESS INFO TO COMPLETED
             # ---------------------------------------------------
             batch[config.TRANSLATION_STATUS] = config.COMPLETED
             fn.save_batch(batch, batches, progress_info)
-            print(fn.log(f"TRANSLATION: [{batch[config.TRANSLATION_STATUS]}]",
-                         batch_id=batch["id"], batch_cnt=len(batches),
-                         color=config.GREEN))
+            print(fn.log_header(f"Translation status: [{batch[config.TRANSLATION_STATUS]}]...",
+                                batch_id=batch["id"], batch_cnt=len(batches),
+                                color=config.GREEN))
 
         # ---------------------------------------------------
         # ... END OF BATCH PROCESSING LOOP

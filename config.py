@@ -93,7 +93,8 @@ PLACEHOLDER_PATTERN = r'<<<PLACEHOLDER_\d{6}>>>' # MUST contain \d{<number>} to 
 # LLM Parameters (change these only for translation fine-tuning)
 # ------------------------------------------------------------
 
-LLM_MODEL = "gpt-5.6-luna" #"gpt-5.4-mini"
+# LLM_MODEL = "gpt-5.4-mini"
+LLM_MODEL = "gpt-5.6-luna"
 
 TRANSLATION_INSTRUCTIONS = f"""
 Translate every text to {TARGET_LANGUAGE["name"]}.
