@@ -67,7 +67,8 @@ TRANSLATABLE_FIELDS = {
 #     "3-3": "Ergebnis 3:
 TRANSLATABLE_CONTAINERS = {
     "folders",
-    "results"
+    "results",
+    "drawings"
 }
 
 # Regular Expressions for identifying anything technical inside the translatable text that should not be touched
@@ -92,7 +93,7 @@ PLACEHOLDER_PATTERN = r'<<<PLACEHOLDER_\d{6}>>>' # MUST contain \d{<number>} to 
 # LLM Parameters (change these only for translation fine-tuning)
 # ------------------------------------------------------------
 
-LLM_MODEL = "gpt-5.4-mini"
+LLM_MODEL = "gpt-5.6-luna" #"gpt-5.4-mini"
 
 TRANSLATION_INSTRUCTIONS = f"""
 Translate every text to {TARGET_LANGUAGE["name"]}.
