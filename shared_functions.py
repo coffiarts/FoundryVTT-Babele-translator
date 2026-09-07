@@ -1131,6 +1131,8 @@ def deduplicate_terminology(master_terminology):
 # ------------------------------------------------------------
 def prompt_for_terminology_rebuild():
 
+    print(f"config.TERMINOLOGY_FILE: {config.TERMINOLOGY_FILE}")
+
     if config.TERMINOLOGY_FILE.exists():
         answer = input(
             f"\n{config.MAGENTA}"
@@ -1236,10 +1238,23 @@ def init_dynamic_paths(input_file_name):
 
     config.INPUT_FILE_NAME = input_file_name
 
+    # Extract module name from input filename
+    module_name = config.INPUT_FILE_NAME[ 0 : config.INPUT_FILE_NAME.find('.')]
+
+    if module_name is None or len(module_name) == 0:
+        raise ValueError(
+            f"Can't derive module name from input filename: {config.INPUT_FILE_NAME}\n"
+            f"The filename is expected to follow pattern: <module-name>.<compendium-name>.json\n"
+            f"Example: dnd-phandelver-below.pbso-adventures.json "
+        )
+
+    print(log(f"Module name extracted from file name: {config.BLUE}{module_name}{config.RESET}"))
+
     # Adapt subfolder names to languages and input filename
+    # Note that INPUT_FOLDER_NAME has already been adapted in prompt_for_input_file(
     config.OUTPUT_FOLDER_NAME = Path(config.OUTPUT_FOLDER_NAME) / config.TARGET_LANGUAGE["code"]
     config.PROGRESS_FOLDER_NAME = Path(config.PROGRESS_FOLDER_NAME) / config.TARGET_LANGUAGE["code"] / config.INPUT_FILE_NAME.removesuffix(".json")
-    config.TERMINOLOGY_FOLDER_NAME = Path(config.TERMINOLOGY_FOLDER_NAME) / config.TARGET_LANGUAGE["code"]
+    config.TERMINOLOGY_FOLDER_NAME = Path(config.TERMINOLOGY_FOLDER_NAME) / config.TARGET_LANGUAGE["code"] / module_name
 
     # Create folders where necessary
     if not os.path.exists(config.OUTPUT_FOLDER_NAME):
