@@ -1198,7 +1198,45 @@ def confirm_batch_nonfatal_errors():
 # ------------------------------------------------------------
 def prompt_for_input_file():
 
-    config.INPUT_FOLDER_NAME = Path(config.INPUT_FOLDER_NAME) / config.SOURCE_LANGUAGE["code"]
+
+    dirs = sorted(
+        [
+            dir.name
+            for dir in os.scandir(config.INPUT_FOLDER_NAME)
+            if dir.is_dir()
+        ]
+    )
+
+    if dirs is not None and len(dirs) > 1:
+
+        print(log_header(f"SELECT MODULE SUBFOLDER (from input folder: {config.INPUT_FOLDER_NAME})", color=config.MAGENTA))
+        print(log(f"Use parameter config.py->INPUT_FOLDER_NAME to switch to another source folder.",color=config.MAGENTA))
+
+        for i, dir_name in enumerate(dirs, start=1):
+            print(log(f"{i}. {dir_name}"))
+
+        while True:
+
+            try:
+
+                dir_selection = int(
+                    input("\nSelect directory (it should reflect a Foundry VTT module's name) ?> ")
+                )
+
+                if 1 <= dir_selection <= len(dirs):
+                    config.MODULE_NAME = dirs[dir_selection - 1]
+                    break
+
+            except ValueError:
+                pass
+
+            print(log(f"{config.RED}Invalid selection.{config.RESET}"))
+
+    if config.MODULE_NAME is not None:
+
+        config.INPUT_FOLDER_NAME = Path(config.INPUT_FOLDER_NAME) / config.MODULE_NAME
+
+    config.INPUT_FOLDER_NAME = (Path(config.INPUT_FOLDER_NAME) / config.SOURCE_LANGUAGE["code"])
 
     json_files = sorted(
         [
@@ -1222,7 +1260,28 @@ def prompt_for_input_file():
             )
 
             if 1 <= selection <= len(json_files):
-                init_dynamic_paths(json_files[selection - 1])
+
+                config.INPUT_FILE_NAME = json_files[selection - 1]
+
+                if config.MODULE_NAME is None:
+
+                    # Extract module name from input filename
+                    module_name = config.INPUT_FILE_NAME[ 0 : config.INPUT_FILE_NAME.find('.')]
+
+                    if module_name is None or len(module_name) == 0:
+                        raise ValueError(
+                            f"Can't derive module name from input filename: {config.INPUT_FILE_NAME}\n"
+                            f"The filename is expected to follow pattern: <module-name>.<compendium-name>.json\n"
+                            f"Example: dnd-phandelver-below.pbso-adventures.json "
+                        )
+
+                    else:
+
+                        config.MODULE_NAME = module_name
+                        print(log(f"Module Name extracted from input filename: {config.MODULE_NAME}"))
+
+                init_dynamic_paths(config.INPUT_FILE_NAME)
+
                 break
 
         except ValueError:
@@ -1238,23 +1297,11 @@ def init_dynamic_paths(input_file_name):
 
     config.INPUT_FILE_NAME = input_file_name
 
-    # Extract module name from input filename
-    module_name = config.INPUT_FILE_NAME[ 0 : config.INPUT_FILE_NAME.find('.')]
-
-    if module_name is None or len(module_name) == 0:
-        raise ValueError(
-            f"Can't derive module name from input filename: {config.INPUT_FILE_NAME}\n"
-            f"The filename is expected to follow pattern: <module-name>.<compendium-name>.json\n"
-            f"Example: dnd-phandelver-below.pbso-adventures.json "
-        )
-
-    print(log(f"Module name extracted from file name: {config.BLUE}{module_name}{config.RESET}"))
-
     # Adapt subfolder names to languages and input filename
     # Note that INPUT_FOLDER_NAME has already been adapted in prompt_for_input_file(
     config.OUTPUT_FOLDER_NAME = Path(config.OUTPUT_FOLDER_NAME) / config.TARGET_LANGUAGE["code"]
-    config.PROGRESS_FOLDER_NAME = Path(config.PROGRESS_FOLDER_NAME) / config.TARGET_LANGUAGE["code"] / config.INPUT_FILE_NAME.removesuffix(".json")
-    config.TERMINOLOGY_FOLDER_NAME = Path(config.TERMINOLOGY_FOLDER_NAME) / config.TARGET_LANGUAGE["code"] / module_name
+    config.PROGRESS_FOLDER_NAME = Path(config.PROGRESS_FOLDER_NAME) / config.MODULE_NAME / config.TARGET_LANGUAGE["code"] / config.INPUT_FILE_NAME.removesuffix(".json")
+    config.TERMINOLOGY_FOLDER_NAME = Path(config.TERMINOLOGY_FOLDER_NAME) / config.MODULE_NAME  / config.TARGET_LANGUAGE["code"]
 
     # Create folders where necessary
     if not os.path.exists(config.OUTPUT_FOLDER_NAME):

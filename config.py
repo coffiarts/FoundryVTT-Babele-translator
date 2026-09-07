@@ -309,6 +309,7 @@ APIKEY_FILE_NAME = "openai_api_key.txt"
 # ---------------------------------------------------------------
 
 INPUT_FILE_NAME = None  # Just for initializing. Parameter is handled by user prompt
+MODULE_NAME = None  # Just for initializing. Parameter is handled by user prompt
 
 REVIEW_ITEMS_FILE_NAME = None  # Just for initializing. Parameter is handled by user prompt
 TERMINOLOGY_FILE_NAME = None  # Just for initializing. Parameter is handled by user prompt
