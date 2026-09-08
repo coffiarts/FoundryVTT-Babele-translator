@@ -450,7 +450,7 @@ def load_placeholders():
 # --------------------------------------------------------------
 # Function: Recursively extract Translatables from Babele input
 # --------------------------------------------------------------
-def extract_translatables_from_input(input, translatables, current_path):
+def extract_translatables_from_babele(input, translatables, current_path):
 
     if isinstance(input, dict):
 
@@ -484,15 +484,15 @@ def extract_translatables_from_input(input, translatables, current_path):
 
                     elif isinstance(sub_item, dict):
 
-                        extract_translatables_from_input(
-                            sub_item,
-                            translatables,
-                            current_path + [key, sub_key]
+                        extract_translatables_from_babele(
+                                sub_item,
+                                translatables,
+                                current_path + [key, sub_key]
                         )
 
             elif isinstance(item, (dict, list)):
 
-                extract_translatables_from_input(
+                extract_translatables_from_babele(
                     item,
                     translatables,
                     current_path + [key]
@@ -502,11 +502,35 @@ def extract_translatables_from_input(input, translatables, current_path):
 
         for index, item in enumerate(input):
 
-            extract_translatables_from_input(
+            extract_translatables_from_babele(
                 item,
                 translatables,
                 current_path + [index]
             )
+
+
+# --------------------------------------------------------------
+# Function: Recursively extract Translatables from Localization "lang" file
+# --------------------------------------------------------------
+def extract_translatables_from_lang_file(input, translatables, current_path):
+
+    if isinstance(input, dict):
+
+        for key, item in input.items():
+
+            extract_translatables_from_lang_file(
+                item,
+                translatables,
+                current_path + [key]
+            )
+
+    else:
+
+        translatables.append({
+            "id": len(translatables),
+            "path": current_path,
+            "text": input
+        })
 
 
 # ------------------------------------------------------------
@@ -1131,7 +1155,7 @@ def deduplicate_terminology(master_terminology):
 # ------------------------------------------------------------
 def prompt_for_terminology_rebuild():
 
-    print(f"config.TERMINOLOGY_FILE: {config.TERMINOLOGY_FILE}")
+    print(f"TERMINOLOGY_FILE: {config.TERMINOLOGY_FILE}")
 
     if config.TERMINOLOGY_FILE.exists():
         answer = input(
@@ -1147,6 +1171,31 @@ def prompt_for_terminology_rebuild():
         normalized_answer = True if answer == config.YES.lower() else False
 
         config.REBUILD_TERMINOLOGY_IF_EXISTS = normalized_answer
+
+
+# ------------------------------------------------------------
+# Function: Simple y/n prompt confirmation
+# ------------------------------------------------------------
+def confirm_yes_no(question=""):
+
+    normalized_answer = None
+
+    while normalized_answer is None:
+
+        answer = input(
+            f"\n{question}\n"
+            f"[{config.YES.lower()}/{config.NO.lower()}] ?>{config.RESET} "
+        ).strip().lower()
+
+        if answer == config.YES.lower():
+            normalized_answer = True
+        elif answer == config.NO.lower():
+            normalized_answer = False
+        else:
+            print(log(f"Invalid answer.", color=config.RED))
+            continue
+
+    return normalized_answer
 
 
 # ------------------------------------------------------------
@@ -1196,112 +1245,186 @@ def confirm_batch_nonfatal_errors():
 # ------------------------------------------------------------
 # Function: Prompt for input file
 # ------------------------------------------------------------
-def prompt_for_input_file():
+def prompt_for_input_file(subdir=None, subdirs_traversed=[]):
 
+    if subdir is not None:
 
-    dirs = sorted(
-        [
-            dir.name
-            for dir in os.scandir(config.INPUT_FOLDER_NAME)
-            if dir.is_dir()
-        ]
-    )
+        config.INPUT_FOLDER_NAME = Path(config.INPUT_FOLDER_NAME) / subdir
+        # print(log(f"DEBUG - subdir: {subdir}"))
+        # print(log(f"DEBUG - descending to: {config.INPUT_FOLDER_NAME}"))
 
-    if dirs is not None and len(dirs) > 1:
+    folder_entries = []
 
-        print(log_header(f"SELECT MODULE SUBFOLDER (from input folder: {config.INPUT_FOLDER_NAME})", color=config.MAGENTA))
+    for item in os.scandir(config.INPUT_FOLDER_NAME):
+        folder_entries.append({
+            "name": item.name,
+            "item": item})
+
+    folder_entries = sorted(folder_entries, key=lambda item: item["name"])
+
+    if len(folder_entries) > 0:
+
+        print(log_header(f"SELECT file to translate (root input folder: {config.INPUT_FOLDER_NAME})", color=config.MAGENTA))
         print(log(f"Use parameter config.py->INPUT_FOLDER_NAME to switch to another source folder.",color=config.MAGENTA))
 
-        for i, dir_name in enumerate(dirs, start=1):
-            print(log(f"{i}. {dir_name}"))
+        for i, entry in enumerate(folder_entries, start=1):
 
-        while True:
+            if entry["item"].is_dir():
+                print(log(f"{i}. [dir] {entry["name"]}"))
+            else:
+                print(log(f"{i}. {entry["name"]}"))
+
+        while config.MODULE_NAME is None or len(config.MODULE_NAME) == 0:
 
             try:
 
-                dir_selection = int(
-                    input("\nSelect directory (it should reflect a Foundry VTT module's name) ?> ")
+                item_selection = int(
+                    input("\nSelect file or directory ?> ")
                 )
 
-                if 1 <= dir_selection <= len(dirs):
-                    config.MODULE_NAME = dirs[dir_selection - 1]
-                    break
+                if 1 <= item_selection <= len(folder_entries):
+
+                    selection = folder_entries[item_selection - 1]
+
+                    if (selection["item"].is_dir()):
+
+                        subdirs_traversed.append(selection["name"])
+                        prompt_for_input_file(subdir=selection["name"], subdirs_traversed=subdirs_traversed)
+                        break
+
+                    else:
+
+                        config.INPUT_FILE_NAME = selection["name"]
+                        config.INPUT_FILE = Path(config.INPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
+                        print(log(f"DEBUG - INPUT_FILE: {config.INPUT_FILE}"))
+
+                        prompt_for_input_type()
+
+                        if config.INPUT_TYPE == config.INPUT_TYPE_BABELE:
+
+                            # Extract module name from input filename
+                            if config.INPUT_FILE_NAME.count(".") > 1:
+                                config.MODULE_NAME = config.INPUT_FILE_NAME[ 0 : config.INPUT_FILE_NAME.find('.')]
+
+                            if config.MODULE_NAME is None or len(config.MODULE_NAME) == 0:
+                                print(log(
+                                    f"Warning: Can't derive module name from input filename \"{config.INPUT_FILE_NAME}\"\n"
+                                    f"The filename does not to follow pattern <module-name>.<compendium-name>.json\n"
+                                    f"Example: dnd-players-handbook.actors.json ", color=config.YELLOW)
+                                )
+
+                                config.MODULE_NAME = "unknown-module"
+
+                            if not confirm_yes_no(
+                                    f"{config.MAGENTA}Do you want to use {config.BOLD}\"{config.MODULE_NAME}\"{config.RESET}{config.MAGENTA} as module/sub-directory name for the output?{config.RESET}\n"
+                                    f"{config.YELLOW}Answering 'No' will abort the process.{config.RESET}"):
+
+                                raise Exception(config.ABORTED_BY_USER_ERROR)
+
+                        else:
+
+                            prompt_for_module_name(subdirs_traversed)
+                            print(f"DEBUG: MODULE_NAME selected: {config.MODULE_NAME}")
+
+                else:
+
+                    raise ValueError()
+
+                adapt_file_paths()
 
             except ValueError:
-                pass
 
-            print(log(f"{config.RED}Invalid selection.{config.RESET}"))
+                print(log(f"Invalid selection.", color=config.RED))
 
-    if config.MODULE_NAME is not None:
+    else:
 
-        config.INPUT_FOLDER_NAME = Path(config.INPUT_FOLDER_NAME) / config.MODULE_NAME
+        print(log(f"Input folder {config.INPUT_FOLDER_NAME} is empty", color=config.RED))
+        exit()
 
-    config.INPUT_FOLDER_NAME = (Path(config.INPUT_FOLDER_NAME) / config.SOURCE_LANGUAGE["code"])
 
-    json_files = sorted(
-        [
-            file.name
-            for file in Path(config.INPUT_FOLDER_NAME).glob("*.json")
-        ]
-    )
+# ------------------------------------------------------------
+# Function: Simple y/n prompt confirmation
+# ------------------------------------------------------------
+def prompt_for_input_type():
 
-    print(log_header(f"SELECT INPUT FILE (from subfolder: {config.INPUT_FOLDER_NAME})", color=config.MAGENTA))
-    print(log(f"Use parameter config.py->INPUT_FOLDER_NAME to switch to another source folder.",color=config.MAGENTA))
+    normalized_answer = None
 
-    for i, file_name in enumerate(json_files, start=1):
-        print(log(f"{i}. {file_name}"))
+    while normalized_answer is None:
 
-    while True:
+        answer = input(f"{config.MAGENTA}"
+            f"\nWhich type of file is this?{config.RESET}\n"
+            f"1. {config.INPUT_TYPE_BABELE}\n"
+            f"2. {config.INPUT_TYPE_LOCALIZATION}\n"
+            f" ?> "
+        ).strip()
+
+        if answer == "1":
+            normalized_answer = config.INPUT_TYPE_BABELE
+        elif answer == "2":
+            normalized_answer = config.INPUT_TYPE_LOCALIZATION
+        else:
+            print(log(f"Invalid answer.", color=config.RED))
+            continue
+
+    config.INPUT_TYPE = normalized_answer
+
+
+# ------------------------------------------------------------
+# Function: Prompt for module name
+# ------------------------------------------------------------
+def prompt_for_module_name(options):
+
+    module_name = None
+
+    print(f"\n{config.MAGENTA}Which one of these folder names represents the module name?{config.RESET}")
+
+    for i, option in enumerate(options, start=1):
+
+        print(log(f"{i}. {option}"))
+
+    while module_name is None:
 
         try:
 
             selection = int(
-                input("\nSelect file ?> ")
+                input(f"?>{config.RESET} ")
             )
 
-            if 1 <= selection <= len(json_files):
+            if 1 <= selection <= len(options):
 
-                config.INPUT_FILE_NAME = json_files[selection - 1]
+                module_name = options[selection - 1]
 
-                if config.MODULE_NAME is None:
+            else:
 
-                    # Extract module name from input filename
-                    module_name = config.INPUT_FILE_NAME[ 0 : config.INPUT_FILE_NAME.find('.')]
-
-                    if module_name is None or len(module_name) == 0:
-                        raise ValueError(
-                            f"Can't derive module name from input filename: {config.INPUT_FILE_NAME}\n"
-                            f"The filename is expected to follow pattern: <module-name>.<compendium-name>.json\n"
-                            f"Example: dnd-phandelver-below.pbso-adventures.json "
-                        )
-
-                    else:
-
-                        config.MODULE_NAME = module_name
-                        print(log(f"Module Name extracted from input filename: {config.MODULE_NAME}"))
-
-                init_dynamic_paths(config.INPUT_FILE_NAME)
-
-                break
+                raise ValueError()
 
         except ValueError:
-            pass
 
-        print(log(f"{config.RED}Invalid selection.{config.RESET}"))
+            print(log(f"Invalid selection.", color=config.RED))
 
+    config.MODULE_NAME = module_name
 
 # ------------------------------------------------------------
-# Function: Init dynamic paths
+# Function: Adapt file paths, depending on INPUT_FILE
 # ------------------------------------------------------------
-def init_dynamic_paths(input_file_name):
+def adapt_file_paths():
 
-    config.INPUT_FILE_NAME = input_file_name
+    if config.INPUT_TYPE != config.INPUT_TYPE_BABELE and config.INPUT_TYPE != config.INPUT_TYPE_LOCALIZATION:
+        raise Exception(f"Invalid input type: {config.INPUT_TYPE}")
 
-    # Adapt subfolder names to languages and input filename
-    # Note that INPUT_FOLDER_NAME has already been adapted in prompt_for_input_file(
-    config.OUTPUT_FOLDER_NAME = Path(config.OUTPUT_FOLDER_NAME) / config.TARGET_LANGUAGE["code"]
-    config.PROGRESS_FOLDER_NAME = Path(config.PROGRESS_FOLDER_NAME) / config.MODULE_NAME / config.TARGET_LANGUAGE["code"] / config.INPUT_FILE_NAME.removesuffix(".json")
-    config.TERMINOLOGY_FOLDER_NAME = Path(config.TERMINOLOGY_FOLDER_NAME) / config.MODULE_NAME  / config.TARGET_LANGUAGE["code"]
+    if config.INPUT_TYPE == config.INPUT_TYPE_BABELE:
+
+        config.PROGRESS_FOLDER_NAME = Path(config.PROGRESS_FOLDER_NAME) / config.MODULE_NAME / "babele" / config.TARGET_LANGUAGE["code"] / config.INPUT_FILE_NAME.removesuffix(".json")
+        config.TERMINOLOGY_FOLDER_NAME = Path(config.TERMINOLOGY_FOLDER_NAME) / config.MODULE_NAME / "babele"  / config.TARGET_LANGUAGE["code"]
+        config.OUTPUT_FOLDER_NAME = Path(config.OUTPUT_FOLDER_NAME) / config.MODULE_NAME / "babele" / config.TARGET_LANGUAGE["code"]
+        config.OUTPUT_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
+
+    else:
+
+        config.PROGRESS_FOLDER_NAME = Path(config.PROGRESS_FOLDER_NAME) / config.MODULE_NAME / "lang"
+        config.TERMINOLOGY_FOLDER_NAME = Path(config.TERMINOLOGY_FOLDER_NAME) / config.MODULE_NAME  / "lang"
+        config.OUTPUT_FOLDER_NAME = Path(config.OUTPUT_FOLDER_NAME) / config.MODULE_NAME / "lang"
+        config.OUTPUT_FILE = Path(config.OUTPUT_FOLDER_NAME) / f"{config.TARGET_LANGUAGE["code"]}.json"
 
     # Create folders where necessary
     if not os.path.exists(config.OUTPUT_FOLDER_NAME):
@@ -1311,13 +1434,18 @@ def init_dynamic_paths(input_file_name):
     if not os.path.exists(config.TERMINOLOGY_FOLDER_NAME):
         os.makedirs(config.TERMINOLOGY_FOLDER_NAME)
 
-    # Adapt specific filenames to input filename
-    config.TERMINOLOGY_FILE_NAME = f"{config.INPUT_FILE_NAME.removesuffix(".json")}-terminology.json"
-    config.REVIEW_ITEMS_FILE_NAME = f"{config.INPUT_FILE_NAME.removesuffix(".json")}-review-items.json"
+    if config.INPUT_TYPE == config.INPUT_TYPE_BABELE:
 
-    # Create all file references based on adapted paths and names
-    config.INPUT_FILE = Path(config.INPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
-    config.OUTPUT_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
+        config.TERMINOLOGY_FILE_NAME = f"{config.INPUT_FILE_NAME.removesuffix(".json")}-terminology.json"
+        config.REVIEW_ITEMS_FILE_NAME = f"{config.INPUT_FILE_NAME.removesuffix(".json")}-review-items.json"
+        config.OUTPUT_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
+
+    else:
+
+        config.TERMINOLOGY_FILE_NAME = f"{config.TARGET_LANGUAGE["code"]}-terminology.json"
+        config.REVIEW_ITEMS_FILE_NAME = f"{config.TARGET_LANGUAGE["code"]}-review-items.json"
+        config.OUTPUT_FILE = Path(config.OUTPUT_FOLDER_NAME) / f"{config.TARGET_LANGUAGE["code"]}.json"
+
     config.PROGRESS_INFO_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.PROGRESS_INFO_FILE_NAME
     config.TERMINOLOGY_FILE = Path(config.TERMINOLOGY_FOLDER_NAME) / config.TERMINOLOGY_FILE_NAME
     config.REVIEW_ITEMS_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.REVIEW_ITEMS_FILE_NAME

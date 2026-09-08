@@ -249,6 +249,10 @@ NEW_RUN = "NEW_RUN"
 RESUME = "RESUME"
 POSTPROCESSING_ONLY = "POSTPROCESSING_ONLY"
 
+# Input Types
+INPUT_TYPE_BABELE = "Babele JSON export"
+INPUT_TYPE_LOCALIZATION = "Localization file (lang/*.json)"
+
 # Batch Status
 TERMINOLOGY_STATUS = "terminology_status"
 TRANSLATION_STATUS = "translation_status"
@@ -307,6 +311,7 @@ APIKEY_FILE_NAME = "openai_api_key.txt"
 # ---------------------------------------------------------------
 # Preprocess configuration (do not edit under ANY circumstance!)
 # ---------------------------------------------------------------
+INPUT_TYPE = None  # Just for initializing. Parameter is handled by user prompt
 
 INPUT_FILE_NAME = None  # Just for initializing. Parameter is handled by user prompt
 MODULE_NAME = None  # Just for initializing. Parameter is handled by user prompt

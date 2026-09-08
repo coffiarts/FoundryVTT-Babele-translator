@@ -148,14 +148,23 @@ if run_mode != config.POSTPROCESSING_ONLY:
     translatables = []
 
     # Recursively fill translatables with matching nodes in babele_data
-    fn.extract_translatables_from_input(
-        input=input_data,
-        translatables=translatables,
-        current_path=[]
-    )
+    if config.INPUT_TYPE == config.INPUT_TYPE_BABELE:
+
+        fn.extract_translatables_from_babele(
+            input=input_data,
+            translatables=translatables,
+            current_path=[]
+        )
+
+    else:
+
+        fn.extract_translatables_from_lang_file(
+            input=input_data,
+            translatables=translatables,
+            current_path=[]
+        )
 
     print(fn.log(f"Extracted translatables: {len(translatables)}\n"))
-
     # -------
     # Tests:
     # -------
