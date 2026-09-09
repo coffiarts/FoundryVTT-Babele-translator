@@ -1,6 +1,5 @@
 import config
 import shared_functions as fn
-import unit_tests
 import json
 import time
 from datetime import datetime

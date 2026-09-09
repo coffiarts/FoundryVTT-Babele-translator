@@ -2,6 +2,7 @@ import config
 import json
 import os
 import re
+import math
 from pathlib import Path
 from openai import OpenAI
 
@@ -1256,9 +1257,22 @@ def prompt_for_input_file(subdir=None, subdirs_traversed=[]):
     folder_entries = []
 
     for item in os.scandir(config.INPUT_FOLDER_NAME):
+
+        size = (
+                int(os.path.getsize(item.path)) / 1024
+                if item.is_file()
+                else None)
+
+        if size is not None:
+            if size > 1000:
+                size = f"{math.ceil(size / 1024)} mb"
+            else:
+                size = f"{math.ceil(size)} kb"
+
         folder_entries.append({
             "name": item.name,
-            "item": item})
+            "item": item,
+            "size": size})
 
     folder_entries = sorted(folder_entries, key=lambda item: item["name"])
 
@@ -1272,7 +1286,7 @@ def prompt_for_input_file(subdir=None, subdirs_traversed=[]):
             if entry["item"].is_dir():
                 print(log(f"{i}. [dir] {entry["name"]}"))
             else:
-                print(log(f"{i}. {entry["name"]}"))
+                print(log(f"{i}. {entry["name"]} [{entry["size"]}]"))
 
         while config.MODULE_NAME is None or len(config.MODULE_NAME) == 0:
 
