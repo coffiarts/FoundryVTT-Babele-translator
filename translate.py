@@ -1,4 +1,5 @@
 import config
+import dialogs
 import shared_functions as fn
 import json
 import time
@@ -34,9 +35,10 @@ def run_translation():
     # ---------------------------------------------------
     # ASK FOR WHICH FILE TO TRANSLATE
     # ---------------------------------------------------
-    fn.prompt_for_input_file()
+    dialogs.prompt_for_input_file()
+    fn.adapt_file_paths()
 
-    # ---------------------------------------------------
+# ---------------------------------------------------
     # START OF PROCESSING FILE
     # ---------------------------------------------------
     print(fn.log_header(f"PROCESSING FILE: {config.INPUT_FILE}"))
@@ -51,7 +53,7 @@ def run_translation():
     print(f"{fn.to_multiline_text(fn.get_resume_relevant_config())}")
 
     # If Terminology exists, ask the user what to do with it
-    fn.prompt_for_terminology_rebuild()
+    dialogs.prompt_for_terminology_rebuild()
 
     # ---------------------------------------------------
     # DETERMINE RUN MODE
@@ -683,7 +685,7 @@ def run_translation():
                                 batch_id=batch["id"], batch_cnt=len(batches),
                                 color=config.YELLOW))
 
-                            if not fn.confirm_batch_nonfatal_errors():
+                            if not dialogs.confirm_batch_nonfatal_errors():
 
                                 raise Exception(config.ABORTED_BY_USER_ERROR)
 
