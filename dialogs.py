@@ -18,16 +18,6 @@ def get_request():
     return _request_queue.get_nowait()
 
 
-def prompt_test(question: str) -> bool:
-    response_queue = queue.Queue()
-
-    _request_queue.put((question, response_queue))
-
-    answer = response_queue.get()
-
-    return answer == "y"
-
-
 # ------------------------------------------------------------
 # Function: Prompt for Terminology Rebuild
 # ------------------------------------------------------------
@@ -69,26 +59,17 @@ def prompt_for_terminology_rebuild() -> str:
 # ------------------------------------------------------------
 # Function: Simple y/n prompt confirmation
 # ------------------------------------------------------------
-def confirm_yes_no(question=""):
+def confirm_yes_no(question="") -> bool:
 
-    normalized_answer = None
+    LOGGER(question)
 
-    while normalized_answer is None:
+    response_queue = queue.Queue()
 
-        answer = input(
-            f"\n{question}\n"
-            f"[{config.YES.lower()}/{config.NO.lower()}] ?>{config.RESET} "
-        ).strip().lower()
+    _request_queue.put((question, response_queue))
 
-        if answer == config.YES.lower():
-            normalized_answer = True
-        elif answer == config.NO.lower():
-            normalized_answer = False
-        else:
-            print(fn.log(f"Invalid answer.", color=config.RED))
-            continue
+    answer = response_queue.get()
 
-    return normalized_answer
+    return answer == config.YES
 
 
 # ------------------------------------------------------------
@@ -221,11 +202,15 @@ def prompt_for_input_file(subdir=None, subdirs_traversed=[]):
 
                                 config.MODULE_NAME = "unknown-module"
 
-                            if not confirm_yes_no(
-                                    f"{config.MAGENTA}Do you want to use {config.BOLD}\"{config.MODULE_NAME}\"{config.RESET}{config.MAGENTA} as module/sub-directory name for the output?{config.RESET}\n"
-                                    f"{config.YELLOW}Answering 'No' will abort the process.{config.RESET}"):
 
-                                raise Exception(config.ABORTED_BY_USER_ERROR)
+                                module_name_confirmed = confirm_yes_no(
+                                    f"{config.MAGENTA}Do you want to use {config.BOLD}\"{config.MODULE_NAME}\"{config.RESET}{config.MAGENTA} as module/sub-directory name for the output?{config.RESET}\n"
+                                    f"{config.YELLOW}Answering 'No' will abort the process.{config.RESET}")
+
+                                LOGGER(fn.log(f"Answer: {config.YES if module_name_confirmed else config.NO}"))
+
+                                if not module_name_confirmed:
+                                    raise Exception(config.ABORTED_BY_USER_ERROR)
 
                         else:
 

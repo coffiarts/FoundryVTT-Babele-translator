@@ -8,7 +8,7 @@ from pathlib import Path
 from openai import OpenAI
 from collections.abc import Callable
 
-def run_translation(logger: Callable[[str], None] = print):
+def run_translation(logger: Callable[[str], None] = print, finished=None):
     # -------------------------------------------------------------------------------------------------------
     # This controls the main process of translating a Babele input file:
     # - import from Babele file
@@ -890,7 +890,8 @@ def run_translation(logger: Callable[[str], None] = print):
         current_time = datetime.now().strftime("%H:%M:%S")
         logger(fn.log_header(f"PROCESS COMPLETED SUCCESSFULLY (time: {current_time})", color=config.GREEN))
 
-
+    if finished:
+        finished()
 
 if __name__ == "__main__":
     run_translation()
