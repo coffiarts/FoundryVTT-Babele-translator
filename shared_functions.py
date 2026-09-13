@@ -6,6 +6,12 @@ import re
 from pathlib import Path
 from openai import OpenAI
 
+LOGGER = print
+
+def set_logger(logger):
+    global LOGGER
+    LOGGER = logger
+    
 # ------------------------------------------------------------
 # Function: Load and return data (as list) from JSON input_file (path)
 # ------------------------------------------------------------
@@ -19,7 +25,7 @@ def load_json_input(input_file):
         data = json.load(file)
 
     # chars_cnt = to_prettified_json(data)
-    # print(f"DEBUG - Loaded {len(data)} top-level elements from {input_file} with {len(chars_cnt)} chars")
+    # LOGGER(f"DEBUG - Loaded {len(data)} top-level elements from {input_file} with {len(chars_cnt)} chars")
 
     return data
 
@@ -39,7 +45,7 @@ def save_json_output(data, output_file):
 
         file.write(json_string)
 
-    # print(f"File written to: {output_file} with {len(json_string)} chars")
+    # LOGGER(f"File written to: {output_file} with {len(json_string)} chars")
 
 
 # ------------------------------------------------------------
@@ -139,7 +145,7 @@ def to_multiline_text(input, value_char_limit=None, row_limit=None):
 # ------------------------------------------------------------
 def init_progress_info():
 
-    print(log("Creating new Progress Info ..."))
+    LOGGER(log("Creating new Progress Info ..."))
 
     current_config = get_resume_relevant_config()
 
@@ -150,7 +156,7 @@ def init_progress_info():
 
     save_json_output(data=progress_info, output_file=config.PROGRESS_INFO_FILE)
 
-    print(log(f"... Done. New Progress Info is now tracked by file {config.PROGRESS_INFO_FILE}"))
+    LOGGER(log(f"... Done. New Progress Info is now tracked by file {config.PROGRESS_INFO_FILE}"))
 
     return progress_info
 
@@ -168,7 +174,7 @@ def init_progress_info():
 # ------------------------------------------------------------
 def validate_progress_info(progress_info=None):
 
-    print(log("Validating existing Progress Info ..."))
+    LOGGER(log("Validating existing Progress Info ..."))
 
     if progress_info is None:
         progress_info = load_json_input(config.PROGRESS_INFO_FILE)
@@ -181,20 +187,20 @@ def validate_progress_info(progress_info=None):
             config.TERMINOLOGY_STATUS
         )
 
-        print(log(f"Terminology loop completed: {terminology_completed}"))
+        LOGGER(log(f"Terminology loop completed: {terminology_completed}"))
 
         translation_completed = validate_status_sequence(
             progress_info["batches"],
             config.TRANSLATION_STATUS
         )
 
-        print(log(f"Translation loop completed: {translation_completed}"))
+        LOGGER(log(f"Translation loop completed: {translation_completed}"))
 
     except ValueError:
 
         raise
 
-    print(log("... valid."))
+    LOGGER(log("... valid."))
 
     resume_batch = find_resume_batch(
         progress_info
@@ -302,7 +308,7 @@ def build_batches(translatables_with_placeholders):
 
     else:
 
-        print(log(f"Built {len(batches)} Batches from {len(translatables_with_placeholders)} Translatables"))
+        LOGGER(log(f"Built {len(batches)} Batches from {len(translatables_with_placeholders)} Translatables"))
 
         return batches
 
@@ -579,7 +585,7 @@ def protect_with_placeholders(translatables):
 
         translatables_with_placeholders.append(translatable_to_protect)
 
-    print(log(f"Extracted {len(placeholders)} new protective placeholders from {len(translatables)} translatables"))
+    LOGGER(log(f"Extracted {len(placeholders)} new protective placeholders from {len(translatables)} translatables"))
 
     return translatables_with_placeholders, placeholders
 
@@ -729,7 +735,7 @@ def determine_run_mode():
 # ------------------------------------------------------------
 def cleanup_progress_files():
 
-    print(log("Cleaning up progress files from previous runs (if any) ..."))
+    LOGGER(log("Cleaning up progress files from previous runs (if any) ..."))
 
     for file in [
         config.PROGRESS_INFO_FILE,
@@ -745,9 +751,9 @@ def cleanup_progress_files():
         if file.exists():
             file.unlink()
 
-            print(log(f"... Deleted: {file}"))
+            LOGGER(log(f"... Deleted: {file}"))
 
-    print(log("Done."))
+    LOGGER(log("Done."))
 
 
 # ------------------------------------------------------------
@@ -806,7 +812,7 @@ def post_mortem_dump(
         file.write(
             f"{details}\n\n"
         )
-        print(log(f"Response metadata: {response_metadata}"))
+        LOGGER(log(f"Response metadata: {response_metadata}"))
 
         if response_metadata is not None:
 
@@ -900,7 +906,7 @@ def post_mortem_dump(
 
             file.write("\n\n")
 
-    print(log_header(f"❌POST-MORTEM DUMP WRITTEN TO: {config.POST_MORTEM_DUMP_FILE}",
+    LOGGER(log_header(f"❌POST-MORTEM DUMP WRITTEN TO: {config.POST_MORTEM_DUMP_FILE}",
                      color=config.RED))
 
 
@@ -1221,5 +1227,16 @@ def find_resume_batch(progress_info):
 
     return None
 
+
+def check_and_warn_if_mock_mode(additionalMsg=None):
+
+    msg = "MOCK MODE IS ON!"
+
+    if additionalMsg is not None:
+        msg += f"\n=== {additionalMsg}"
+
+    if config.MOCK_MODE:
+        LOGGER(log_header(msg, color=config.YELLOW))
+    return config
 
 
