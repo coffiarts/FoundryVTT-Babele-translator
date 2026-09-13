@@ -37,7 +37,12 @@ def run_translation(logger: Callable[[str], None] = print):
     # ---------------------------------------------------
     # ASK FOR WHICH FILE TO TRANSLATE
     # ---------------------------------------------------
-    dialogs.prompt_for_input_file()
+    try:
+        dialogs.prompt_for_input_file()
+    except ValueError as e:
+        logger(fn.log(f"{config.RED}❌ {e.args[0]}{config.RESET}"))
+        raise RuntimeError(str(e))
+
     fn.adapt_file_paths()
 
 # ---------------------------------------------------
@@ -68,7 +73,7 @@ def run_translation(logger: Callable[[str], None] = print):
     except ValueError as e:
 
         logger(fn.log(f"{config.RED}❌ {e.args[0]}{config.RESET}"))
-        exit()
+        raise RuntimeError(str(e))
 
     # ---------------------------------------------------
     # INITIALIZE RUN, DEPENDING ON RUN MODE
@@ -106,7 +111,7 @@ def run_translation(logger: Callable[[str], None] = print):
         except ValueError as e:
 
             logger(fn.log(f"{config.RED}❌ {e.args[0]}{config.RESET}"))
-            exit()
+            raise RuntimeError(str(e))
 
     elif run_mode == config.POSTPROCESSING_ONLY:
 
@@ -262,7 +267,7 @@ def run_translation(logger: Callable[[str], None] = print):
             fn.save_json_output(data=details["batches"], output_file=config.BATCHES_FILE)
 
             logger(fn.log(f"{config.RED}❌ {details["error"]}{config.RESET}"))
-            exit()
+            raise RuntimeError(str(e))
 
         # -------
         # Tests:

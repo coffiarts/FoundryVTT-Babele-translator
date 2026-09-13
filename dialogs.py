@@ -203,8 +203,7 @@ def prompt_for_input_file(subdir=None, subdirs_traversed=[]):
 
     else:
 
-        print(fn.log(f"Input folder {config.INPUT_FOLDER_NAME} is empty", color=config.RED))
-        exit()
+        raise ValueError(f"Input folder {config.INPUT_FOLDER_NAME} is empty.")
 
 
 # ------------------------------------------------------------
