@@ -1164,7 +1164,7 @@ def prompt_for_terminology_rebuild():
             f"=== REBUILD TERMINOLOGY? ===\n"
             f"Existing Terminology for this input file already exists at: {config.TERMINOLOGY_FILE}\n"
             "Do you want to rebuild it online before translating?\n"
-            f"({config.YES.lower()}): Rebuild from scratch \n"
+            f"({config.YES.lower()}): Rebuild terminology from scratch \n"
             f"({config.NO.lower()}) or (Enter): No, reuse existing Terminology (or continue, in case of aborts)\n"
             f"?>{config.RESET} "
         ).strip().lower()
