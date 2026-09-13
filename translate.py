@@ -28,6 +28,7 @@ def run_translation(logger: Callable[[str], None] = print):
     # -------------------------------------------------------------------------------------------------------
 
     fn.set_logger(logger)
+    dialogs.set_logger(logger)
 
     # ---------------------------------------------------
     # WARN IF MOCK MODE IS ON
@@ -60,7 +61,9 @@ def run_translation(logger: Callable[[str], None] = print):
     logger(f"{fn.to_multiline_text(fn.get_resume_relevant_config())}")
 
     # If Terminology exists, ask the user what to do with it
-    dialogs.prompt_for_terminology_rebuild()
+    rebuildTerminologyYN = dialogs.prompt_for_terminology_rebuild()
+    config.REBUILD_TERMINOLOGY_IF_EXISTS = rebuildTerminologyYN == config.YES
+    logger(fn.log(f"Answer: {rebuildTerminologyYN}"))
 
     # ---------------------------------------------------
     # DETERMINE RUN MODE

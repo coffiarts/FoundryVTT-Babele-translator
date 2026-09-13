@@ -3,28 +3,67 @@ import os
 import math
 import shared_functions as fn
 from pathlib import Path
+import queue
+
+_request_queue = queue.Queue()
+
+LOGGER = print
+
+def set_logger(logger):
+    global LOGGER
+    LOGGER = logger
+
+def get_request():
+
+    return _request_queue.get_nowait()
+
+
+def prompt_test(question: str) -> bool:
+    response_queue = queue.Queue()
+
+    _request_queue.put((question, response_queue))
+
+    answer = response_queue.get()
+
+    return answer == "y"
+
 
 # ------------------------------------------------------------
 # Function: Prompt for Terminology Rebuild
 # ------------------------------------------------------------
-def prompt_for_terminology_rebuild():
+def prompt_for_terminology_rebuild() -> str:
 
-    print(f"TERMINOLOGY_FILE: {config.TERMINOLOGY_FILE}")
+    LOGGER(f"TERMINOLOGY_FILE: {config.TERMINOLOGY_FILE}")
 
     if config.TERMINOLOGY_FILE.exists():
-        answer = input(
-            f"\n{config.MAGENTA}"
-            f"=== REBUILD TERMINOLOGY? ===\n"
-            f"Existing Terminology for this input file already exists at: {config.TERMINOLOGY_FILE}\n"
-            "Do you want to rebuild it online before translating?\n"
-            f"({config.YES.lower()}): Rebuild terminology from scratch \n"
-            f"({config.NO.lower()}) or (Enter): No, reuse existing Terminology (or continue, in case of aborts)\n"
+
+        question =\
+            f"\n{config.MAGENTA}"\
+            f"=== REBUILD TERMINOLOGY? ===\n" \
+            f"Existing Terminology for this input file already exists at: {config.TERMINOLOGY_FILE}\n" \
+            "Do you want to rebuild it online before translating?\n" \
+            f"({config.YES.lower()}): Rebuild terminology from scratch \n" \
+            f"({config.NO.lower()}) or (Enter): No, reuse existing Terminology (or continue, in case of aborts)\n" \
             f"?>{config.RESET} "
-        ).strip().lower()
 
-        normalized_answer = True if answer == config.YES.lower() else False
+        LOGGER(question)
 
-        config.REBUILD_TERMINOLOGY_IF_EXISTS = normalized_answer
+        response_queue = queue.Queue()
+
+        _request_queue.put((question, response_queue))
+
+        answer = response_queue.get()
+        return_value = (
+            config.YES
+            if answer == config.YES
+            else config.NO
+        )
+
+        return return_value
+
+    else:
+
+        return config.YES
 
 
 # ------------------------------------------------------------
@@ -80,7 +119,7 @@ def confirm_force_new_run():
 
 
 # ------------------------------------------------------------
-# Function: Prompt confirmation for keeping batch on non-fatal errors
+# Function: Prompt confirmation for keeping batch after non-fatal errors
 # ------------------------------------------------------------
 def confirm_batch_nonfatal_errors():
 
