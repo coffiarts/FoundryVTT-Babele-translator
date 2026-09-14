@@ -9,10 +9,20 @@ _request_queue = queue.Queue()
 
 LOGGER = print
 
+# ===========================================
+# Function: Set Logger
+# Receives the shared logger from the main workflow
+# If not invoked, logger will be the simple "print"
+# ===========================================
 def set_logger(logger):
     global LOGGER
     LOGGER = logger
 
+
+# ===========================================
+# Function: Get Request
+#
+# ===========================================
 def get_request():
 
     return _request_queue.get_nowait()
@@ -52,7 +62,11 @@ def confirm_yes_no(question="") -> bool:
 
     response_queue = queue.Queue()
 
-    _request_queue.put((question, response_queue))
+    _request_queue.put({
+        "type": "text",
+        "question": question,
+        "response_queue": response_queue
+    })
 
     answer = response_queue.get()
     answer_is_yes = answer == config.YES

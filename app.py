@@ -59,20 +59,24 @@ class App(ctk.CTk):
         self.submit_button = ctk.CTkButton(
             self,
             text="OK",
-            command=self.submit_answer
+            command=self.process_dialog_response
         )
         self.submit_button.pack(padx=20, pady=(0, 20))
 
-        # zunächst unsichtbar
+        # initially invisible
         self.question_label.pack_forget()
         self.answer_entry.pack_forget()
         self.submit_button.pack_forget()
 
-        self.check_dialog_requests()
+        self.process_dialog_requests()
 
         self.LOGGER = self.log_message
 
 
+    # ===========================================
+    # Function: Select File
+    # Generated a UI File Picker for selecting the Input File
+    # ===========================================
     def select_file(self):
         filename = filedialog.askopenfilename(
             title="Select file to translate",
@@ -94,6 +98,10 @@ class App(ctk.CTk):
         self.start_button.configure(state="enabled")
 
 
+    # ===========================================
+    # Function: Start Translation
+    # Runs the main worker thread (translation) asynchronously
+    # ===========================================
     def start_translation(self):
 
         if config.INPUT_FILE is None:
@@ -113,20 +121,33 @@ class App(ctk.CTk):
         ).start()
 
 
-    def check_dialog_requests(self):
+    # ===========================================
+    # Function: Translation Finished
+    # A callback invoked when start_translation() completes
+    # Its main function is to reactivate the start button
+    # ===========================================
+    def translation_finished(self):
+        self.after(
+            0,
+            lambda: self.start_button.configure(state="normal")
+        )
+
+
+    # ===========================================
+    # Function: Process Dialog Requests
+    # Processes dialog requests from the translation engine and dynamically
+    # displays the corresponding UI elements in the main application window.
+    # ===========================================
+    def process_dialog_requests(self):
 
         try:
-
             request = dialogs.get_request()
 
         except queue.Empty:
-
             pass
 
         else:
-
             if request["type"] == "radio":
-
                 self.current_response_queue = request["response_queue"]
 
                 self.question_label.configure(
@@ -160,48 +181,53 @@ class App(ctk.CTk):
                     pady=(10, 20)
                 )
 
+            elif request["type"] == "text":
+                self.current_response_queue = request["response_queue"]
+
+                self.question_label.configure(
+                    text=request["question"]
+                )
+
+                self.question_label.pack(
+                    padx=20,
+                    pady=(10, 5),
+                    anchor="w"
+                )
+
+                self.answer_entry.pack(
+                    padx=20,
+                    pady=5,
+                    fill="x"
+                )
+
+                self.submit_button.pack(
+                    padx=20,
+                    pady=(10, 20)
+                )
+
+                self.answer_entry.focus()
+
             else:
                 print("UNBEKANNTER REQUEST")
 
-            # self.current_response_queue = response_queue
-            #
-            # self.question_label.configure(text=question)
-            #
-            # self.question_label.pack(
-            #     padx=20,
-            #     pady=(10, 5),
-            #     anchor="w"
-            # )
-            #
-            # self.answer_entry.pack(
-            #     padx=20,
-            #     pady=5,
-            #     fill="x"
-            # )
-            #
-            # self.submit_button.pack(
-            #     padx=20,
-            #     pady=(0, 20)
-            # )
-            #
-            # self.answer_entry.focus()
-
-        self.after(50, self.check_dialog_requests)
+        self.after(50, self.process_dialog_requests)
 
 
+    # ===========================================
+    # Function: Log Message
+    # Writes the message passed to the configured logger
+    # ===========================================
     def log_message(self, message):
         self.log.insert("end", message + "\n")
         self.log.see("end")
 
 
-    def translation_finished(self):
-        self.after(
-            0,
-            lambda: self.start_button.configure(state="normal")
-        )
-
-
-    def submit_answer(self):
+    # ===========================================
+    # Function: Process Dialog Response
+    # Submits the current dialog response, delivers it to the waiting request,
+    # and removes any temporary dialog controls from the UI.
+    # ===========================================
+    def process_dialog_response(self):
 
         if self.current_response_queue is None:
             return
@@ -228,5 +254,6 @@ class App(ctk.CTk):
         self.current_radio_buttons.clear()
 
 
+# Finally, run it!
 app = App()
 app.mainloop()

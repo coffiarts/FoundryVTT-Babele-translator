@@ -38,11 +38,8 @@ def run_translation(logger: Callable[[str], None] = print, finished=None):
     # ---------------------------------------------------
     # ASK FOR WHICH FILE TO TRANSLATE
     # ---------------------------------------------------
-    try:
-        dialogs.prompt_for_input_file()
-    except ValueError as e:
-        logger(fn.log(f"{config.RED}❌ {e.args[0]}{config.RESET}"))
-        raise RuntimeError(str(e))
+    if config.INPUT_FILE is None:
+        raise ValueError("❌ Input File is not defined.")
 
     fn.adapt_file_paths()
 
