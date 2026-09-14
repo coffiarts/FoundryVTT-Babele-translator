@@ -61,9 +61,7 @@ def run_translation(logger: Callable[[str], None] = print, finished=None):
     logger(f"{fn.to_multiline_text(fn.get_resume_relevant_config())}")
 
     # If Terminology exists, ask the user what to do with it
-    rebuildTerminologyYN = dialogs.prompt_for_terminology_rebuild()
-    config.REBUILD_TERMINOLOGY_IF_EXISTS = rebuildTerminologyYN == config.YES
-    logger(fn.log(f"Answer: {rebuildTerminologyYN}"))
+    config.REBUILD_TERMINOLOGY_IF_EXISTS = dialogs.prompt_for_terminology_rebuild()
 
     # ---------------------------------------------------
     # DETERMINE RUN MODE

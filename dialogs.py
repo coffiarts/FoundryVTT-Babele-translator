@@ -21,7 +21,7 @@ def get_request():
 # ------------------------------------------------------------
 # Function: Prompt for Terminology Rebuild
 # ------------------------------------------------------------
-def prompt_for_terminology_rebuild() -> str:
+def prompt_for_terminology_rebuild() -> bool:
 
     LOGGER(f"TERMINOLOGY_FILE: {config.TERMINOLOGY_FILE}")
 
@@ -32,28 +32,15 @@ def prompt_for_terminology_rebuild() -> str:
             f"=== REBUILD TERMINOLOGY? ===\n" \
             f"Existing Terminology for this input file already exists at: {config.TERMINOLOGY_FILE}\n" \
             "Do you want to rebuild it online before translating?\n" \
-            f"({config.YES.lower()}): Rebuild terminology from scratch \n" \
-            f"({config.NO.lower()}) or (Enter): No, reuse existing Terminology (or continue, in case of aborts)\n" \
+            f"({config.YES.upper()}/{config.YES.lower()}): Rebuild terminology from scratch \n" \
+            f"({config.NO.upper()}/{config.NO.lower()}) or (Enter): No, reuse existing Terminology (or continue, in case of aborts)\n" \
             f"?>{config.RESET} "
 
-        LOGGER(question)
-
-        response_queue = queue.Queue()
-
-        _request_queue.put((question, response_queue))
-
-        answer = response_queue.get()
-        return_value = (
-            config.YES
-            if answer == config.YES
-            else config.NO
-        )
-
-        return return_value
+        return confirm_yes_no(question)
 
     else:
 
-        return config.YES
+        return True
 
 
 # ------------------------------------------------------------
@@ -68,8 +55,46 @@ def confirm_yes_no(question="") -> bool:
     _request_queue.put((question, response_queue))
 
     answer = response_queue.get()
+    answer_is_yes = answer == config.YES
 
-    return answer == config.YES
+    LOGGER(f"{fn.log(f"Answer: {config.YES if answer_is_yes else config.NO}")}")
+
+    return answer_is_yes
+
+
+# ------------------------------------------------------------
+# Function: Simple y/n prompt confirmation
+# ------------------------------------------------------------
+def prompt_for_selection(question="", options: dict = {}) -> int:
+
+    LOGGER(question)
+
+    options_text = "\n".join([f"- {key}: {value}" for key, value in options.items()])
+
+    LOGGER(options_text)
+
+    answer:int | None = None
+
+    question = {
+        "question": question,
+        "options": options
+    }
+
+    while answer is None:
+
+        response_queue = queue.Queue()
+
+        _request_queue.put((question, response_queue))
+
+        answer = response_queue.get()
+
+        if answer not in (options.keys()):
+            LOGGER(fn.log(f"Invalid selection.", color=config.RED))
+            continue
+
+    LOGGER(f"{fn.log(f"Answer: {answer}: {options[answer]}")}")
+
+    return answer
 
 
 # ------------------------------------------------------------
@@ -83,20 +108,17 @@ def confirm_force_new_run():
         else ""
     )
 
-    answer = input(
-        f"\n{config.MAGENTA}=== REPLACE PREVIOUS RESULTS? ===\n"
-        f"The last run for this file is marked as fully {config.COMPLETED}.\n"
-        f"{text_if_output_still_exists}"
-        "Do you want to discard the results and start a complete, FRESH translation?\n"
-        "Or do you want to keep them and just rerun Post-Processing steps (integrity checks and rebuilding of the output file)?\n"
-        f"({config.YES.lower()}): Discard and replace previous results.\n"
-        f"({config.NO.lower()}) or (Enter): No, just rerun Post-Processing (this will also skip Terminology rebuild!)\n"
+    question =\
+        f"\n{config.MAGENTA}=== REPLACE PREVIOUS RESULTS? ===\n" \
+        f"The last run for this file is marked as fully {config.COMPLETED}.\n" \
+        f"{text_if_output_still_exists}" \
+        "Do you want to discard the results and start a complete, FRESH translation?\n" \
+        "Or do you want to keep them and just rerun Post-Processing steps (integrity checks and rebuilding of the output file)?\n" \
+        f"({config.YES.upper()}/{config.YES.lower()}): Discard and replace previous results.\n" \
+        f"({config.NO.upper()}/{config.NO.lower()}) or (Enter)): No, just rerun Post-Processing (this will also skip Terminology rebuild!)\n" \
         f"?>{config.RESET} "
-    ).strip().lower()
 
-    normalized_answer = True if answer == config.YES.lower() else False
-
-    return normalized_answer
+    return confirm_yes_no(question)
 
 
 # ------------------------------------------------------------
@@ -106,8 +128,8 @@ def confirm_batch_nonfatal_errors():
 
     answer = input(
         f"\n{config.YELLOW}=== DO YOU WANT TO KEEP THIS BATCH ANYWAY? ===\n{config.RESET}"
-        f"({config.GREEN}{config.YES.lower()}): Yes, keep it and export errors as Review Items for later.{config.RESET}\n"
-        f"({config.RED}{config.NO.lower()}) or (Enter): No, abort. I will restart the process myself to retry from this Batch.{config.RESET}\n"
+        f"({config.GREEN}{config.YES.upper()}/{config.YES.lower()}): Yes, keep it and export errors as Review Items for later.{config.RESET}\n"
+        f"({config.RED}{config.NO.upper()}/{config.NO.lower()}) or (Enter): No, abort. I will restart the process myself to retry from this Batch.{config.RESET}\n"
         f"{config.YELLOW}?>{config.RESET} "
     ).strip().lower()
 
@@ -185,7 +207,7 @@ def prompt_for_input_file(subdir=None, subdirs_traversed=[]):
                         config.INPUT_FILE = Path(config.INPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
                         print(fn.log(f"DEBUG - INPUT_FILE: {config.INPUT_FILE}"))
 
-                        prompt_for_input_type()
+                        config.INPUT_TYPE = prompt_for_input_type()
 
                         if config.INPUT_TYPE == config.INPUT_TYPE_BABELE:
 
@@ -206,8 +228,6 @@ def prompt_for_input_file(subdir=None, subdirs_traversed=[]):
                                 module_name_confirmed = confirm_yes_no(
                                     f"{config.MAGENTA}Do you want to use {config.BOLD}\"{config.MODULE_NAME}\"{config.RESET}{config.MAGENTA} as module/sub-directory name for the output?{config.RESET}\n"
                                     f"{config.YELLOW}Answering 'No' will abort the process.{config.RESET}")
-
-                                LOGGER(fn.log(f"Answer: {config.YES if module_name_confirmed else config.NO}"))
 
                                 if not module_name_confirmed:
                                     raise Exception(config.ABORTED_BY_USER_ERROR)
@@ -233,11 +253,11 @@ def prompt_for_input_file(subdir=None, subdirs_traversed=[]):
 # ------------------------------------------------------------
 # Function: Prompt for Input Type
 # ------------------------------------------------------------
-def prompt_for_input_type():
+def prompt_for_input_type() -> str:
 
-    normalized_answer = None
+    input_type:str | None = None
 
-    while normalized_answer is None:
+    while input_type is None:
 
         answer = input(f"{config.MAGENTA}"
                        f"\nWhich type of file is this?{config.RESET}\n"
@@ -247,14 +267,14 @@ def prompt_for_input_type():
                        ).strip()
 
         if answer == "1":
-            normalized_answer = config.INPUT_TYPE_BABELE
+            input_type = config.INPUT_TYPE_BABELE
         elif answer == "2":
-            normalized_answer = config.INPUT_TYPE_LOCALIZATION
+            input_type = config.INPUT_TYPE_LOCALIZATION
         else:
             print(fn.log(f"Invalid answer.", color=config.RED))
             continue
 
-    config.INPUT_TYPE = normalized_answer
+    return input_type
 
 
 # ------------------------------------------------------------
