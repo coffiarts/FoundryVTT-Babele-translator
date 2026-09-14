@@ -49,6 +49,11 @@ class App(ctk.CTk):
             value=config.INPUT_TYPE_BABELE
         )
 
+        self.input_type_var.trace_add(
+            "write",
+            self.on_input_type_changed
+        )
+
         self.radio_input_type_babele = ctk.CTkRadioButton(
             self.input_type_frame,
             text=config.INPUT_TYPE_BABELE,
@@ -346,6 +351,33 @@ class App(ctk.CTk):
             radio.destroy()
 
         self.current_radio_buttons.clear()
+
+
+    # ===========================================
+    # Function: On Input Type Changed
+    # Gets alerted whenever a new INPUT_TYPE has selected
+    # Ensures that the Module Name Suggestion gests reavaluated
+    # ===========================================
+    def on_input_type_changed(self, *args):
+        self.refresh_module_name_suggestion()
+
+
+    # ===========================================
+    # Function: Refresh Module Name Suggestion
+    #
+    # ===========================================
+    def refresh_module_name_suggestion(self):
+
+        if self.selected_file is None:
+            return
+
+        suggested_module_name = dialogs.suggest_module_name(
+            self.selected_file,
+            self.input_type_var.get()
+        )
+
+        self.module_name_entry.delete(0, "end")
+        self.module_name_entry.insert(0, suggested_module_name)
 
 
 # Finally, run it!
