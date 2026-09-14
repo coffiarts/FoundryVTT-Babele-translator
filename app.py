@@ -42,6 +42,8 @@ class App(ctk.CTk):
 
         self.current_response_queue = None
 
+        self.current_radio_buttons = []
+
         self.question_label = ctk.CTkLabel(
             self,
             text=""
@@ -115,7 +117,7 @@ class App(ctk.CTk):
 
         try:
 
-            question, response_queue = dialogs.get_request()
+            request = dialogs.get_request()
 
         except queue.Empty:
 
@@ -123,28 +125,66 @@ class App(ctk.CTk):
 
         else:
 
-            self.current_response_queue = response_queue
+            if request["type"] == "radio":
 
-            self.question_label.configure(text=question)
+                self.current_response_queue = request["response_queue"]
 
-            self.question_label.pack(
-                padx=20,
-                pady=(10, 5),
-                anchor="w"
-            )
+                self.question_label.configure(
+                    text=request["question"]
+                )
 
-            self.answer_entry.pack(
-                padx=20,
-                pady=5,
-                fill="x"
-            )
+                self.question_label.pack(
+                    padx=20,
+                    pady=(10, 5),
+                    anchor="w"
+                )
 
-            self.submit_button.pack(
-                padx=20,
-                pady=(0, 20)
-            )
+                self.radio_var = ctk.StringVar()
 
-            self.answer_entry.focus()
+                for option in request["options"]:
+                    radio = ctk.CTkRadioButton(
+                        self,
+                        text=option,
+                        variable=self.radio_var,
+                        value=option
+                    )
+                    radio.pack(
+                        padx=20,
+                        anchor="w"
+                    )
+
+                    self.current_radio_buttons.append(radio)
+
+                self.submit_button.pack(
+                    padx=20,
+                    pady=(10, 20)
+                )
+
+            else:
+                print("UNBEKANNTER REQUEST")
+
+            # self.current_response_queue = response_queue
+            #
+            # self.question_label.configure(text=question)
+            #
+            # self.question_label.pack(
+            #     padx=20,
+            #     pady=(10, 5),
+            #     anchor="w"
+            # )
+            #
+            # self.answer_entry.pack(
+            #     padx=20,
+            #     pady=5,
+            #     fill="x"
+            # )
+            #
+            # self.submit_button.pack(
+            #     padx=20,
+            #     pady=(0, 20)
+            # )
+            #
+            # self.answer_entry.focus()
 
         self.after(50, self.check_dialog_requests)
 
@@ -166,7 +206,11 @@ class App(ctk.CTk):
         if self.current_response_queue is None:
             return
 
-        answer = self.answer_entry.get().strip().upper()
+        if self.current_radio_buttons:
+            answer = self.radio_var.get()
+
+        else:
+            answer = self.answer_entry.get().strip().upper()
 
         self.current_response_queue.put(answer)
 
@@ -177,6 +221,11 @@ class App(ctk.CTk):
         self.submit_button.pack_forget()
 
         self.current_response_queue = None
+
+        for radio in self.current_radio_buttons:
+            radio.destroy()
+
+        self.current_radio_buttons.clear()
 
 
 app = App()

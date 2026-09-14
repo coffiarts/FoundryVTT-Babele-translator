@@ -63,38 +63,20 @@ def confirm_yes_no(question="") -> bool:
 
 
 # ------------------------------------------------------------
-# Function: Simple y/n prompt confirmation
+# Function: Prompt Radio
 # ------------------------------------------------------------
-def prompt_for_selection(question="", options: dict = {}) -> int:
+def prompt_radio(question, options):
 
-    LOGGER(question)
+    response_queue = queue.Queue()
 
-    options_text = "\n".join([f"- {key}: {value}" for key, value in options.items()])
-
-    LOGGER(options_text)
-
-    answer:int | None = None
-
-    question = {
+    _request_queue.put({
+        "type": "radio",
         "question": question,
-        "options": options
-    }
+        "options": options,
+        "response_queue": response_queue
+    })
 
-    while answer is None:
-
-        response_queue = queue.Queue()
-
-        _request_queue.put((question, response_queue))
-
-        answer = response_queue.get()
-
-        if answer not in (options.keys()):
-            LOGGER(fn.log(f"Invalid selection.", color=config.RED))
-            continue
-
-    LOGGER(f"{fn.log(f"Answer: {answer}: {options[answer]}")}")
-
-    return answer
+    return response_queue.get()
 
 
 # ------------------------------------------------------------
@@ -253,26 +235,23 @@ def prompt_for_input_file(subdir=None, subdirs_traversed=[]):
 # ------------------------------------------------------------
 # Function: Prompt for Input Type
 # ------------------------------------------------------------
-def prompt_for_input_type() -> str:
+def prompt_for_input_type() -> str | None:
 
-    input_type:str | None = None
+    question = "Which type of file is this?"
+    LOGGER(fn.log(question, color=config.MAGENTA))
 
-    while input_type is None:
+    options = [
+        config.INPUT_TYPE_BABELE,
+        config.INPUT_TYPE_LOCALIZATION
+    ]
+    LOGGER(fn.log("\n".join(options), color=config.MAGENTA))
 
-        answer = input(f"{config.MAGENTA}"
-                       f"\nWhich type of file is this?{config.RESET}\n"
-                       f"1. {config.INPUT_TYPE_BABELE}\n"
-                       f"2. {config.INPUT_TYPE_LOCALIZATION}\n"
-                       f" ?> "
-                       ).strip()
+    input_type:str | None = prompt_radio(
+        question,
+        options
+    )
 
-        if answer == "1":
-            input_type = config.INPUT_TYPE_BABELE
-        elif answer == "2":
-            input_type = config.INPUT_TYPE_LOCALIZATION
-        else:
-            print(fn.log(f"Invalid answer.", color=config.RED))
-            continue
+    LOGGER(fn.log(f"Answer: {input_type}"))
 
     return input_type
 
