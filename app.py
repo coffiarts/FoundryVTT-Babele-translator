@@ -38,32 +38,37 @@ class App(ctk.CTk):
         # =========================================
         # Input type selector
         # =========================================
+        self.input_type_frame = ctk.CTkFrame(self)
+
+        self.input_type_frame.pack(
+            padx=20,
+            pady=5
+        )
+
         self.input_type_var = ctk.StringVar(
             value=config.INPUT_TYPE_BABELE
         )
 
         self.radio_input_type_babele = ctk.CTkRadioButton(
-            self,
+            self.input_type_frame,
             text=config.INPUT_TYPE_BABELE,
             variable=self.input_type_var,
             value=config.INPUT_TYPE_BABELE
         )
 
         self.radio_input_type_babele.pack(
-            padx=20,
-            anchor="w"
+            side="left", padx=(0, 20)
         )
 
         self.radio_input_type_localization = ctk.CTkRadioButton(
-            self,
+            self.input_type_frame,
             text=config.INPUT_TYPE_LOCALIZATION,
             variable=self.input_type_var,
             value=config.INPUT_TYPE_LOCALIZATION
         )
 
         self.radio_input_type_localization.pack(
-            padx=20,
-            anchor="w"
+            side="left"
         )
 
 
@@ -173,7 +178,10 @@ class App(ctk.CTk):
             text=self.selected_file.name
         )
 
-        suggested_module_name = dialogs.suggest_module_name()
+        suggested_module_name = dialogs.suggest_module_name(
+            config.INPUT_FILE,
+            self.input_type_var.get()
+        )
 
         self.module_name_entry.delete(0, "end")
         self.module_name_entry.insert(0, suggested_module_name)

@@ -207,7 +207,7 @@ def prompt_for_input_file(subdir=None, subdirs_traversed=[]):
 
                         if config.INPUT_TYPE == config.INPUT_TYPE_BABELE:
 
-                            config.MODULE_NAME = suggest_module_name()
+                            config.MODULE_NAME = suggest_module_name(config.INPUT_FILE, config.INPUT_TYPE)
 
                             if config.MODULE_NAME is None or len(config.MODULE_NAME) == 0:
                                 print(fn.log(
@@ -249,14 +249,43 @@ def prompt_for_input_file(subdir=None, subdirs_traversed=[]):
 # Try to extract module name from input filename
 # If not successful, return config.UNKNOWN_MODULE_NAME
 # ------------------------------------------------------------
-def suggest_module_name():
-
+def suggest_module_name(input_file, input_type):
     suggested = config.UNKNOWN_MODULE_NAME
 
-    if config.INPUT_FILE_NAME.count(".") > 1:
-        suggested = config.INPUT_FILE_NAME[0: config.INPUT_FILE_NAME.find('.')]
+    if input_type == config.INPUT_TYPE_BABELE:
+        if input_file.name.count(".") > 1:
+            suggested = input_file.name[0: input_file.name.find('.')]
+
+        return suggested
+
+    elif input_type == config.INPUT_TYPE_LOCALIZATION:
+        ignored_folder_names = {
+            "lang",
+            "language",
+            "languages"
+        }
+
+        current = input_file.parent
+
+        while True:
+
+            folder_name = current.name.lower()
+
+            if folder_name == config.INPUT_FOLDER_NAME.lower():
+                return config.UNKNOWN_MODULE_NAME
+
+            if folder_name not in {
+                "lang",
+                "language",
+                "languages"
+            }:
+                return current.name
+
+            current = current.parent
 
     return suggested
+
+
 
 
 # ------------------------------------------------------------
