@@ -108,8 +108,6 @@ class App(ctk.CTk):
 
         self.start_button.pack(padx=20, pady=20)
 
-        self.start_button.configure(state="disabled")
-
 
         # =========================================
         # Log Output Window
@@ -157,6 +155,9 @@ class App(ctk.CTk):
         # =========================================
         # Now go for it!
         # =========================================
+        self.disable_configuration_controls()
+        self.file_button.configure(state="normal")
+
         self.process_dialog_requests()
 
 
@@ -191,7 +192,7 @@ class App(ctk.CTk):
         self.module_name_entry.delete(0, "end")
         self.module_name_entry.insert(0, suggested_module_name)
 
-        self.start_button.configure(state="enabled")
+        self.enable_configuration_controls()
 
 
     # ===========================================
@@ -207,7 +208,7 @@ class App(ctk.CTk):
         config.INPUT_TYPE = self.input_type_var.get()
         config.MODULE_NAME = self.module_name_entry.get().strip()
 
-        self.start_button.configure(state="disabled")
+        self.disable_configuration_controls()
 
         threading.Thread(
             target=translate.run_translation,
@@ -228,7 +229,7 @@ class App(ctk.CTk):
     def translation_finished(self):
         self.after(
             0,
-            lambda: self.start_button.configure(state="normal")
+            lambda: self.enable_configuration_controls()
         )
 
 
@@ -378,6 +379,38 @@ class App(ctk.CTk):
 
         self.module_name_entry.delete(0, "end")
         self.module_name_entry.insert(0, suggested_module_name)
+
+
+    # ===========================================
+    # Function: Disable Configuration Controls
+    #
+    # ===========================================
+    def disable_configuration_controls(self):
+
+        self.file_button.configure(state="disabled")
+
+        self.radio_input_type_babele.configure(state="disabled")
+        self.radio_input_type_localization.configure(state="disabled")
+
+        self.module_name_entry.configure(state="disabled")
+
+        self.start_button.configure(state="disabled")
+
+
+    # ===========================================
+    # Function: Enable Configuration Controls
+    #
+    # ===========================================
+    def enable_configuration_controls(self):
+
+        self.file_button.configure(state="normal")
+
+        self.radio_input_type_babele.configure(state="normal")
+        self.radio_input_type_localization.configure(state="normal")
+
+        self.module_name_entry.configure(state="normal")
+
+        self.start_button.configure(state="normal")
 
 
 # Finally, run it!
