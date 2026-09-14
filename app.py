@@ -1,8 +1,11 @@
 import queue
-import customtkinter as ctk
 import dialogs
 import threading
 import translate
+import config
+import customtkinter as ctk
+from tkinter import filedialog
+from pathlib import Path
 
 class App(ctk.CTk):
 
@@ -11,12 +14,28 @@ class App(ctk.CTk):
 
         self.title("Foundry VTT Translator")
 
+        self.selected_file = None
+
+        self.file_button = ctk.CTkButton(
+            self,
+            text="Select Input File",
+            command=self.select_file
+        )
+        self.file_button.pack(padx=20, pady=(20, 5))
+
+        self.file_label = ctk.CTkLabel(
+            self,
+            text="No file selected"
+        )
+        self.file_label.pack(padx=20, pady=(0, 20))
+
         self.start_button = ctk.CTkButton(
             self,
             text="Start",
             command=self.start_translation
         )
         self.start_button.pack(padx=20, pady=20)
+        self.start_button.configure(state="disabled")
 
         self.log = ctk.CTkTextbox(self, width=600, height=300)
         self.log.pack(padx=20, pady=20, fill="both", expand=True)
@@ -51,7 +70,34 @@ class App(ctk.CTk):
 
         self.LOGGER = self.log_message
 
+
+    def select_file(self):
+        filename = filedialog.askopenfilename(
+            title="Select file to translate",
+            filetypes=[("JSON files", "*.json")]
+        )
+
+        if not filename:
+            return
+
+        self.selected_file = Path(filename)
+
+        config.INPUT_FILE = self.selected_file
+        config.INPUT_FILE_NAME = self.selected_file.name
+
+        self.file_label.configure(
+            text=self.selected_file.name
+        )
+
+        self.start_button.configure(state="enabled")
+
+
     def start_translation(self):
+
+        if config.INPUT_FILE is None:
+            self.log_message("Please select an input file first.")
+            return
+
         self.start_button.configure(state="disabled")
 
         threading.Thread(
