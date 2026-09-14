@@ -14,6 +14,9 @@ class App(ctk.CTk):
 
         self.title("Foundry VTT Translator")
 
+        # =========================================
+        # File picker
+        # =========================================
         self.selected_file = None
 
         self.file_button = ctk.CTkButton(
@@ -21,25 +24,97 @@ class App(ctk.CTk):
             text="Select Input File",
             command=self.select_file
         )
+
         self.file_button.pack(padx=20, pady=(20, 5))
 
         self.file_label = ctk.CTkLabel(
             self,
             text="No file selected"
         )
+
         self.file_label.pack(padx=20, pady=(0, 20))
 
+
+        # =========================================
+        # Input type selector
+        # =========================================
+        self.input_type_var = ctk.StringVar(
+            value=config.INPUT_TYPE_BABELE
+        )
+
+        self.radio_input_type_babele = ctk.CTkRadioButton(
+            self,
+            text=config.INPUT_TYPE_BABELE,
+            variable=self.input_type_var,
+            value=config.INPUT_TYPE_BABELE
+        )
+
+        self.radio_input_type_babele.pack(
+            padx=20,
+            anchor="w"
+        )
+
+        self.radio_input_type_localization = ctk.CTkRadioButton(
+            self,
+            text=config.INPUT_TYPE_LOCALIZATION,
+            variable=self.input_type_var,
+            value=config.INPUT_TYPE_LOCALIZATION
+        )
+
+        self.radio_input_type_localization.pack(
+            padx=20,
+            anchor="w"
+        )
+
+
+        # =========================================
+        # Module name suggestion (editable)
+        # =========================================
+        self.module_name_label = ctk.CTkLabel(
+            self,
+            text="Module name (overwrite as needed)"
+        )
+
+        self.module_name_label.pack(padx=20, pady=(20, 0))
+
+        self.module_name_entry = ctk.CTkEntry(
+            self,
+            width=300
+        )
+
+        self.module_name_entry.pack(padx=20, pady=5, fill="x")
+
+        self.module_name_entry.insert(0, "(Please pick a file first)")
+
+
+        # =========================================
+        # Start Button
+        # =========================================
         self.start_button = ctk.CTkButton(
             self,
-            text="Start",
+            text="Start Translation",
             command=self.start_translation
         )
+
         self.start_button.pack(padx=20, pady=20)
+
         self.start_button.configure(state="disabled")
 
+
+        # =========================================
+        # Log Output Window
+        # =========================================
         self.log = ctk.CTkTextbox(self, width=600, height=300)
+
         self.log.pack(padx=20, pady=20, fill="both", expand=True)
 
+        # Initialize Logger
+        self.LOGGER = self.log_message
+
+
+        # =========================================
+        # Dynamic prompts (initially hidden)
+        # =========================================
         self.current_response_queue = None
 
         self.current_radio_buttons = []
@@ -63,14 +138,17 @@ class App(ctk.CTk):
         )
         self.submit_button.pack(padx=20, pady=(0, 20))
 
-        # initially invisible
+        # Set them all initially to invisible
         self.question_label.pack_forget()
         self.answer_entry.pack_forget()
         self.submit_button.pack_forget()
 
+
+        # =========================================
+        # Now go for it!
+        # =========================================
         self.process_dialog_requests()
 
-        self.LOGGER = self.log_message
 
 
     # ===========================================
@@ -95,6 +173,11 @@ class App(ctk.CTk):
             text=self.selected_file.name
         )
 
+        suggested_module_name = dialogs.suggest_module_name()
+
+        self.module_name_entry.delete(0, "end")
+        self.module_name_entry.insert(0, suggested_module_name)
+
         self.start_button.configure(state="enabled")
 
 
@@ -107,6 +190,9 @@ class App(ctk.CTk):
         if config.INPUT_FILE is None:
             self.log_message("Please select an input file first.")
             return
+
+        config.INPUT_TYPE = self.input_type_var.get()
+        config.MODULE_NAME = self.module_name_entry.get().strip()
 
         self.start_button.configure(state="disabled")
 

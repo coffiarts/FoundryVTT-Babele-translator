@@ -265,7 +265,7 @@ ERROR = "ERROR"
 # Test Result
 PASSED = "PASSED" # FAILED can be reused from above
 
-# Colors &  Formatting
+# Console Colors &  Formatting
 RED    = "\033[31m"
 GREEN  = "\033[32m"
 YELLOW = "\033[33m"
@@ -285,6 +285,7 @@ ABORTED_BY_USER_ERROR = "Aborted by user."
 # Other
 YES = "Y"
 NO = "N"
+UNKNOWN_MODULE_NAME = "unknown-module"
 
 # ---------------------------------------------------------------
 # Folders and file names (usually no reason to change any of these)

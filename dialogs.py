@@ -207,9 +207,7 @@ def prompt_for_input_file(subdir=None, subdirs_traversed=[]):
 
                         if config.INPUT_TYPE == config.INPUT_TYPE_BABELE:
 
-                            # Extract module name from input filename
-                            if config.INPUT_FILE_NAME.count(".") > 1:
-                                config.MODULE_NAME = config.INPUT_FILE_NAME[ 0 : config.INPUT_FILE_NAME.find('.')]
+                            config.MODULE_NAME = suggest_module_name()
 
                             if config.MODULE_NAME is None or len(config.MODULE_NAME) == 0:
                                 print(fn.log(
@@ -244,6 +242,21 @@ def prompt_for_input_file(subdir=None, subdirs_traversed=[]):
     else:
 
         raise ValueError(f"Input folder {config.INPUT_FOLDER_NAME} is empty.")
+
+
+# ------------------------------------------------------------
+# Function: Suggest Module Name
+# Try to extract module name from input filename
+# If not successful, return config.UNKNOWN_MODULE_NAME
+# ------------------------------------------------------------
+def suggest_module_name():
+
+    suggested = config.UNKNOWN_MODULE_NAME
+
+    if config.INPUT_FILE_NAME.count(".") > 1:
+        suggested = config.INPUT_FILE_NAME[0: config.INPUT_FILE_NAME.find('.')]
+
+    return suggested
 
 
 # ------------------------------------------------------------
