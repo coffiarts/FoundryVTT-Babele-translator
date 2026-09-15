@@ -1,5 +1,6 @@
 import config
 import shared_functions as fn
+import exceptions
 import queue
 
 _request_queue = queue.Queue()
@@ -60,17 +61,19 @@ def confirm_yes_no(question="") -> bool:
     response_queue = queue.Queue()
 
     _request_queue.put({
-        "type": "text",
+        "type": config.PROMPT_TYPE_YESNO,
         "question": question,
         "response_queue": response_queue
     })
 
     answer = response_queue.get()
-    answer_is_yes = answer == config.YES
 
-    LOGGER(f"{fn.log(f"Answer: {config.YES if answer_is_yes else config.NO}")}")
+    if answer == config.CANCEL:
+        raise exceptions.CancelledException()
 
-    return answer_is_yes
+    LOGGER(f"{fn.log(f"Answer: {answer}")}")
+
+    return answer == config.YES
 
 
 # ------------------------------------------------------------
@@ -81,13 +84,18 @@ def prompt_radio(question, options):
     response_queue = queue.Queue()
 
     _request_queue.put({
-        "type": "radio",
+        "type": config.PROMPT_TYPE_RADIO,
         "question": question,
         "options": options,
         "response_queue": response_queue
     })
 
-    return response_queue.get()
+    answer = response_queue.get()
+
+    if answer == config.CANCEL:
+        raise exceptions.CancelledException()
+
+    return answer
 
 
 # ------------------------------------------------------------
@@ -119,16 +127,18 @@ def confirm_force_new_run():
 # ------------------------------------------------------------
 def confirm_batch_nonfatal_errors():
 
-    answer = input(
-        f"\n{config.YELLOW}=== DO YOU WANT TO KEEP THIS BATCH ANYWAY? ===\n{config.RESET}"
-        f"({config.GREEN}{config.YES.upper()}/{config.YES.lower()}): Yes, keep it and export errors as Review Items for later.{config.RESET}\n"
-        f"({config.RED}{config.NO.upper()}/{config.NO.lower()}) or (Enter): No, abort. I will restart the process myself to retry from this Batch.{config.RESET}\n"
+    question = \
+        f"\n{config.YELLOW}=== DO YOU WANT TO KEEP THIS BATCH ANYWAY? ===\n{config.RESET}" \
+        f"({config.GREEN}{config.YES.upper()}/{config.YES.lower()}): Yes, keep it and export errors as Review Items for later.{config.RESET}\n" \
+        f"({config.RED}{config.NO.upper()}/{config.NO.lower()}) or (Enter): No, abort. I will restart the process myself to retry from this Batch.{config.RESET}\n" \
         f"{config.YELLOW}?>{config.RESET} "
-    ).strip().lower()
 
-    normalized_answer = True if answer == config.YES.lower() else False
+    answer = confirm_yes_no(question)
 
-    return normalized_answer
+    if answer == config.CANCEL:
+        raise exceptions.CancelledException()
+
+    return answer
 
 
 # ------------------------------------------------------------

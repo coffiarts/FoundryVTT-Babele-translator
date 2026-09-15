@@ -282,9 +282,15 @@ RESET  = "\033[0m" # Used to end any coloring or formatting
 PLACEHOLDER_TRANSLATION_ERROR = "PLACEHOLDER_TRANSLATION_ERROR"
 ABORTED_BY_USER_ERROR = "Aborted by user."
 
+# Prompt Types
+PROMPT_TYPE_RADIO = "radio"
+PROMPT_TYPE_YESNO = "yes/no"
+PROMPT_TYPE_TEXT = "text"
+
 # Other
-YES = "Y"
-NO = "N"
+YES = "Yes"
+NO = "No"
+CANCEL = "Cancel"
 UNKNOWN_MODULE_NAME = "unknown-module"
 
 # ---------------------------------------------------------------

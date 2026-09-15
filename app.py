@@ -1,8 +1,10 @@
-import queue
-import dialogs
-import threading
-import translate
+from multiprocessing.process import parent_process
+
 import config
+import translate
+import dialogs
+import queue
+import threading
 import customtkinter as ctk
 from tkinter import filedialog
 from pathlib import Path
@@ -33,7 +35,6 @@ class App(ctk.CTk):
         )
 
         self.file_label.pack(padx=20, pady=(0, 20))
-
 
         # =========================================
         # Input type selector
@@ -76,7 +77,6 @@ class App(ctk.CTk):
             side="left"
         )
 
-
         # =========================================
         # Module name suggestion (editable)
         # =========================================
@@ -96,9 +96,8 @@ class App(ctk.CTk):
 
         self.module_name_entry.insert(0, "(Please pick a file first)")
 
-
         # =========================================
-        # Start Button
+        # Start Translation Button
         # =========================================
         self.start_button = ctk.CTkButton(
             self,
@@ -108,58 +107,77 @@ class App(ctk.CTk):
 
         self.start_button.pack(padx=20, pady=20)
 
-
         # =========================================
         # Log Output Window
         # =========================================
         self.log = ctk.CTkTextbox(self, width=600, height=300)
 
-        self.log.pack(padx=20, pady=20, fill="both", expand=True)
+        self.log.pack(padx=20, pady=20, fill="both", expand=False)
 
         # Initialize Logger
         self.LOGGER = self.log_message
 
-
         # =========================================
-        # Dynamic prompts (initially hidden)
+        # Dynamic prompts (at bottom, initially hidden)
         # =========================================
-        self.current_response_queue = None
-
         self.current_radio_buttons = []
 
         self.question_label = ctk.CTkLabel(
             self,
             text=""
         )
-        self.question_label.pack(padx=20, pady=(10, 5), anchor="w")
+        self.show_question_label()
 
-        self.answer_entry = ctk.CTkEntry(
+        self.text_answer_entry = ctk.CTkEntry(
             self,
             width=400
         )
-        self.answer_entry.pack(padx=20, pady=5, fill="x")
+        self.show_text_answer_entry()
 
+        # Buttons Frame
+        self.buttons_frame = ctk.CTkFrame(self)
+
+        # Submit ("OK") Button
         self.submit_button = ctk.CTkButton(
-            self,
+            self.buttons_frame,
             text="OK",
-            command=self.process_dialog_response
+            command=self.read_dialog_response
         )
-        self.submit_button.pack(padx=20, pady=(0, 20))
+        self.show_submit_button()
+
+        # YES Button
+        self.yes_button = ctk.CTkButton(
+            self.buttons_frame,
+            text="Yes",
+            command=self.submit_yes
+        )
+
+        # NO Button
+        self.no_button = ctk.CTkButton(
+            self.buttons_frame,
+            text="No",
+            command=self.submit_no
+        )
+
+        # CANCEL Button
+        self.cancel_button = ctk.CTkButton(
+            self.buttons_frame,
+            text="Cancel",
+            command=self.cancel
+        )
 
         # Set them all initially to invisible
-        self.question_label.pack_forget()
-        self.answer_entry.pack_forget()
-        self.submit_button.pack_forget()
-
+        self.hide_cancel_button()
+        self.hide_all_prompts()
 
         # =========================================
         # Now go for it!
         # =========================================
+        self.current_response_queue = None
         self.disable_configuration_controls()
         self.file_button.configure(state="normal")
-
-        self.process_dialog_requests()
-
+        self.cancel_event = threading.Event()
+        self.render_dialog_requests()
 
 
     # ===========================================
@@ -184,15 +202,9 @@ class App(ctk.CTk):
             text=self.selected_file.name
         )
 
-        suggested_module_name = dialogs.suggest_module_name(
-            config.INPUT_FILE,
-            self.input_type_var.get()
-        )
-
-        self.module_name_entry.delete(0, "end")
-        self.module_name_entry.insert(0, suggested_module_name)
-
         self.enable_configuration_controls()
+
+        self.refresh_module_name_suggestion()
 
 
     # ===========================================
@@ -200,6 +212,9 @@ class App(ctk.CTk):
     # Runs the main worker thread (translation) asynchronously
     # ===========================================
     def start_translation(self):
+
+        self.cancel_event.clear()
+        self.show_cancel_button()
 
         if config.INPUT_FILE is None:
             self.log_message("Please select an input file first.")
@@ -213,9 +228,9 @@ class App(ctk.CTk):
         threading.Thread(
             target=translate.run_translation,
             kwargs={
-                # deine normalen Parameter ...
                 "logger": self.log_message,
                 "finished": self.translation_finished,
+                "cancel_event": self.cancel_event
             },
             daemon=True
         ).start()
@@ -238,7 +253,7 @@ class App(ctk.CTk):
     # Processes dialog requests from the translation engine and dynamically
     # displays the corresponding UI elements in the main application window.
     # ===========================================
-    def process_dialog_requests(self):
+    def render_dialog_requests(self):
 
         try:
             request = dialogs.get_request()
@@ -247,18 +262,13 @@ class App(ctk.CTk):
             pass
 
         else:
-            if request["type"] == "radio":
+            if request["type"] == config.PROMPT_TYPE_RADIO:
                 self.current_response_queue = request["response_queue"]
 
                 self.question_label.configure(
                     text=request["question"]
                 )
-
-                self.question_label.pack(
-                    padx=20,
-                    pady=(10, 5),
-                    anchor="w"
-                )
+                self.show_question_label()
 
                 self.radio_var = ctk.StringVar()
 
@@ -276,50 +286,39 @@ class App(ctk.CTk):
 
                     self.current_radio_buttons.append(radio)
 
-                self.submit_button.pack(
-                    padx=20,
-                    pady=(10, 20)
-                )
+                self.show_buttons_frame()
+                self.show_submit_button()
 
-            elif request["type"] == "text":
+            elif request["type"] == config.PROMPT_TYPE_YESNO:
+
                 self.current_response_queue = request["response_queue"]
 
                 self.question_label.configure(
                     text=request["question"]
                 )
 
-                self.question_label.pack(
-                    padx=20,
-                    pady=(10, 5),
-                    anchor="w"
+                self.show_question_label()
+                self.show_buttons_frame()
+                self.show_yesno_buttons()
+
+            elif request["type"] == config.PROMPT_TYPE_TEXT:
+                self.current_response_queue = request["response_queue"]
+
+                self.question_label.configure(
+                    text=request["question"]
                 )
 
-                self.answer_entry.pack(
-                    padx=20,
-                    pady=5,
-                    fill="x"
-                )
+                self.show_question_label()
+                self.show_text_answer_entry()
+                self.show_buttons_frame()
+                self.show_submit_button()
 
-                self.submit_button.pack(
-                    padx=20,
-                    pady=(10, 20)
-                )
-
-                self.answer_entry.focus()
+                self.text_answer_entry.focus()
 
             else:
                 print("UNBEKANNTER REQUEST")
 
-        self.after(50, self.process_dialog_requests)
-
-
-    # ===========================================
-    # Function: Log Message
-    # Writes the message passed to the configured logger
-    # ===========================================
-    def log_message(self, message):
-        self.log.insert("end", message + "\n")
-        self.log.see("end")
+        self.after(50, self.render_dialog_requests)
 
 
     # ===========================================
@@ -327,7 +326,7 @@ class App(ctk.CTk):
     # Submits the current dialog response, delivers it to the waiting request,
     # and removes any temporary dialog controls from the UI.
     # ===========================================
-    def process_dialog_response(self):
+    def read_dialog_response(self):
 
         if self.current_response_queue is None:
             return
@@ -336,23 +335,19 @@ class App(ctk.CTk):
             answer = self.radio_var.get()
 
         else:
-            answer = self.answer_entry.get().strip().upper()
+            answer = self.text_answer_entry.get().strip().upper()
 
         self.current_response_queue.put(answer)
 
-        self.answer_entry.delete(0, "end")
+        self.text_answer_entry.delete(0, "end")
 
-        self.question_label.pack_forget()
-        self.answer_entry.pack_forget()
-        self.submit_button.pack_forget()
+        self.hide_all_prompts()
 
         self.current_response_queue = None
 
         for radio in self.current_radio_buttons:
             radio.destroy()
-
         self.current_radio_buttons.clear()
-
 
     # ===========================================
     # Function: On Input Type Changed
@@ -388,12 +383,9 @@ class App(ctk.CTk):
     def disable_configuration_controls(self):
 
         self.file_button.configure(state="disabled")
-
         self.radio_input_type_babele.configure(state="disabled")
         self.radio_input_type_localization.configure(state="disabled")
-
         self.module_name_entry.configure(state="disabled")
-
         self.start_button.configure(state="disabled")
 
 
@@ -404,15 +396,128 @@ class App(ctk.CTk):
     def enable_configuration_controls(self):
 
         self.file_button.configure(state="normal")
-
         self.radio_input_type_babele.configure(state="normal")
         self.radio_input_type_localization.configure(state="normal")
-
         self.module_name_entry.configure(state="normal")
-
         self.start_button.configure(state="normal")
+        self.hide_cancel_button()
+
+
+
+    # ===========================================
+    # Function: Submit YES
+    # Used by the "Yes" button
+    # ===========================================
+    def submit_yes(self):
+        self.current_response_queue.put(config.YES)
+
+
+    # ===========================================
+    # Function: Submit NO
+    # Used by the "No" button
+    # ===========================================
+    def submit_no(self):
+        self.current_response_queue.put(config.NO)
+
+
+    # ===========================================
+    # Function: Cancel
+    # Used by the "Cancel" button
+    # ===========================================
+    def cancel(self):
+        self.cancel_event.set()
+        self.cancel_button.configure(text="Please wait ...", state="disabled") # This one's needed for interrupting running API calls
+        self.current_response_queue.put(config.CANCEL)         # ... this one for interrupting user prompts
+
+
+    # ===========================================
+    # Function: Hide All Prompts
+    #
+    # ===========================================
+    def hide_all_prompts(self):
+        self.question_label.pack_forget()
+        self.text_answer_entry.pack_forget()
+        self.buttons_frame.pack_forget()
+        self.submit_button.pack_forget()
+        self.yes_button.pack_forget()
+        self.no_button.pack_forget()
+
+    # ===========================================
+    # Function: Show Buttons Frame
+    #
+    # ===========================================
+    def show_buttons_frame(self):
+        self.buttons_frame.pack(
+            padx=20,
+            pady=5
+        )
+
+    # ===========================================
+    # Function: Show Cancel Button
+    #
+    # ===========================================
+    def show_cancel_button(self):
+        self.cancel_button.pack(padx=20, pady=(0, 20))
+
+    # ===========================================
+    # Function: Hide Cancel Button
+    #
+    # ===========================================
+    def hide_cancel_button(self):
+        self.cancel_button.pack_forget()
+
+    # ===========================================
+    # Function: Show Question Label
+    #
+    # ===========================================
+    def show_question_label(self):
+        self.question_label.pack(padx=20, pady=(10, 5), anchor="w")
+
+    # ===========================================
+    # Function: Show Text Answer Entry
+    #
+    # ===========================================
+    def show_text_answer_entry(self):
+        self.text_answer_entry.pack(padx=20, pady=5, fill="x")
+
+    # ===========================================
+    # Function: Show Submit Button
+    #
+    # ===========================================
+    def show_submit_button(self):
+        self.submit_button.pack(padx=20, pady=(0, 20))
+
+    # ===========================================
+    # Function: Show Yes/No Buttons
+    #
+    # ===========================================
+    def show_yesno_buttons(self):
+        self.yes_button.pack(padx=20, pady=(0, 20))
+        self.no_button.pack(padx=20, pady=(0, 20))
+
+
+    # ===========================================
+    # Function: Worker Exception Handler
+    # Responsible for catching any error occuring within the asynchronous translation thread
+    # Primarily useful for intercepting when user has pressed CANCEL
+    # ===========================================
+    def worker_exception_handler(self, args):
+        self.log_message("Cancelled.")
+        self.cancel_button.configure(text="Cancel", state="enabled")
+        self.hide_all_prompts()
+        self.enable_configuration_controls()
+
+
+    # ===========================================
+    # Function: Log Message
+    # Writes the message passed to the configured logger
+    # ===========================================
+    def log_message(self, message):
+        self.log.insert("end", message + "\n")
+        self.log.see("end")
 
 
 # Finally, run it!
 app = App()
+threading.excepthook = app.worker_exception_handler
 app.mainloop()

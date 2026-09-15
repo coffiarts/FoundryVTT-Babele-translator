@@ -1,6 +1,7 @@
 import config
 import dialogs
 import shared_functions as fn
+import exceptions
 import json
 import time
 from datetime import datetime
@@ -8,7 +9,8 @@ from pathlib import Path
 from openai import OpenAI
 from collections.abc import Callable
 
-def run_translation(logger: Callable[[str], None] = print, finished=None):
+
+def run_translation(logger: Callable[[str], None] = print, finished=None, cancel_event=None):
     # -------------------------------------------------------------------------------------------------------
     # This controls the main process of translating a Babele input file:
     # - import from Babele file
@@ -43,7 +45,7 @@ def run_translation(logger: Callable[[str], None] = print, finished=None):
 
     fn.adapt_file_paths()
 
-# ---------------------------------------------------
+    # ---------------------------------------------------
     # START OF PROCESSING FILE
     # ---------------------------------------------------
     logger(fn.log_header(f"PROCESSING FILE: {config.INPUT_FILE}"))
@@ -59,6 +61,7 @@ def run_translation(logger: Callable[[str], None] = print, finished=None):
 
     # If Terminology exists, ask the user what to do with it
     config.REBUILD_TERMINOLOGY_IF_EXISTS = dialogs.prompt_for_terminology_rebuild()
+
 
     # ---------------------------------------------------
     # DETERMINE RUN MODE
@@ -726,6 +729,8 @@ def run_translation(logger: Callable[[str], None] = print, finished=None):
                                  color=config.BLUE)
                           )
 
+                    check_for_cancel(cancel_event)
+
                 # ---------------------------------------------------
                 # SAVE TRANSLATIONS (STILL WITH PLACEHOLDERS)
                 # ---------------------------------------------------
@@ -887,6 +892,11 @@ def run_translation(logger: Callable[[str], None] = print, finished=None):
 
     if finished:
         finished()
+
+def check_for_cancel(cancel_event):
+    if cancel_event is not None and cancel_event.is_set():
+        raise exceptions.CancelledException()
+
 
 if __name__ == "__main__":
     run_translation()
