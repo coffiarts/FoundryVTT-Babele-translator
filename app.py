@@ -489,7 +489,7 @@ class App(ctk.CTk):
     #
     # ===========================================
     def show_cancel_button(self):
-        self.cancel_button.pack(padx=20, pady=(0, 20))
+        self.cancel_button.pack(side="right", padx=5)
 
     # ===========================================
     # Function: Hide Cancel Button
@@ -517,15 +517,15 @@ class App(ctk.CTk):
     #
     # ===========================================
     def show_submit_button(self):
-        self.submit_button.pack(padx=20, pady=(0, 20))
+        self.submit_button.pack(side="left", padx=5)
 
     # ===========================================
     # Function: Show Yes/No Buttons
     #
     # ===========================================
     def show_yesno_buttons(self):
-        self.yes_button.pack(padx=20, pady=(0, 20))
-        self.no_button.pack(padx=20, pady=(0, 20))
+        self.yes_button.pack(side="left", padx=5)
+        self.no_button.pack(side="left", padx=5)
 
 
     # ===========================================
