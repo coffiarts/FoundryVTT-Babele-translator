@@ -25,7 +25,7 @@ TARGET_LANGUAGE = {
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 
-MOCK_MODE = True # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
+MOCK_MODE = False # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
 
 GAME_SYSTEM_CONTEXT = "D&D 5e" # Used in translation instructions. Free prompt-style. Always use the english name here, optionally enrich it by a translation, like: "The Dark Eye (aka 'Das Schwarze Auge')
 

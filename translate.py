@@ -453,6 +453,8 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
                 batch[config.TERMINOLOGY_STATUS] = config.COMPLETED
                 fn.save_batch(batch, batches, progress_info)
 
+                abort_if_cancelled(cancel_event)
+
             # ---------------------------------------------------
             # ... END OF TERMINOLOGY BATCH LOOP
             # ---------------------------------------------------
@@ -729,7 +731,6 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
                                  color=config.BLUE)
                           )
 
-                    check_for_cancel(cancel_event)
 
                 # ---------------------------------------------------
                 # SAVE TRANSLATIONS (STILL WITH PLACEHOLDERS)
@@ -739,6 +740,8 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
                 logger(fn.log(f"Saved {len(translations_with_placeholders)} translations (with placeholders)",
                              batch_id=batch["id"], batch_cnt=len(batches),
                              color=config.GREEN))
+
+                abort_if_cancelled(cancel_event)
 
                 # -------
                 # Tests:
@@ -893,7 +896,7 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
     if finished:
         finished()
 
-def check_for_cancel(cancel_event):
+def abort_if_cancelled(cancel_event):
     if cancel_event is not None and cancel_event.is_set():
         raise exceptions.CancelledException()
 

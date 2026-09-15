@@ -104,8 +104,21 @@ class App(ctk.CTk):
             text="Start Translation",
             command=self.start_translation
         )
-
         self.start_button.pack(padx=20, pady=20)
+
+        # =========================================
+        # Mock Mode Switch
+        # =========================================
+        self.mock_mode_var = ctk.BooleanVar(value=config.MOCK_MODE)
+        self.mock_switch = ctk.CTkSwitch(
+            self,
+            text="Mock Mode",
+            variable=self.mock_mode_var,
+            command=self.on_mock_mode_changed,
+            progress_color="red",
+            fg_color="gray"
+        )
+        self.mock_switch.pack(padx=20, pady=20)
 
         # =========================================
         # Log Output Window
@@ -244,9 +257,18 @@ class App(ctk.CTk):
     def translation_finished(self):
         self.after(
             0,
-            lambda: self.enable_configuration_controls()
+            lambda: self.reset_ui()
         )
 
+
+    # ===========================================
+    # Function: Reset UI
+    # Restores the initial state before pressing
+    # the "Start Translation" Button
+    # ===========================================
+    def reset_ui(self):
+        self.hide_all_prompts()
+        self.enable_configuration_controls()
 
     # ===========================================
     # Function: Process Dialog Requests
@@ -359,6 +381,15 @@ class App(ctk.CTk):
 
 
     # ===========================================
+    # Function: On Mock Mode Changed
+    # Gets alerted whenever a the Mock Mode Switch is toggled
+    # ===========================================
+    def on_mock_mode_changed(self):
+        config.MOCK_MODE = bool(self.mock_mode_var.get())
+        self.log_message(f"MOCK_MODE = {config.MOCK_MODE}")
+
+
+    # ===========================================
     # Function: Refresh Module Name Suggestion
     #
     # ===========================================
@@ -387,6 +418,7 @@ class App(ctk.CTk):
         self.radio_input_type_localization.configure(state="disabled")
         self.module_name_entry.configure(state="disabled")
         self.start_button.configure(state="disabled")
+        self.mock_switch.configure(state="disabled")
 
 
     # ===========================================
@@ -400,7 +432,7 @@ class App(ctk.CTk):
         self.radio_input_type_localization.configure(state="normal")
         self.module_name_entry.configure(state="normal")
         self.start_button.configure(state="normal")
-        self.hide_cancel_button()
+        self.mock_switch.configure(state="normal")
 
 
 

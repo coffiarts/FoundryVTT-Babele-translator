@@ -719,7 +719,7 @@ def determine_run_mode():
     if find_resume_batch(progress_info) is None:
 
         # Run is already complete. So we need to ask the user what they want:
-        if dialogs.confirm_force_new_run():
+        if dialogs.confirm_replace_results():
 
             return config.NEW_RUN
 
@@ -1237,6 +1237,7 @@ def check_and_warn_if_mock_mode(additionalMsg=None):
 
     if config.MOCK_MODE:
         LOGGER(log_header(msg, color=config.YELLOW))
-    return config
+
+    return config.MOCK_MODE
 
 

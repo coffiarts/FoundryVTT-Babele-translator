@@ -27,31 +27,6 @@ def get_request():
 
 
 # ------------------------------------------------------------
-# Function: Prompt for Terminology Rebuild
-# ------------------------------------------------------------
-def prompt_for_terminology_rebuild() -> bool:
-
-    LOGGER(f"TERMINOLOGY_FILE: {config.TERMINOLOGY_FILE}")
-
-    if config.TERMINOLOGY_FILE.exists():
-
-        question =\
-            f"\n{config.MAGENTA}"\
-            f"=== REBUILD TERMINOLOGY? ===\n" \
-            f"Existing Terminology for this input file already exists at: {config.TERMINOLOGY_FILE}\n" \
-            "Do you want to rebuild it online before translating?\n" \
-            f"({config.YES.upper()}/{config.YES.lower()}): Rebuild terminology from scratch \n" \
-            f"({config.NO.upper()}/{config.NO.lower()}) or (Enter): No, reuse existing Terminology (or continue, in case of aborts)\n" \
-            f"?>{config.RESET} "
-
-        return confirm_yes_no(question)
-
-    else:
-
-        return True
-
-
-# ------------------------------------------------------------
 # Function: Simple y/n prompt confirmation
 # ------------------------------------------------------------
 def confirm_yes_no(question="") -> bool:
@@ -99,9 +74,33 @@ def prompt_radio(question, options):
 
 
 # ------------------------------------------------------------
-# Function: Prompt confirmation for force new run
+# Function: Prompt for Terminology Rebuild
 # ------------------------------------------------------------
-def confirm_force_new_run():
+def prompt_for_terminology_rebuild() -> bool:
+
+    LOGGER(f"TERMINOLOGY_FILE: {config.TERMINOLOGY_FILE}")
+
+    if config.TERMINOLOGY_FILE.exists():
+
+        question = \
+            f"\n{config.MAGENTA}" \
+            f"=== REBUILD TERMINOLOGY? ===\n" \
+            f"Existing Terminology for this input file already exists at: {config.TERMINOLOGY_FILE}\n" \
+            "Do you want to rebuild it online before translating?\n" \
+            f"[{config.YES}] Rebuild terminology from scratch \n" \
+            f"[{config.NO}] No, reuse existing Terminology (or continue, in case of aborts)"
+
+        return confirm_yes_no(question)
+
+    else:
+
+        return True
+
+
+# ------------------------------------------------------------
+# Function: Confirm Replacement of Results
+# ------------------------------------------------------------
+def confirm_replace_results():
 
     text_if_output_still_exists = (
         f"A translated output file can still be found at: {config.OUTPUT_FILE}\n"
@@ -115,9 +114,8 @@ def confirm_force_new_run():
         f"{text_if_output_still_exists}" \
         "Do you want to discard the results and start a complete, FRESH translation?\n" \
         "Or do you want to keep them and just rerun Post-Processing steps (integrity checks and rebuilding of the output file)?\n" \
-        f"({config.YES.upper()}/{config.YES.lower()}): Discard and replace previous results.\n" \
-        f"({config.NO.upper()}/{config.NO.lower()}) or (Enter)): No, just rerun Post-Processing (this will also skip Terminology rebuild!)\n" \
-        f"?>{config.RESET} "
+        f"[{config.YES}] Discard and replace previous results.\n" \
+        f"[{config.NO}] No, just rerun Post-Processing (this will also skip Terminology rebuild!)"
 
     return confirm_yes_no(question)
 
@@ -131,7 +129,7 @@ def confirm_batch_nonfatal_errors():
         f"\n{config.YELLOW}=== DO YOU WANT TO KEEP THIS BATCH ANYWAY? ===\n{config.RESET}" \
         f"({config.GREEN}{config.YES.upper()}/{config.YES.lower()}): Yes, keep it and export errors as Review Items for later.{config.RESET}\n" \
         f"({config.RED}{config.NO.upper()}/{config.NO.lower()}) or (Enter): No, abort. I will restart the process myself to retry from this Batch.{config.RESET}\n" \
-        f"{config.YELLOW}?>{config.RESET} "
+        f"{config.YELLOW}?>{config.RESET}"
 
     answer = confirm_yes_no(question)
 
