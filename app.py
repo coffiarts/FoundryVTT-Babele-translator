@@ -15,6 +15,7 @@ class App(ctk.CTk):
         super().__init__()
 
         self.title("Foundry VTT Translator")
+        self.calculate_window_dimensions(min_width=1000, min_height=700, factor=0.8)
 
         # =========================================
         # File picker
@@ -386,7 +387,7 @@ class App(ctk.CTk):
     # ===========================================
     def on_mock_mode_changed(self):
         config.MOCK_MODE = bool(self.mock_mode_var.get())
-        self.log_message(f"MOCK_MODE = {config.MOCK_MODE}")
+        # self.log_message(f"MOCK_MODE = {config.MOCK_MODE}")
 
 
     # ===========================================
@@ -547,6 +548,22 @@ class App(ctk.CTk):
     def log_message(self, message):
         self.log.insert("end", message + "\n")
         self.log.see("end")
+
+
+    def calculate_window_dimensions(self, min_width=800, min_height=600, factor=0.8):
+
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+
+        width = int(max(screen_width * factor, min_width))
+        height = int(max(screen_height * factor, min_height))
+
+        x = int((screen_width - width) // 2)
+        y = int((screen_height - height) // 2)
+
+        geometry = f"{width}x{height}+{x}+{y}"
+        self.minsize(min_width, min_height)
+        self.geometry(geometry)
 
 
 # Finally, run it!
