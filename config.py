@@ -278,6 +278,13 @@ BOLD = "\033[1m"
 UNDERLINE = "\033[4m"
 RESET  = "\033[0m" # Used to end any coloring or formatting
 
+# UI Colors & Formatting
+TAG_ERROR = "error"
+TAG_SUCCESS = "success"
+TAG_WARNING = "warning"
+TAG_INFO = "info"
+TAG_QUESTION = "question"
+
 # Error Types
 PLACEHOLDER_TRANSLATION_ERROR = "PLACEHOLDER_TRANSLATION_ERROR"
 ABORTED_BY_USER_ERROR = "Aborted by user."

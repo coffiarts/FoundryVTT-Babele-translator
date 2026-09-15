@@ -156,7 +156,7 @@ def init_progress_info():
 
     save_json_output(data=progress_info, output_file=config.PROGRESS_INFO_FILE)
 
-    LOGGER(log(f"... Done. New Progress Info is now tracked by file {config.PROGRESS_INFO_FILE}"))
+    LOGGER(log(f"... Done. New Progress Info is now tracked by file {config.PROGRESS_INFO_FILE}", config.TAG_SUCCESS))
 
     return progress_info
 
@@ -187,20 +187,20 @@ def validate_progress_info(progress_info=None):
             config.TERMINOLOGY_STATUS
         )
 
-        LOGGER(log(f"Terminology loop completed: {terminology_completed}"))
+        LOGGER(log(f"Terminology loop completed: {terminology_completed}"), config.TAG_SUCCESS)
 
         translation_completed = validate_status_sequence(
             progress_info["batches"],
             config.TRANSLATION_STATUS
         )
 
-        LOGGER(log(f"Translation loop completed: {translation_completed}"))
+        LOGGER(log(f"Translation loop completed: {translation_completed}"), config.TAG_SUCCESS)
 
     except ValueError:
 
         raise
 
-    LOGGER(log("... valid."))
+    LOGGER(log("... valid."), config.TAG_SUCCESS)
 
     resume_batch = find_resume_batch(
         progress_info
@@ -753,7 +753,7 @@ def cleanup_progress_files():
 
             LOGGER(log(f"... Deleted: {file}"))
 
-    LOGGER(log("Done."))
+    LOGGER(log("Done."), config.TAG_SUCCESS)
 
 
 # ------------------------------------------------------------
@@ -906,8 +906,7 @@ def post_mortem_dump(
 
             file.write("\n\n")
 
-    LOGGER(log_header(f"❌POST-MORTEM DUMP WRITTEN TO: {config.POST_MORTEM_DUMP_FILE}",
-                     color=config.RED))
+    LOGGER(log_header(f"❌POST-MORTEM DUMP WRITTEN TO: {config.POST_MORTEM_DUMP_FILE}"), config.TAG_ERROR)
 
 
 # ------------------------------------------------------------
@@ -1236,7 +1235,7 @@ def check_and_warn_if_mock_mode(additionalMsg=None):
         msg += f"\n=== {additionalMsg}"
 
     if config.MOCK_MODE:
-        LOGGER(log_header(msg, color=config.YELLOW))
+        LOGGER(log_header(msg), config.TAG_WARNING)
 
     return config.MOCK_MODE
 

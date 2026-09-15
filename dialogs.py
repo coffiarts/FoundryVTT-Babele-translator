@@ -85,9 +85,9 @@ def prompt_for_terminology_rebuild() -> bool:
         question = \
             f"\n{config.MAGENTA}" \
             f"=== REBUILD TERMINOLOGY? ===\n" \
-            f"Existing Terminology for this input file already exists at: {config.TERMINOLOGY_FILE}\n" \
+            f"Found existing Terminology for this input file: {config.TERMINOLOGY_FILE}\n" \
             "Do you want to rebuild it online before translating?\n" \
-            f"[{config.YES}] Rebuild terminology from scratch \n" \
+            f"[{config.YES}] Rebuild terminology from scratch (replace) \n" \
             f"[{config.NO}] No, reuse existing Terminology (or continue, in case of aborts)"
 
         return confirm_yes_no(question)
@@ -126,10 +126,9 @@ def confirm_replace_results():
 def confirm_batch_nonfatal_errors():
 
     question = \
-        f"\n{config.YELLOW}=== DO YOU WANT TO KEEP THIS BATCH ANYWAY? ===\n{config.RESET}" \
-        f"({config.GREEN}{config.YES.upper()}/{config.YES.lower()}): Yes, keep it and export errors as Review Items for later.{config.RESET}\n" \
-        f"({config.RED}{config.NO.upper()}/{config.NO.lower()}) or (Enter): No, abort. I will restart the process myself to retry from this Batch.{config.RESET}\n" \
-        f"{config.YELLOW}?>{config.RESET}"
+        f"\n=== DO YOU WANT TO KEEP THIS BATCH ANYWAY? ===\n" \
+        f"({config.YES.upper()}/{config.YES.lower()}): Yes, keep it and export errors as Review Items for later.\n" \
+        f"({config.NO.upper()}/{config.NO.lower()}) or (Enter): No, abort. I will restart the process myself to retry from this Batch."
 
     answer = confirm_yes_no(question)
 

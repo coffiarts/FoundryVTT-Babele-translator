@@ -10,7 +10,7 @@ from openai import OpenAI
 from collections.abc import Callable
 
 
-def run_translation(logger: Callable[[str], None] = print, finished=None, cancel_event=None):
+def run_translation(logger: Callable[str], finished=None, cancel_event=None):
     # -------------------------------------------------------------------------------------------------------
     # This controls the main process of translating a Babele input file:
     # - import from Babele file
@@ -73,7 +73,7 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
 
     except ValueError as e:
 
-        logger(fn.log(f"{config.RED}❌ {e.args[0]}{config.RESET}"))
+        logger(fn.log(f"❌ {e.args[0]}"), config.TAG_ERROR)
         raise RuntimeError(str(e))
 
     # ---------------------------------------------------
@@ -107,11 +107,11 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
                 starting_text = fn.load_translatables_for_batch(resume_batch, limit=1)[0]["text"][:100]
                 logger(fn.log(
                     f"Resuming from Batch with id={resume_batch["id"]} [Terminology: {resume_batch[config.TERMINOLOGY_STATUS]} / Translation: {resume_batch[config.TRANSLATION_STATUS]}] - starting with: \"{starting_text} ...\"\n")
-                )
+                    , config.TAG_INFO)
 
         except ValueError as e:
 
-            logger(fn.log(f"{config.RED}❌ {e.args[0]}{config.RESET}"))
+            logger(fn.log(f"❌ {e.args[0]}"), config.TAG_ERROR)
             raise RuntimeError(str(e))
 
     elif run_mode == config.POSTPROCESSING_ONLY:
@@ -126,7 +126,7 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
     # ------------------------------------------------------------
     global_timer_start = time.perf_counter()
     current_time = datetime.now().strftime("%H:%M:%S")
-    logger(fn.log(f"Start global timer (time: {current_time})"))
+    logger(fn.log(f"Start global timer (time: {current_time})"), config.TAG_INFO)
 
     if run_mode != config.POSTPROCESSING_ONLY:
 
@@ -267,7 +267,7 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
             details["batches"].pop()
             fn.save_json_output(data=details["batches"], output_file=config.BATCHES_FILE)
 
-            logger(fn.log(f"{config.RED}❌ {details["error"]}{config.RESET}"))
+            logger(fn.log(f"❌ {details["error"]}"), config.TAG_ERROR)
             raise RuntimeError(str(e))
 
         # -------
@@ -329,8 +329,7 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
                 progress_info
             )
 
-            logger(fn.log_header(f"REUSING EXISTING TERMINOLOGY ({len(master_terminology["terms"])} entries).",
-                                color=config.MAGENTA))
+            logger(fn.log_header(f"REUSING EXISTING TERMINOLOGY ({len(master_terminology["terms"])} entries)."), config.TAG_INFO)
 
         else:
 
@@ -342,7 +341,7 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
                 )
 
                 logger(fn.log(
-                    f"RESUMING TERMINOLOGY BUILD FROM LAST RUN ({len(master_terminology_raw["terms"])} entries) ...{config.RESET}"))
+                    f"RESUMING TERMINOLOGY BUILD FROM LAST RUN ({len(master_terminology_raw["terms"])} entries) ..."), config.TAG_INFO)
 
             else:
 
@@ -364,10 +363,11 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
 
                 if (run_mode == config.RESUME
                         and batch[config.TERMINOLOGY_STATUS] == config.COMPLETED):
-                    logger(fn.log(
+                    logger(
+                        fn.log(
                         "Terminology skipped (already completed)",
-                        batch_id=batch['id'], batch_cnt=len(batches),
-                        color=config.GREEN)
+                            batch_id=batch['id'], batch_cnt=len(batches)
+                        ), config.TAG_SUCCESS
                     )
 
                     continue
@@ -439,10 +439,11 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
 
                     api_timer_end = time.perf_counter()
 
-                    logger(fn.log(
+                    logger(
+                        fn.log(
                         f"API duration: {api_timer_end - api_timer_start:.2f} seconds",
-                        batch_id=batch['id'], batch_cnt=len(batches),
-                        color=config.BLUE)
+                            batch_id=batch['id'], batch_cnt=len(batches)
+                        ), config.TAG_INFO
                     )
 
                 fn.save_json_output(
@@ -466,8 +467,8 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
 
             if duplicate_cnt > 0:
                 logger(fn.log(
-                    f"Eliminated {duplicate_cnt} duplicate(s) from Terminology.",
-                    color=config.YELLOW)
+                    f"Eliminated {duplicate_cnt} duplicate(s) from Terminology."),
+                    config.TAG_INFO
                 )
 
             fn.save_json_output(
@@ -476,8 +477,8 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
             )
 
             logger(fn.log(
-                f"Saved {len(master_terminology["terms"])} entries in Master Terminology: {config.TERMINOLOGY_FILE}",
-                color=config.GREEN)
+                f"Saved {len(master_terminology["terms"])} entries in Master Terminology: {config.TERMINOLOGY_FILE}"),
+                config.TAG_SUCCESS
             )
 
         # ---------------------------------------------------
@@ -492,8 +493,8 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
         if run_mode == config.RESUME and resume_batch is None:
 
             logger(fn.log(
-                f"All Translation processing already completed. Continuing with post-processing only.",
-                color=config.GREEN)
+                f"All Translation processing already completed. Continuing with post-processing only."),
+                config.TAG_SUCCESS
             )
 
             translations_with_placeholders = fn.load_json_input(
@@ -532,8 +533,8 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
 
                         logger(fn.log(
                             f"Translation skipped (already completed)",
-                            batch_id=batch["id"], batch_cnt=len(batches),
-                            color=config.GREEN)
+                                batch_id=batch["id"], batch_cnt=len(batches)
+                            ), config.TAG_SUCCESS
                         )
 
                         continue
@@ -641,7 +642,7 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
 
                     api_timer_start = time.perf_counter()
                     current_time = datetime.now().strftime("%H:%M:%S")
-                    logger(fn.log(f"Start API timer (time: {current_time})"))
+                    logger(fn.log(f"Start API timer (time: {current_time})"), config.TAG_INFO)
 
                     response = client.responses.create(
                         model=config.LLM_MODEL,
@@ -656,12 +657,12 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
 
                         new_translations = json.loads(response.output_text)
 
-                        logger(fn.log("Completenes check...", batch_id=batch["id"], batch_cnt=len(batches)))
+                        logger(fn.log("Completeness check...", batch_id=batch["id"], batch_cnt=len(batches)))
 
                         fn.verify_translation_completeness(batch, len(batches), batch_payload, new_translations)
 
                         logger(
-                            fn.log(f"... completeness check: {config.GREEN}PASSED{config.RESET}", batch_id=batch["id"],
+                            fn.log(f"... completeness check: {config.GREEN}PASSED", batch_id=batch["id"],
                                    batch_cnt=len(batches)))
 
                         # ---------------------------------------------------
@@ -677,8 +678,9 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
 
                         if len(expected_placeholder_errors) == 0:
                             logger(fn.log(f"No Placeholder translation issue(s) identified in Batch",
-                                         batch_id=batch["id"], batch_cnt=len(batches),
-                                         color=config.GREEN))
+                                         batch_id=batch["id"], batch_cnt=len(batches)),
+                                   config.TAG_SUCCESS
+                            )
 
                             translations_with_placeholders.extend(new_translations)
 
@@ -689,11 +691,13 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
                             for error in expected_placeholder_errors:
                                 list_errors_text += fn.to_multiline_text(error["details"]) + "\n"
 
-                            logger(fn.log(f"{list_errors_text}", color=config.YELLOW))
-                            logger(fn.log(
+                            logger(fn.log(f"{list_errors_text}"), config.TAG_WARNING)
+                            logger(
+                                fn.log(
                                 f"WARNING - Confirmation required: Batch contains {len(expected_placeholder_errors)} placeholder translation error(s) - see above.",
-                                batch_id=batch["id"], batch_cnt=len(batches),
-                                color=config.YELLOW))
+                                    batch_id=batch["id"], batch_cnt=len(batches)),
+                                config.TAG_WARNING
+                            )
 
                             if not dialogs.confirm_batch_nonfatal_errors():
 
@@ -708,7 +712,7 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
                         batch[config.TRANSLATION_STATUS] = config.FAILED
                         fn.save_batch(batch, batches, progress_info)
 
-                        logger(fn.log(f"{e.args[0]}", color=config.RED))
+                        logger(fn.log(f"{e.args[0]}"), config.TAG_ERROR)
 
                         fn.post_mortem_dump(
                             title="FATAL ERROR",
@@ -726,10 +730,11 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
 
                     api_timer_end = time.perf_counter()
 
-                    logger(fn.log(f"API duration: {api_timer_end - api_timer_start:.2f} seconds",
-                                 batch_id=batch["id"], batch_cnt=len(batches),
-                                 color=config.BLUE)
-                          )
+                    logger(
+                        fn.log(f"API duration: {api_timer_end - api_timer_start:.2f} seconds",
+                                 batch_id=batch["id"], batch_cnt=len(batches)
+                        ), config.TAG_INFO
+                    )
 
 
                 # ---------------------------------------------------
@@ -738,8 +743,9 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
                 fn.save_json_output(translations_with_placeholders, config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE)
 
                 logger(fn.log(f"Saved {len(translations_with_placeholders)} translations (with placeholders)",
-                             batch_id=batch["id"], batch_cnt=len(batches),
-                             color=config.GREEN))
+                             batch_id=batch["id"], batch_cnt=len(batches)),
+                       config.TAG_SUCCESS
+                )
 
                 abort_if_cancelled(cancel_event)
 
@@ -755,8 +761,9 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
                 batch[config.TRANSLATION_STATUS] = config.COMPLETED
                 fn.save_batch(batch, batches, progress_info)
                 logger(fn.log_header(f"Translation status: [{batch[config.TRANSLATION_STATUS]}]...",
-                                    batch_id=batch["id"], batch_cnt=len(batches),
-                                    color=config.GREEN))
+                                    batch_id=batch["id"], batch_cnt=len(batches)),
+                       config.TAG_SUCCESS
+                )
 
             # ---------------------------------------------------
             # ... END OF BATCH PROCESSING LOOP
@@ -811,8 +818,9 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
         translations_with_placeholders
     )
 
-    logger(fn.log(f"{len(review_items)} Placeholder translation issue(s) identified",
-                 color=config.GREEN if len(review_items) == 0 else config.YELLOW))
+    logger(fn.log(f"{len(review_items)} Placeholder translation issue(s) identified"),
+                 config.TAG_SUCCESS if len(review_items) == 0 else config.TAG_WARNING
+    )
 
     # ---------------------------------------------------
     # SAVE REVIEW ITEMS
@@ -826,8 +834,10 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
         fn.delete_file(config.REVIEW_ITEMS_FILE)
 
     if len(review_items) > 0:
-        logger(fn.log(f"{len(review_items)} Post-review item(s) written to {config.REVIEW_ITEMS_FILE}",
-                     color=config.GREEN if len(review_items) == 0 else config.YELLOW))
+        logger(
+            fn.log(f"{len(review_items)} Post-review item(s) written to {config.REVIEW_ITEMS_FILE}"),
+            config.TAG_SUCCESS if len(review_items) == 0 else config.TAG_WARNING
+        )
         # logger(fn.log(f"DEBUG - \n{fn.to_prettified_json(review_items)}"))
 
     # ---------------------------------------------------
@@ -885,13 +895,13 @@ def run_translation(logger: Callable[[str], None] = print, finished=None, cancel
     # ------------------------------------------------------------
     global_timer_end = time.perf_counter()
     logger(fn.log(
-        f"TOTAL processing duration: {config.BLUE}{global_timer_end - global_timer_start:.2f} seconds{config.RESET}"))
-    logger(fn.log(f"Find the translated file here: {config.BLUE}{config.OUTPUT_FILE}{config.RESET}"))
+        f"TOTAL processing duration: {global_timer_end - global_timer_start:.2f} seconds"), config.TAG_INFO)
+    logger(fn.log(f"Find the translated file here: {config.OUTPUT_FILE}"), config.TAG_INFO)
 
     if not fn.check_and_warn_if_mock_mode("THIS WAS ONLY A SIMULATION!"):
 
         current_time = datetime.now().strftime("%H:%M:%S")
-        logger(fn.log_header(f"PROCESS COMPLETED SUCCESSFULLY (time: {current_time})", color=config.GREEN))
+        logger(fn.log_header(f"PROCESS COMPLETED SUCCESSFULLY (time: {current_time})"), config.TAG_SUCCESS)
 
     if finished:
         finished()

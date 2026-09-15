@@ -1,13 +1,12 @@
-from multiprocessing.process import parent_process
-
-import config
-import translate
-import dialogs
 import queue
 import threading
-import customtkinter as ctk
-from tkinter import filedialog
 from pathlib import Path
+from tkinter import filedialog
+import customtkinter as ctk
+import config
+import dialogs
+import translate
+
 
 class App(ctk.CTk):
 
@@ -32,7 +31,8 @@ class App(ctk.CTk):
 
         self.file_label = ctk.CTkLabel(
             self,
-            text="No file selected"
+            text="No file selected",
+            font=("Arial", 18, "bold")
         )
 
         self.file_label.pack(padx=20, pady=(0, 20))
@@ -83,14 +83,16 @@ class App(ctk.CTk):
         # =========================================
         self.module_name_label = ctk.CTkLabel(
             self,
-            text="Module name (overwrite as needed)"
+            text="Module name (overwrite as needed)",
+            font=("Arial", 18, "bold")
         )
 
         self.module_name_label.pack(padx=20, pady=(20, 0))
 
         self.module_name_entry = ctk.CTkEntry(
             self,
-            width=300
+            width=300,
+            font=("Arial", 14, "bold")
         )
 
         self.module_name_entry.pack(padx=20, pady=5, fill="x")
@@ -124,8 +126,12 @@ class App(ctk.CTk):
         # =========================================
         # Log Output Window
         # =========================================
-        self.log = ctk.CTkTextbox(self, width=600, height=300)
-
+        self.log = ctk.CTkTextbox(self, width=600, height=300, fg_color="black", text_color="white")
+        self.log.tag_config(config.TAG_ERROR, foreground="red")
+        self.log.tag_config(config.TAG_SUCCESS, foreground="green")
+        self.log.tag_config(config.TAG_WARNING, foreground="yellow")
+        self.log.tag_config(config.TAG_INFO, foreground="blue")
+        self.log.tag_config(config.TAG_QUESTION, foreground="magenta")
         self.log.pack(padx=20, pady=20, fill="both", expand=False)
 
         # Initialize Logger
@@ -138,7 +144,8 @@ class App(ctk.CTk):
 
         self.question_label = ctk.CTkLabel(
             self,
-            text=""
+            text="",
+            font=("Arial", 16, "bold")
         )
         self.show_question_label()
 
@@ -193,7 +200,6 @@ class App(ctk.CTk):
         self.cancel_event = threading.Event()
         self.render_dialog_requests()
 
-
     # ===========================================
     # Function: Select File
     # Generated a UI File Picker for selecting the Input File
@@ -220,7 +226,6 @@ class App(ctk.CTk):
 
         self.refresh_module_name_suggestion()
 
-
     # ===========================================
     # Function: Start Translation
     # Runs the main worker thread (translation) asynchronously
@@ -231,7 +236,7 @@ class App(ctk.CTk):
         self.show_cancel_button()
 
         if config.INPUT_FILE is None:
-            self.log_message("Please select an input file first.")
+            self.log_message("Please select an input file first.", config.TAG_ERROR)
             return
 
         config.INPUT_TYPE = self.input_type_var.get()
@@ -249,7 +254,6 @@ class App(ctk.CTk):
             daemon=True
         ).start()
 
-
     # ===========================================
     # Function: Translation Finished
     # A callback invoked when start_translation() completes
@@ -260,7 +264,6 @@ class App(ctk.CTk):
             0,
             lambda: self.reset_ui()
         )
-
 
     # ===========================================
     # Function: Reset UI
@@ -343,7 +346,6 @@ class App(ctk.CTk):
 
         self.after(50, self.render_dialog_requests)
 
-
     # ===========================================
     # Function: Process Dialog Response
     # Submits the current dialog response, delivers it to the waiting request,
@@ -380,7 +382,6 @@ class App(ctk.CTk):
     def on_input_type_changed(self, *args):
         self.refresh_module_name_suggestion()
 
-
     # ===========================================
     # Function: On Mock Mode Changed
     # Gets alerted whenever a the Mock Mode Switch is toggled
@@ -388,7 +389,6 @@ class App(ctk.CTk):
     def on_mock_mode_changed(self):
         config.MOCK_MODE = bool(self.mock_mode_var.get())
         # self.log_message(f"MOCK_MODE = {config.MOCK_MODE}")
-
 
     # ===========================================
     # Function: Refresh Module Name Suggestion
@@ -407,7 +407,6 @@ class App(ctk.CTk):
         self.module_name_entry.delete(0, "end")
         self.module_name_entry.insert(0, suggested_module_name)
 
-
     # ===========================================
     # Function: Disable Configuration Controls
     #
@@ -420,7 +419,6 @@ class App(ctk.CTk):
         self.module_name_entry.configure(state="disabled")
         self.start_button.configure(state="disabled")
         self.mock_switch.configure(state="disabled")
-
 
     # ===========================================
     # Function: Enable Configuration Controls
@@ -435,15 +433,12 @@ class App(ctk.CTk):
         self.start_button.configure(state="normal")
         self.mock_switch.configure(state="normal")
 
-
-
     # ===========================================
     # Function: Submit YES
     # Used by the "Yes" button
     # ===========================================
     def submit_yes(self):
         self.current_response_queue.put(config.YES)
-
 
     # ===========================================
     # Function: Submit NO
@@ -452,16 +447,15 @@ class App(ctk.CTk):
     def submit_no(self):
         self.current_response_queue.put(config.NO)
 
-
     # ===========================================
     # Function: Cancel
     # Used by the "Cancel" button
     # ===========================================
     def cancel(self):
         self.cancel_event.set()
-        self.cancel_button.configure(text="Please wait ...", state="disabled") # This one's needed for interrupting running API calls
-        self.current_response_queue.put(config.CANCEL)         # ... this one for interrupting user prompts
-
+        self.cancel_button.configure(text="Please wait ...",
+                                     state="disabled")  # This one's needed for interrupting running API calls
+        self.current_response_queue.put(config.CANCEL)  # ... this one for interrupting user prompts
 
     # ===========================================
     # Function: Hide All Prompts
@@ -528,28 +522,30 @@ class App(ctk.CTk):
         self.yes_button.pack(side="left", padx=5)
         self.no_button.pack(side="left", padx=5)
 
-
     # ===========================================
     # Function: Worker Exception Handler
     # Responsible for catching any error occuring within the asynchronous translation thread
     # Primarily useful for intercepting when user has pressed CANCEL
     # ===========================================
     def worker_exception_handler(self, args):
-        self.log_message("Cancelled.")
+        self.log_message("Cancelled.", config.TAG_ERROR)
         self.cancel_button.configure(text="Cancel", state="enabled")
         self.hide_all_prompts()
         self.enable_configuration_controls()
-
 
     # ===========================================
     # Function: Log Message
     # Writes the message passed to the configured logger
     # ===========================================
-    def log_message(self, message):
-        self.log.insert("end", message + "\n")
+    def log_message(self, message, tag=""):
+        self.log.insert("end", message + "\n", tag)
         self.log.see("end")
 
 
+    # ===========================================
+    # Function: Calculate window size and position
+    #
+    # ===========================================
     def calculate_window_dimensions(self, min_width=800, min_height=600, factor=0.8):
 
         screen_width = self.winfo_screenwidth()
