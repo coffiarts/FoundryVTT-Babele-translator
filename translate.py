@@ -362,7 +362,7 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
                 #     raise Exception("!!! TEST ABORT !!!")
 
                 if (run_mode == config.RESUME
-                        and batch[config.TERMINOLOGY_STATUS] == config.COMPLETED):
+                        and batch[config.TERMINOLOGY_STATUS] in (config.COMPLETED, config.REVIEW_REQUIRED)):
                     logger(
                         fn.log(
                         "Terminology skipped (already completed)",
@@ -707,6 +707,24 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
 
                                 translations_with_placeholders.extend(new_translations)
 
+                                existing_review_items = []
+
+                                if config.PROGRESS_REVIEW_ITEMS_FILE.exists():
+                                    existing_review_items = fn.load_json_input(
+                                        config.PROGRESS_REVIEW_ITEMS_FILE
+                                    )
+
+                                existing_review_items.extend(
+                                    expected_placeholder_errors
+                                )
+
+                                fn.save_json_output(
+                                    existing_review_items,
+                                    config.PROGRESS_REVIEW_ITEMS_FILE
+                                )
+
+                                batch[config.TRANSLATION_STATUS] = config.REVIEW_REQUIRED
+
                     except Exception as e:
 
                         batch[config.TRANSLATION_STATUS] = config.FAILED
@@ -758,7 +776,9 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
                 # ---------------------------------------------------
                 # SET BATCH & PROGRESS INFO TO COMPLETED
                 # ---------------------------------------------------
-                batch[config.TRANSLATION_STATUS] = config.COMPLETED
+                if batch[config.TRANSLATION_STATUS] != config.REVIEW_REQUIRED:
+                    batch[config.TRANSLATION_STATUS] = config.COMPLETED
+
                 fn.save_batch(batch, batches, progress_info)
                 logger(fn.log_header(f"Translation status: [{batch[config.TRANSLATION_STATUS]}]...",
                                     batch_id=batch["id"], batch_cnt=len(batches)),
@@ -809,36 +829,30 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
         # )}")
 
     # ---------------------------------------------------
-    # VALIDATE PLACEHOLDERS => REVIEW ITEMS
+    # SAVE COLLECTED REVIEW ITEMS TO OUTPUT FOLDER
     # ---------------------------------------------------
-    logger(fn.log_header(f"VALIDATE PLACEHOLDERS"))
+    logger(fn.log_header(f"SAVE COLLECTED REVIEW ITEMS TO OUTPUT FOLDER"))
 
-    review_items = fn.identify_review_items(
-        translatables_with_placeholders,
-        translations_with_placeholders
-    )
+    review_items = []
 
-    logger(fn.log(f"{len(review_items)} Placeholder translation issue(s) identified"),
-                 config.TAG_SUCCESS if len(review_items) == 0 else config.TAG_WARNING
-    )
+    if config.PROGRESS_REVIEW_ITEMS_FILE.exists():
+        review_items = fn.load_json_input(
+            config.PROGRESS_REVIEW_ITEMS_FILE
+        )
 
-    # ---------------------------------------------------
-    # SAVE REVIEW ITEMS
-    # ---------------------------------------------------
     if len(review_items) > 0:
         fn.save_json_output(
             review_items,
             config.REVIEW_ITEMS_FILE
         )
-    else:
-        fn.delete_file(config.REVIEW_ITEMS_FILE)
-
-    if len(review_items) > 0:
         logger(
             fn.log(f"{len(review_items)} Post-review item(s) written to {config.REVIEW_ITEMS_FILE}"),
             config.TAG_SUCCESS if len(review_items) == 0 else config.TAG_WARNING
         )
         # logger(fn.log(f"DEBUG - \n{fn.to_prettified_json(review_items)}"))
+    else:
+        fn.delete_file(config.REVIEW_ITEMS_FILE)
+
 
     # ---------------------------------------------------
     # REPLACE PLACEHOLDERS (Restore Foundry Syntax)

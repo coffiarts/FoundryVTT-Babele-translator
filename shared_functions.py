@@ -230,18 +230,18 @@ def validate_status_sequence(
 
         if phase_completed:
 
-            if batch_progress_info[status_phase] != config.COMPLETED:
+            if batch_progress_info[status_phase] not in (config.COMPLETED, config.REVIEW_REQUIRED):
                 phase_completed = False
 
         else:
 
-            if batch_progress_info[status_phase] == config.COMPLETED:
+            if batch_progress_info[status_phase] in (config.COMPLETED, config.REVIEW_REQUIRED):
 
                 raise ValueError(
                     f"Corrupt ProgressInfo: "
                     f"{status_phase}="
-                    f"{config.COMPLETED} found after non-"
-                    f"{config.COMPLETED} batch "
+                    f"{config.COMPLETED} or {config.REVIEW_REQUIRED} found after non-"
+                    f"{config.COMPLETED}/{config.REVIEW_REQUIRED} batch "
                     f"(id={batch_progress_info['id']})."
                 )
 
@@ -746,6 +746,7 @@ def cleanup_progress_files():
         config.BATCHES_FILE,
         config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE,
         config.TRANSLATIONS_FINAL_FILE,
+        config.PROGRESS_REVIEW_ITEMS_FILE,
         config.POST_MORTEM_DUMP_FILE
     ]:
 
@@ -1208,6 +1209,7 @@ def adapt_file_paths():
     config.BATCHES_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.BATCHES_FILE_NAME
     config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME
     config.TRANSLATIONS_FINAL_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.TRANSLATIONS_FINAL_FILE_NAME
+    config.PROGRESS_REVIEW_ITEMS_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.PROGRESS_REVIEW_ITEMS_FILE_NAME
     config.POST_MORTEM_DUMP_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.POST_MORTEM_DUMP_FILE_NAME
 
 
@@ -1221,7 +1223,7 @@ def find_resume_batch(progress_info):
         if (
                 batch_progress_info[config.TERMINOLOGY_STATUS] != config.COMPLETED
                 or
-                batch_progress_info[config.TRANSLATION_STATUS] != config.COMPLETED
+                batch_progress_info[config.TRANSLATION_STATUS] not in (config.COMPLETED, config.REVIEW_REQUIRED)
         ):
             return batch_progress_info
 
