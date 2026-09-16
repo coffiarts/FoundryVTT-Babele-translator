@@ -162,6 +162,69 @@ def init_progress_info():
 
 
 # ------------------------------------------------------------
+# Function: Analyze Process Info
+# Retrieves all UI-relevant info from the current process-info
+# Required for initializing a resumable process after a file has been selected
+# ------------------------------------------------------------
+def analyze_progress_info():
+
+    progress_info = load_json_input(
+        config.PROGRESS_INFO_FILE
+    )
+
+    review_item_count = 0
+
+    if config.PROGRESS_REVIEW_ITEMS_FILE.exists():
+
+        review_items = load_json_input(
+            config.PROGRESS_REVIEW_ITEMS_FILE
+        )
+
+        review_item_count = len(review_items)
+
+    batches = []
+
+    translatables_count = 0
+    char_count = 0
+
+    for batch in progress_info["batches"]:
+
+        batch_translatables_count = len(
+            batch["translatable_ids"]
+        )
+
+        translatables_count += (
+            batch_translatables_count
+        )
+
+        char_count += batch["char_count"]
+
+        batches.append({
+            "id": batch["id"],
+            "terminology_status": batch["terminology_status"],
+            "translation_status": batch["translation_status"],
+            "translatables_count": batch_translatables_count,
+            "char_count": batch["char_count"]
+        })
+
+    return {
+        "input_type": progress_info["config"]["INPUT_TYPE"],
+        "module_name": progress_info["config"]["MODULE_NAME"],
+
+        "translatables_count": translatables_count,
+        "char_count": char_count,
+
+        "batches": batches,
+
+        "review_item_count": review_item_count,
+
+        "status_message": (
+            "Process can be resumed."
+        )
+    }
+
+
+# ------------------------------------------------------------
 # Function: Validate Progress
 # Used by Run Mode = RESUME
 # Checks if the status sequence of subsequent Batches is valid for being resumed.
