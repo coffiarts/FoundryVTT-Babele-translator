@@ -658,7 +658,8 @@ def get_resume_relevant_config():
         "TRANSLATABLE_FIELDS": sorted(config.TRANSLATABLE_FIELDS),
         "TRANSLATABLE_CONTAINERS": sorted(config.TRANSLATABLE_CONTAINERS),
         "PROTECTED_SYNTAX_PATTERNS": sorted(config.PROTECTED_SYNTAX_PATTERNS),
-        "MOCK_MODE": config.MOCK_MODE,
+        "INPUT_TYPE": config.INPUT_TYPE,
+        "MODULE_NAME": config.MODULE_NAME
     }
 
 
