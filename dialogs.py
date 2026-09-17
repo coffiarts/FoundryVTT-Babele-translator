@@ -1,5 +1,5 @@
 import config
-import shared_functions as fn
+import core_functions as fn
 import exceptions
 import queue
 

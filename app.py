@@ -6,6 +6,7 @@ import customtkinter as ctk
 import config
 import dialogs
 import translate
+import core_functions as fn
 
 
 class App(ctk.CTk):
@@ -126,13 +127,13 @@ class App(ctk.CTk):
         # =========================================
         # Log Output Window
         # =========================================
-        self.log = ctk.CTkTextbox(self, width=600, height=300, fg_color="black", text_color="white")
-        self.log.tag_config(config.TAG_ERROR, foreground="red")
-        self.log.tag_config(config.TAG_SUCCESS, foreground="green")
-        self.log.tag_config(config.TAG_WARNING, foreground="yellow")
-        self.log.tag_config(config.TAG_INFO, foreground="blue")
-        self.log.tag_config(config.TAG_QUESTION, foreground="magenta")
-        self.log.pack(padx=20, pady=20, fill="both", expand=False)
+        self.log_window = ctk.CTkTextbox(self, width=600, height=300, fg_color="black", text_color="white")
+        self.log_window.tag_config(config.TAG_ERROR, foreground="red")
+        self.log_window.tag_config(config.TAG_SUCCESS, foreground="green")
+        self.log_window.tag_config(config.TAG_WARNING, foreground="yellow")
+        self.log_window.tag_config(config.TAG_INFO, foreground="blue")
+        self.log_window.tag_config(config.TAG_QUESTION, foreground="magenta")
+        self.log_window.pack(padx=20, pady=20, fill="both", expand=False)
 
         # Initialize Logger
         self.LOGGER = self.log_message
@@ -219,12 +220,13 @@ class App(ctk.CTk):
         config.INPUT_FILE_NAME = self.selected_file.name
 
         self.file_label.configure(
-            text=self.selected_file.name
+            text=config.INPUT_FILE_NAME
         )
 
         self.enable_configuration_controls()
 
         self.refresh_module_name_suggestion()
+
 
     # ===========================================
     # Function: Start Translation
@@ -232,11 +234,29 @@ class App(ctk.CTk):
     # ===========================================
     def start_translation(self):
 
+        # Check for existing progress-info
+        config.INPUT_TYPE = self.input_type_var.get()
+        config.MODULE_NAME = self.module_name_entry.get().strip()
+        fn.adapt_file_paths()
+
+        progress_info = fn.analyze_progress_info()
+        self.LOGGER(fn.to_prettified_json(progress_info))
+
+        if progress_info is not None:
+
+            self.init_visual_process_status()
+
+            if not dialogs.confirm_yes_no(
+                f"Do you want to resume the incomplete process for this file?\n"
+                f"[{config.YES}] Pick it up where I left\n"
+                f"[{config.NO}] Discard and start from scratch"):
+                exit() # TODO - reset UI
+
         self.cancel_event.clear()
         self.show_cancel_button()
 
         if config.INPUT_FILE is None:
-            self.log_message("Please select an input file first.", config.TAG_ERROR)
+            self.LOGGER("Please select an input file first.", config.TAG_ERROR)
             return
 
         config.INPUT_TYPE = self.input_type_var.get()
@@ -388,7 +408,7 @@ class App(ctk.CTk):
     # ===========================================
     def on_mock_mode_changed(self):
         config.MOCK_MODE = bool(self.mock_mode_var.get())
-        # self.log_message(f"MOCK_MODE = {config.MOCK_MODE}")
+        # self.LOGGER(f"MOCK_MODE = {config.MOCK_MODE}")
 
     # ===========================================
     # Function: Refresh Module Name Suggestion
@@ -406,6 +426,7 @@ class App(ctk.CTk):
 
         self.module_name_entry.delete(0, "end")
         self.module_name_entry.insert(0, suggested_module_name)
+
 
     # ===========================================
     # Function: Disable Configuration Controls
@@ -432,6 +453,14 @@ class App(ctk.CTk):
         self.module_name_entry.configure(state="normal")
         self.start_button.configure(state="normal")
         self.mock_switch.configure(state="normal")
+
+
+    # ===========================================
+    # Function: Initialize Visual Process Status
+    # Visualizes the last state of an existing, resumable process
+    # ===========================================
+    def init_visual_process_status(self):
+        pass # TODO - not implemented
 
     # ===========================================
     # Function: Submit YES
@@ -528,7 +557,7 @@ class App(ctk.CTk):
     # Primarily useful for intercepting when user has pressed CANCEL
     # ===========================================
     def worker_exception_handler(self, args):
-        self.log_message("Cancelled.", config.TAG_ERROR)
+        self.LOGGER("Cancelled.", config.TAG_ERROR)
         self.cancel_button.configure(text="Cancel", state="enabled")
         self.hide_all_prompts()
         self.enable_configuration_controls()
@@ -538,8 +567,8 @@ class App(ctk.CTk):
     # Writes the message passed to the configured logger
     # ===========================================
     def log_message(self, message, tag=""):
-        self.log.insert("end", message + "\n", tag)
-        self.log.see("end")
+        self.log_window.insert("end", message + "\n", tag)
+        self.log_window.see("end")
 
 
     # ===========================================

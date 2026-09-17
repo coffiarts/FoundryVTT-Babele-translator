@@ -1,6 +1,6 @@
 import config
 import dialogs
-import shared_functions as fn
+import core_functions as fn
 import exceptions
 import json
 import time
@@ -42,8 +42,6 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
     # ---------------------------------------------------
     if config.INPUT_FILE is None:
         raise ValueError("❌ Input File is not defined.")
-
-    fn.adapt_file_paths()
 
     # ---------------------------------------------------
     # START OF PROCESSING FILE
