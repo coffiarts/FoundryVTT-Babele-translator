@@ -1,8 +1,8 @@
-import config
-import translation_worker
-import app_ui_dialogs
-import translation_worker_dialogs
-import core_functions as fn
+import ct4f_config as config
+import ct4f_translator as translator
+import ct4f_translator_dialogs as translator_dialogs
+import ct4f_ui_dialogs as ui_dialogs
+import ct4f_core_functions as fn
 import queue
 import threading
 from pathlib import Path
@@ -19,9 +19,10 @@ class App(ctk.CTk):
         # Initialize Logger
         self.LOGGER = self.log_message
 
-        app_ui_dialogs.set_logger(self.LOGGER)
+        ui_dialogs.set_logger(self.LOGGER)
 
-        self.title("Foundry VTT Translator")
+        self.title("coffiarts' Translator for Foundry VTT")
+        self.iconbitmap(fn.resource_path("assets/icon.ico"))
         self.calculate_window_dimensions(min_width=1000, min_height=700, factor=0.8)
 
         # =========================================
@@ -245,13 +246,13 @@ class App(ctk.CTk):
         fn.adapt_file_paths()
 
         progress_info = fn.analyze_progress_info()
-        self.LOGGER(f"progress_info:\n:{fn.to_prettified_json(progress_info)}")
+        # self.LOGGER(f"progress_info:\n:{fn.to_prettified_json(progress_info)}")
 
         if progress_info is not None:
 
             self.init_visual_process_status()
 
-            app_ui_dialogs.confirm_yes_no(
+            ui_dialogs.confirm_yes_no(
                 question="Do you want to resume the incomplete process for this file?",
                 on_yes=self.run_translation,
                 on_no=self.start_from_scratch
@@ -290,7 +291,7 @@ class App(ctk.CTk):
         self.disable_configuration_controls()
 
         threading.Thread(
-            target=translation_worker.run_translation,
+            target=translator.run_translation,
             kwargs={
                 "logger": self.log_message,
                 "finished": self.translation_finished,
@@ -332,7 +333,7 @@ class App(ctk.CTk):
     def render_dialog_requests(self):
 
         try:
-            request = translation_worker_dialogs.get_request()
+            request = translator_dialogs.get_request()
 
         except queue.Empty:
             pass
@@ -455,7 +456,7 @@ class App(ctk.CTk):
         if self.selected_file is None:
             return
 
-        suggested_module_name = app_ui_dialogs.suggest_module_name(
+        suggested_module_name = ui_dialogs.suggest_module_name(
             self.selected_file,
             self.input_type_var.get()
         )
@@ -617,7 +618,13 @@ class App(ctk.CTk):
     # Primarily useful for intercepting when user has pressed CANCEL
     # ===========================================
     def worker_exception_handler(self, args):
-        self.LOGGER("Cancelled.", config.TAG_ERROR)
+
+        msg = f"An Exception occurred:\n{args}"
+        self.LOGGER(msg, config.TAG_ERROR)
+        if self.LOGGER != print:
+            print(msg)
+        # self.LOGGER("Cancelled.", config.TAG_ERROR)
+
         self.cancel_button.configure(text="Cancel", state="enabled")
         self.hide_all_prompts()
         self.enable_configuration_controls()
@@ -654,5 +661,6 @@ class App(ctk.CTk):
 
 # Finally, run it!
 app = App()
+config.APP_DIR = fn.app_dir()
 threading.excepthook = app.worker_exception_handler
 app.mainloop()

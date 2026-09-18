@@ -1,5 +1,5 @@
-import config
-import translation_worker_dialogs as dialogs
+import ct4f_config as config
+import ct4f_translator_dialogs as dialogs
 
 
 LOGGER = print

@@ -326,31 +326,34 @@ APIKEY_FILE_NAME = "openai_api_key.txt"
 
 # ---------------------------------------------------------------
 # Preprocess configuration (do not edit under ANY circumstance!)
+# These are just for initializing. Parameter is handled by user prompt
 # ---------------------------------------------------------------
-INPUT_TYPE = None  # Just for initializing. Parameter is handled by user prompt
+APP_DIR = None
+INPUT_TYPE = None
 
-INPUT_FILE_NAME = None  # Just for initializing. Parameter is handled by user prompt
-MODULE_NAME = None  # Just for initializing. Parameter is handled by user prompt
+INPUT_FILE_NAME = None
+MODULE_NAME = None
 
-REVIEW_ITEMS_FILE_NAME = None  # Just for initializing. Parameter is handled by user prompt
-TERMINOLOGY_FILE_NAME = None  # Just for initializing. Parameter is handled by user prompt
+REVIEW_ITEMS_FILE_NAME = None
+TERMINOLOGY_FILE_NAME = None
 
-INPUT_FILE = None  # Just for initializing. Parameter is handled by user prompt
-OUTPUT_FILE = None  # Just for initializing. Parameter is handled by user prompt
-PROGRESS_INFO_FILE = None  # Just for initializing. Parameter is handled by user prompt
-TRANSLATABLES_FILE = None  # Just for initializing. Parameter is handled by user prompt
-TRANSLATABLES_WITH_PLACEHOLDERS_FILE = None  # Just for initializing. Parameter is handled by user prompt
-PLACEHOLDERS_FILE = None  # Just for initializing. Parameter is handled by user prompt
-BATCHES_FILE = None  # Just for initializing. Parameter is handled by user prompt
-TERMINOLOGY_FILE = None  # Just for initializing. Parameter is handled by user prompt
-TRANSLATIONS_WITH_PLACEHOLDERS_FILE = None  # Just for initializing. Parameter is handled by user prompt
-TRANSLATIONS_FINAL_FILE = None  # Just for initializing. Parameter is handled by user prompt
-PROGRESS_REVIEW_ITEMS_FILE = None  # Just for initializing. Parameter is handled by user prompt
-POST_MORTEM_DUMP_FILE = None  # Just for initializing. Parameter is handled by user prompt
-REVIEW_ITEMS_FILE = None  # Just for initializing. Parameter is handled by user prompt
+INPUT_FILE = None
+OUTPUT_FILE = None
+PROGRESS_INFO_FILE = None
+TRANSLATABLES_FILE = None
+TRANSLATABLES_WITH_PLACEHOLDERS_FILE = None
+PLACEHOLDERS_FILE = None
+BATCHES_FILE = None
+TERMINOLOGY_FILE = None
+TRANSLATIONS_WITH_PLACEHOLDERS_FILE = None
+TRANSLATIONS_FINAL_FILE = None
+PROGRESS_REVIEW_ITEMS_FILE = None
+POST_MORTEM_DUMP_FILE = None
+REVIEW_ITEMS_FILE = None
 
-APIKEY_FILE = Path(SECRETS_FOLDER_NAME) / APIKEY_FILE_NAME
-REBUILD_TERMINOLOGY_IF_EXISTS = False  # Just for initializing. Parameter is handled by user prompt
+REBUILD_TERMINOLOGY_IF_EXISTS = False
+
+APIKEY_FILE = None
 
 
 

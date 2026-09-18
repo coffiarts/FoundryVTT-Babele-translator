@@ -1,6 +1,8 @@
-import config
+import ct4f_config as config
+import ct4f_translator_dialogs as translator_dialogs
 import json
 import os
+import sys
 import re
 from pathlib import Path
 from openai import OpenAI
@@ -167,9 +169,13 @@ def init_progress_info():
 # ------------------------------------------------------------
 def analyze_progress_info():
 
-    progress_info = load_json_input(
-        config.PROGRESS_INFO_FILE
-    )
+    if config.PROGRESS_INFO_FILE.exists():
+        progress_info = load_json_input(
+            config.PROGRESS_INFO_FILE
+        )
+
+    else:
+        return None
 
     review_item_count = 0
 
@@ -782,7 +788,7 @@ def determine_run_mode():
     if find_resume_batch(progress_info) is None:
 
         # Run is already complete. So we need to ask the user what they want:
-        if dialogs.confirm_replace_results():
+        if translator_dialogs.confirm_replace_results():
 
             return config.NEW_RUN
 
@@ -1228,19 +1234,21 @@ def adapt_file_paths():
     if config.INPUT_TYPE != config.INPUT_TYPE_BABELE and config.INPUT_TYPE != config.INPUT_TYPE_LOCALIZATION:
         raise Exception(f"Invalid input type: {config.INPUT_TYPE}")
 
+    config.APIKEY_FILE = config.APP_DIR / config.SECRETS_FOLDER_NAME / config.APIKEY_FILE_NAME # TODO - Change path into something locally configurable
+
     if config.INPUT_TYPE == config.INPUT_TYPE_BABELE:
 
-        config.PROGRESS_FOLDER_NAME = Path(config.PROGRESS_FOLDER_NAME) / config.MODULE_NAME / "babele" / config.TARGET_LANGUAGE["code"] / config.INPUT_FILE_NAME.removesuffix(".json")
-        config.TERMINOLOGY_FOLDER_NAME = Path(config.TERMINOLOGY_FOLDER_NAME) / config.MODULE_NAME / "babele"  / config.TARGET_LANGUAGE["code"]
-        config.OUTPUT_FOLDER_NAME = Path(config.OUTPUT_FOLDER_NAME) / config.MODULE_NAME / "babele" / config.TARGET_LANGUAGE["code"]
-        config.OUTPUT_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
+        config.PROGRESS_FOLDER_NAME = config.APP_DIR / config.PROGRESS_FOLDER_NAME / config.MODULE_NAME / "babele" / config.TARGET_LANGUAGE["code"] / config.INPUT_FILE_NAME.removesuffix(".json")
+        config.TERMINOLOGY_FOLDER_NAME = config.APP_DIR / config.TERMINOLOGY_FOLDER_NAME / config.MODULE_NAME / "babele"  / config.TARGET_LANGUAGE["code"]
+        config.OUTPUT_FOLDER_NAME = config.APP_DIR / config.OUTPUT_FOLDER_NAME / config.MODULE_NAME / "babele" / config.TARGET_LANGUAGE["code"]
+        config.OUTPUT_FILE = config.APP_DIR / config.OUTPUT_FOLDER_NAME / config.INPUT_FILE_NAME
 
     else:
 
-        config.PROGRESS_FOLDER_NAME = Path(config.PROGRESS_FOLDER_NAME) / config.MODULE_NAME / "lang"
-        config.TERMINOLOGY_FOLDER_NAME = Path(config.TERMINOLOGY_FOLDER_NAME) / config.MODULE_NAME  / "lang"
-        config.OUTPUT_FOLDER_NAME = Path(config.OUTPUT_FOLDER_NAME) / config.MODULE_NAME / "lang"
-        config.OUTPUT_FILE = Path(config.OUTPUT_FOLDER_NAME) / f"{config.TARGET_LANGUAGE["code"]}.json"
+        config.PROGRESS_FOLDER_NAME = config.APP_DIR / config.PROGRESS_FOLDER_NAME / config.MODULE_NAME / "lang"
+        config.TERMINOLOGY_FOLDER_NAME = config.APP_DIR / config.TERMINOLOGY_FOLDER_NAME / config.MODULE_NAME  / "lang"
+        config.OUTPUT_FOLDER_NAME = config.APP_DIR / config.OUTPUT_FOLDER_NAME / config.MODULE_NAME / "lang"
+        config.OUTPUT_FILE = config.APP_DIR / config.OUTPUT_FOLDER_NAME / f"{config.TARGET_LANGUAGE["code"]}.json"
 
     # Create folders where necessary
     if not os.path.exists(config.OUTPUT_FOLDER_NAME):
@@ -1304,4 +1312,18 @@ def check_and_warn_if_mock_mode(additionalMsg=None):
 
     return config.MOCK_MODE
 
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
+def app_dir():
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).parent
+    return Path(__file__).parent
 
