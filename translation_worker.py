@@ -1,5 +1,5 @@
 import config
-import dialogs
+import translation_worker_dialogs as dialogs
 import core_functions as fn
 import exceptions
 import json
@@ -924,5 +924,5 @@ def abort_if_cancelled(cancel_event):
 
 
 if __name__ == "__main__":
-    run_translation()
+    run_translation(print)
 

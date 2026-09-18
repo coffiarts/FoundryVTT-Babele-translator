@@ -1,5 +1,5 @@
 import config
-import shared_functions as fn
+import core_functions as fn
 
 # ------------------------------------------------------------
 # Function: Check Result
@@ -25,9 +25,9 @@ def check_result(result):
 def test_extract_translatables_from_babele(translatables):
 
     pass
-    # print(f"DEBUG - Content of first 10 translatables:"
-    #     f"\n{stringify_json(translatables[:10])}"
-    # )
+    print(f"DEBUG - Content of first 10 translatables:"
+        f"\n{fn.to_prettified_json(translatables[:10])}"
+    )
 
 
 def test_save_to_file(saved_data, loaded_data):
@@ -74,7 +74,7 @@ def test_create_translatables_with_placeholders(translatables_with_placeholders)
     #     f"{to_prettified_json(placeholders)}"
     # )
     # print(
-    #     f"DEBUG - All Translatables with PLaceholders:\n"
+    #     f"DEBUG - All Translatables with placeholders:\n"
     #     f"{to_prettified_json([
     #         translatable
     #         for translatable in translatables_with_placeholders

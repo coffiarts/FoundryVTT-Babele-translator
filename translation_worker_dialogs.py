@@ -26,6 +26,15 @@ def get_request():
     return _request_queue.get_nowait()
 
 
+# ===========================================
+# Function: Put Request
+#
+# ===========================================
+def put_request(request):
+
+    _request_queue.put(request)
+
+
 # ------------------------------------------------------------
 # Function: Simple y/n prompt confirmation
 # ------------------------------------------------------------
@@ -137,45 +146,4 @@ def confirm_batch_nonfatal_errors():
 
     return answer
 
-
-# ------------------------------------------------------------
-# Function: Suggest Module Name
-# Try to extract module name from input filename
-# If not successful, return config.UNKNOWN_MODULE_NAME
-# ------------------------------------------------------------
-def suggest_module_name(input_file, input_type):
-    suggested = config.UNKNOWN_MODULE_NAME
-
-    if input_type == config.INPUT_TYPE_BABELE:
-        if input_file.name.count(".") > 1:
-            suggested = input_file.name[0: input_file.name.find('.')]
-
-        return suggested
-
-    elif input_type == config.INPUT_TYPE_LOCALIZATION:
-        ignored_folder_names = {
-            "lang",
-            "language",
-            "languages"
-        }
-
-        current = input_file.parent
-
-        while True:
-
-            folder_name = current.name.lower()
-
-            if folder_name == config.INPUT_FOLDER_NAME.lower():
-                return config.UNKNOWN_MODULE_NAME
-
-            if folder_name not in {
-                "lang",
-                "language",
-                "languages"
-            }:
-                return current.name
-
-            current = current.parent
-
-    return suggested
 

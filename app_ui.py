@@ -1,18 +1,25 @@
+import config
+import translation_worker
+import app_ui_dialogs
+import translation_worker_dialogs
+import core_functions as fn
 import queue
 import threading
 from pathlib import Path
 from tkinter import filedialog
 import customtkinter as ctk
-import config
-import dialogs
-import translate
-import core_functions as fn
+
 
 
 class App(ctk.CTk):
 
     def __init__(self):
         super().__init__()
+
+        # Initialize Logger
+        self.LOGGER = self.log_message
+
+        app_ui_dialogs.set_logger(self.LOGGER)
 
         self.title("Foundry VTT Translator")
         self.calculate_window_dimensions(min_width=1000, min_height=700, factor=0.8)
@@ -106,7 +113,7 @@ class App(ctk.CTk):
         self.start_button = ctk.CTkButton(
             self,
             text="Start Translation",
-            command=self.start_translation
+            command=self.prepare_start
         )
         self.start_button.pack(padx=20, pady=20)
 
@@ -135,8 +142,6 @@ class App(ctk.CTk):
         self.log_window.tag_config(config.TAG_QUESTION, foreground="magenta")
         self.log_window.pack(padx=20, pady=20, fill="both", expand=False)
 
-        # Initialize Logger
-        self.LOGGER = self.log_message
 
         # =========================================
         # Dynamic prompts (at bottom, initially hidden)
@@ -195,7 +200,7 @@ class App(ctk.CTk):
         # =========================================
         # Now go for it!
         # =========================================
-        self.current_response_queue = None
+        self.current_request = None
         self.disable_configuration_controls()
         self.file_button.configure(state="normal")
         self.cancel_event = threading.Event()
@@ -229,10 +234,10 @@ class App(ctk.CTk):
 
 
     # ===========================================
-    # Function: Start Translation
-    # Runs the main worker thread (translation) asynchronously
+    # Function: Prepare Start
+    # Checks which run mode to apply, then delegates to the respective follow-up function
     # ===========================================
-    def start_translation(self):
+    def prepare_start(self):
 
         # Check for existing progress-info
         config.INPUT_TYPE = self.input_type_var.get()
@@ -240,24 +245,44 @@ class App(ctk.CTk):
         fn.adapt_file_paths()
 
         progress_info = fn.analyze_progress_info()
-        self.LOGGER(fn.to_prettified_json(progress_info))
+        self.LOGGER(f"progress_info:\n:{fn.to_prettified_json(progress_info)}")
 
         if progress_info is not None:
 
             self.init_visual_process_status()
 
-            if not dialogs.confirm_yes_no(
-                f"Do you want to resume the incomplete process for this file?\n"
-                f"[{config.YES}] Pick it up where I left\n"
-                f"[{config.NO}] Discard and start from scratch"):
-                exit() # TODO - reset UI
+            app_ui_dialogs.confirm_yes_no(
+                question="Do you want to resume the incomplete process for this file?",
+                on_yes=self.run_translation,
+                on_no=self.start_from_scratch
+            )
 
+        else:
+
+            self.run_translation()
+
+
+    # ===========================================
+    # Function: Initialize Visual Process Status
+    # Visualizes the last state of an existing, resumable process
+    # ===========================================
+    def start_from_scratch(self):
+        # TODO: reset_ui()
+        # TODO: start_translation()
+        self.run_translation()
+
+
+    # ===========================================
+    # Function: Run Translation
+    # Starts the main worker thread (translation) asynchronously
+    # ===========================================
+    def run_translation(self) -> bool:
         self.cancel_event.clear()
         self.show_cancel_button()
 
         if config.INPUT_FILE is None:
             self.LOGGER("Please select an input file first.", config.TAG_ERROR)
-            return
+            return False
 
         config.INPUT_TYPE = self.input_type_var.get()
         config.MODULE_NAME = self.module_name_entry.get().strip()
@@ -265,7 +290,7 @@ class App(ctk.CTk):
         self.disable_configuration_controls()
 
         threading.Thread(
-            target=translate.run_translation,
+            target=translation_worker.run_translation,
             kwargs={
                 "logger": self.log_message,
                 "finished": self.translation_finished,
@@ -273,6 +298,9 @@ class App(ctk.CTk):
             },
             daemon=True
         ).start()
+
+        return True
+
 
     # ===========================================
     # Function: Translation Finished
@@ -285,6 +313,7 @@ class App(ctk.CTk):
             lambda: self.reset_ui()
         )
 
+
     # ===========================================
     # Function: Reset UI
     # Restores the initial state before pressing
@@ -294,6 +323,7 @@ class App(ctk.CTk):
         self.hide_all_prompts()
         self.enable_configuration_controls()
 
+
     # ===========================================
     # Function: Process Dialog Requests
     # Processes dialog requests from the translation engine and dynamically
@@ -302,14 +332,16 @@ class App(ctk.CTk):
     def render_dialog_requests(self):
 
         try:
-            request = dialogs.get_request()
+            request = translation_worker_dialogs.get_request()
 
         except queue.Empty:
             pass
 
         else:
+            self.LOGGER(f"REQUEST RECEIVED: {request}")
+
             if request["type"] == config.PROMPT_TYPE_RADIO:
-                self.current_response_queue = request["response_queue"]
+                self.current_request = request
 
                 self.question_label.configure(
                     text=request["question"]
@@ -337,7 +369,7 @@ class App(ctk.CTk):
 
             elif request["type"] == config.PROMPT_TYPE_YESNO:
 
-                self.current_response_queue = request["response_queue"]
+                self.current_request = request
 
                 self.question_label.configure(
                     text=request["question"]
@@ -348,7 +380,7 @@ class App(ctk.CTk):
                 self.show_yesno_buttons()
 
             elif request["type"] == config.PROMPT_TYPE_TEXT:
-                self.current_response_queue = request["response_queue"]
+                self.current_request = request
 
                 self.question_label.configure(
                     text=request["question"]
@@ -362,9 +394,10 @@ class App(ctk.CTk):
                 self.text_answer_entry.focus()
 
             else:
-                print("UNBEKANNTER REQUEST")
+                print("UNKNOWN REQUEST")
 
         self.after(50, self.render_dialog_requests)
+
 
     # ===========================================
     # Function: Process Dialog Response
@@ -373,7 +406,7 @@ class App(ctk.CTk):
     # ===========================================
     def read_dialog_response(self):
 
-        if self.current_response_queue is None:
+        if self.current_request is None:
             return
 
         if self.current_radio_buttons:
@@ -382,25 +415,27 @@ class App(ctk.CTk):
         else:
             answer = self.text_answer_entry.get().strip().upper()
 
-        self.current_response_queue.put(answer)
+        self.current_request["response_queue"].put(answer)
 
         self.text_answer_entry.delete(0, "end")
 
         self.hide_all_prompts()
 
-        self.current_response_queue = None
+        self.current_request = None
 
         for radio in self.current_radio_buttons:
             radio.destroy()
         self.current_radio_buttons.clear()
 
+
     # ===========================================
     # Function: On Input Type Changed
     # Gets alerted whenever a new INPUT_TYPE has selected
-    # Ensures that the Module Name Suggestion gests reavaluated
+    # Ensures that the Module Name Suggestion gets reevaluated
     # ===========================================
     def on_input_type_changed(self, *args):
         self.refresh_module_name_suggestion()
+
 
     # ===========================================
     # Function: On Mock Mode Changed
@@ -409,6 +444,7 @@ class App(ctk.CTk):
     def on_mock_mode_changed(self):
         config.MOCK_MODE = bool(self.mock_mode_var.get())
         # self.LOGGER(f"MOCK_MODE = {config.MOCK_MODE}")
+
 
     # ===========================================
     # Function: Refresh Module Name Suggestion
@@ -419,7 +455,7 @@ class App(ctk.CTk):
         if self.selected_file is None:
             return
 
-        suggested_module_name = dialogs.suggest_module_name(
+        suggested_module_name = app_ui_dialogs.suggest_module_name(
             self.selected_file,
             self.input_type_var.get()
         )
@@ -441,6 +477,7 @@ class App(ctk.CTk):
         self.start_button.configure(state="disabled")
         self.mock_switch.configure(state="disabled")
 
+
     # ===========================================
     # Function: Enable Configuration Controls
     #
@@ -460,21 +497,35 @@ class App(ctk.CTk):
     # Visualizes the last state of an existing, resumable process
     # ===========================================
     def init_visual_process_status(self):
+        self.LOGGER("init_visual_process_status # TODO - not implemented")
         pass # TODO - not implemented
+
 
     # ===========================================
     # Function: Submit YES
     # Used by the "Yes" button
     # ===========================================
     def submit_yes(self):
-        self.current_response_queue.put(config.YES)
+
+        if "response_queue" in self.current_request:
+            self.current_request["response_queue"].put(config.YES)
+
+        elif "on_yes" in self.current_request:
+            self.current_request["on_yes"]()
+
 
     # ===========================================
     # Function: Submit NO
     # Used by the "No" button
     # ===========================================
     def submit_no(self):
-        self.current_response_queue.put(config.NO)
+
+        if "response_queue" in self.current_request:
+            self.current_request["response_queue"].put(config.NO)
+
+        elif "on_no" in self.current_request:
+            self.current_request["on_no"]()
+
 
     # ===========================================
     # Function: Cancel
@@ -484,7 +535,8 @@ class App(ctk.CTk):
         self.cancel_event.set()
         self.cancel_button.configure(text="Please wait ...",
                                      state="disabled")  # This one's needed for interrupting running API calls
-        self.current_response_queue.put(config.CANCEL)  # ... this one for interrupting user prompts
+        self.current_request["response_queue"].put(config.CANCEL)  # ... this one for interrupting user prompts
+
 
     # ===========================================
     # Function: Hide All Prompts
@@ -498,6 +550,7 @@ class App(ctk.CTk):
         self.yes_button.pack_forget()
         self.no_button.pack_forget()
 
+
     # ===========================================
     # Function: Show Buttons Frame
     #
@@ -508,12 +561,14 @@ class App(ctk.CTk):
             pady=5
         )
 
+
     # ===========================================
     # Function: Show Cancel Button
     #
     # ===========================================
     def show_cancel_button(self):
         self.cancel_button.pack(side="right", padx=5)
+
 
     # ===========================================
     # Function: Hide Cancel Button
@@ -522,12 +577,14 @@ class App(ctk.CTk):
     def hide_cancel_button(self):
         self.cancel_button.pack_forget()
 
+
     # ===========================================
     # Function: Show Question Label
     #
     # ===========================================
     def show_question_label(self):
         self.question_label.pack(padx=20, pady=(10, 5), anchor="w")
+
 
     # ===========================================
     # Function: Show Text Answer Entry
@@ -536,12 +593,14 @@ class App(ctk.CTk):
     def show_text_answer_entry(self):
         self.text_answer_entry.pack(padx=20, pady=5, fill="x")
 
+
     # ===========================================
     # Function: Show Submit Button
     #
     # ===========================================
     def show_submit_button(self):
         self.submit_button.pack(side="left", padx=5)
+
 
     # ===========================================
     # Function: Show Yes/No Buttons
@@ -551,9 +610,10 @@ class App(ctk.CTk):
         self.yes_button.pack(side="left", padx=5)
         self.no_button.pack(side="left", padx=5)
 
+
     # ===========================================
     # Function: Worker Exception Handler
-    # Responsible for catching any error occuring within the asynchronous translation thread
+    # Responsible for catching any error occurring within the asynchronous translation thread
     # Primarily useful for intercepting when user has pressed CANCEL
     # ===========================================
     def worker_exception_handler(self, args):
@@ -561,6 +621,7 @@ class App(ctk.CTk):
         self.cancel_button.configure(text="Cancel", state="enabled")
         self.hide_all_prompts()
         self.enable_configuration_controls()
+
 
     # ===========================================
     # Function: Log Message

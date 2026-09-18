@@ -1,5 +1,4 @@
 import config
-import dialogs
 import json
 import os
 import re

@@ -219,12 +219,7 @@ __marimo__/
 
 #local IntelliJ project files
 *.iml
-/.idea/misc.xml
-/.idea/modules.xml
-/analyze_json_structure.py
-/.idea/vcs.xml
-/.idea/workspace.xml
-/.idea/.gitignore
+/.idea/
 
 #local input and output files
 /local_secret_do_not_commit/
