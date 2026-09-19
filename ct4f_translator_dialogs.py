@@ -55,7 +55,7 @@ def confirm_yes_no(question="") -> bool:
     if answer == config.CANCEL:
         raise exceptions.CancelledException()
 
-    LOGGER(f"{fn.log(f"Answer: {answer}")}")
+    LOGGER(f"Answer: {answer}")
 
     return answer == config.YES
 
@@ -85,7 +85,7 @@ def prompt_radio(question, options):
 # ------------------------------------------------------------
 # Function: Prompt for Terminology Rebuild
 # ------------------------------------------------------------
-def prompt_for_terminology_rebuild() -> bool:
+def check_for_terminology_rebuild() -> bool:
 
     LOGGER(f"TERMINOLOGY_FILE: {config.TERMINOLOGY_FILE}")
 

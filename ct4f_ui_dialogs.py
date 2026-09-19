@@ -20,9 +20,8 @@ def set_logger(logger):
 # ===========================================
 def confirm_yes_no(question, on_yes, on_no):
 
-    LOGGER(f"confirm_yes_no:\n\"{question}\"")
+    LOGGER(f"confirm_yes_no: \n\"{question}\"")
 
-    LOGGER("PUT REQUEST")
     dialogs.put_request({
         "type": config.PROMPT_TYPE_YESNO,
         "question": question,

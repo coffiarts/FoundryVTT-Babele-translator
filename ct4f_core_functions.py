@@ -146,7 +146,7 @@ def to_multiline_text(input, value_char_limit=None, row_limit=None):
 # ------------------------------------------------------------
 def init_progress_info():
 
-    LOGGER(log("Creating new Progress Info ..."))
+    LOGGER(batch_log_msg("Creating new Progress Info ..."))
 
     current_config = get_resume_relevant_config()
 
@@ -157,7 +157,7 @@ def init_progress_info():
 
     save_json_output(data=progress_info, output_file=config.PROGRESS_INFO_FILE)
 
-    LOGGER(log(f"... Done. New Progress Info is now tracked by file {config.PROGRESS_INFO_FILE}", config.TAG_SUCCESS))
+    LOGGER(batch_log_msg(f"... Done. New Progress Info is now tracked by file {config.PROGRESS_INFO_FILE}", config.TAG_SUCCESS))
 
     return progress_info
 
@@ -242,7 +242,7 @@ def analyze_progress_info():
 # ------------------------------------------------------------
 def validate_progress_info(progress_info=None):
 
-    LOGGER(log("Validating existing Progress Info ..."))
+    LOGGER(batch_log_msg("Validating existing Progress Info ..."))
 
     if progress_info is None:
         progress_info = load_json_input(config.PROGRESS_INFO_FILE)
@@ -255,20 +255,20 @@ def validate_progress_info(progress_info=None):
             config.TERMINOLOGY_STATUS
         )
 
-        LOGGER(log(f"Terminology loop completed: {terminology_completed}"), config.TAG_SUCCESS)
+        LOGGER(batch_log_msg(f"Terminology loop completed: {terminology_completed}"), config.TAG_SUCCESS)
 
         translation_completed = validate_status_sequence(
             progress_info["batches"],
             config.TRANSLATION_STATUS
         )
 
-        LOGGER(log(f"Translation loop completed: {translation_completed}"), config.TAG_SUCCESS)
+        LOGGER(batch_log_msg(f"Translation loop completed: {translation_completed}"), config.TAG_SUCCESS)
 
     except ValueError:
 
         raise
 
-    LOGGER(log("... valid."), config.TAG_SUCCESS)
+    LOGGER(batch_log_msg("... valid."), config.TAG_SUCCESS)
 
     resume_batch = find_resume_batch(
         progress_info
@@ -376,7 +376,7 @@ def build_batches(translatables_with_placeholders):
 
     else:
 
-        LOGGER(log(f"Built {len(batches)} Batches from {len(translatables_with_placeholders)} Translatables"))
+        LOGGER(batch_log_msg(f"Built {len(batches)} Batches from {len(translatables_with_placeholders)} Translatables"))
 
         return batches
 
@@ -653,7 +653,7 @@ def protect_with_placeholders(translatables):
 
         translatables_with_placeholders.append(translatable_to_protect)
 
-    LOGGER(log(f"Extracted {len(placeholders)} new protective placeholders from {len(translatables)} translatables"))
+    LOGGER(batch_log_msg(f"Extracted {len(placeholders)} new protective placeholders from {len(translatables)} translatables"))
 
     return translatables_with_placeholders, placeholders
 
@@ -804,7 +804,7 @@ def determine_run_mode():
 # ------------------------------------------------------------
 def cleanup_progress_files():
 
-    LOGGER(log("Cleaning up progress files from previous runs (if any) ..."))
+    LOGGER(batch_log_msg("Cleaning up progress files from previous runs (if any) ..."))
 
     for file in [
         config.PROGRESS_INFO_FILE,
@@ -821,9 +821,9 @@ def cleanup_progress_files():
         if file.exists():
             file.unlink()
 
-            LOGGER(log(f"... Deleted: {file}"))
+            LOGGER(batch_log_msg(f"... Deleted: {file}"))
 
-    LOGGER(log("Done."), config.TAG_SUCCESS)
+    LOGGER(batch_log_msg("Done."), config.TAG_SUCCESS)
 
 
 # ------------------------------------------------------------
@@ -882,7 +882,7 @@ def post_mortem_dump(
         file.write(
             f"{details}\n\n"
         )
-        LOGGER(log(f"Response metadata: {response_metadata}"))
+        LOGGER(batch_log_msg(f"Response metadata: {response_metadata}"))
 
         if response_metadata is not None:
 
@@ -1010,10 +1010,11 @@ def log_header(text, batch_id=None, batch_cnt=None, color=None) -> str:
 
 
 # ------------------------------------------------------------
-# Function: Simple Log Line
-# Returns a unified string for it - self-explaining
+# Function: Batch Log Message
+# Returns a preprocessed batch-related log message, including
+# information about the batch in a unified format
 # ------------------------------------------------------------
-def log(text, batch_id=None, batch_cnt=None, color=None) -> str:
+def batch_log_msg(text, batch_id=None, batch_cnt=None, color=None) -> str:
 
     batch_prefix = (
         f"Batch {batch_id+1}/{batch_cnt}: "

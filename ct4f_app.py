@@ -339,8 +339,6 @@ class App(ctk.CTk):
             pass
 
         else:
-            self.LOGGER(f"REQUEST RECEIVED: {request}")
-
             if request["type"] == config.PROMPT_TYPE_RADIO:
                 self.current_request = request
 
