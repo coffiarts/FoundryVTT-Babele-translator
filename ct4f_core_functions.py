@@ -1,5 +1,6 @@
 import ct4f_config as config
 import ct4f_translator_dialogs as translator_dialogs
+from ct4f_security import get_api_key
 import json
 import os
 import sys
@@ -689,15 +690,12 @@ def find_patterns(text, patterns, leading_trailing_chars = 100):
 # Function: Initialize API client
 # ------------------------------------------------------------
 def init_api_client():
+    api_key = get_api_key()
+    if not api_key:
+        raise ValueError("Kein OpenAI API-Key konfiguriert. Bitte in den Einstellungen hinterlegen.")
 
-    api_key = config.APIKEY_FILE.read_text(
-        encoding="utf-8"
-    ).strip()
-    client = OpenAI(
-        api_key=api_key
-    )
+    client = OpenAI(api_key=api_key)
     return client
-
 
 # ------------------------------------------------------------
 # Function: Apply translations (all at once)
@@ -1236,8 +1234,6 @@ def adapt_file_paths():
     if config.INPUT_TYPE != config.INPUT_TYPE_BABELE and config.INPUT_TYPE != config.INPUT_TYPE_LOCALIZATION:
         raise Exception(f"Invalid input type: {config.INPUT_TYPE}")
 
-    config.APIKEY_FILE = config.APP_DIR / config.SECRETS_FOLDER_NAME / config.APIKEY_FILE_NAME # TODO - Change path into something locally configurable
-
     if config.INPUT_TYPE == config.INPUT_TYPE_BABELE:
 
         config.PROGRESS_FOLDER_NAME = config.USER_DATA_DIR / config.PROGRESS_FOLDER_NAME / config.MODULE_NAME / "babele" / config.TARGET_LANGUAGE["code"] / config.INPUT_FILE_NAME.removesuffix(".json")
@@ -1348,14 +1344,14 @@ def init_system_dirs():
     )
     LOGGER(f"APP_DIR: {config.APP_DIR}")
 
-    config.USER_CONFIG_DIR = Path(user_config_dir(appauthor=config.APP_AUTHOR, appname=config.APP_NAME))
+    config.USER_CONFIG_DIR = Path(user_config_dir(appauthor=config.APP_AUTHOR, appname=config.APP_SHORT_NAME))
     config.USER_CONFIG_DIR.mkdir(
         parents=True,
         exist_ok=True
     )
     LOGGER(f"USER_CONFIG_DIR: {config.USER_CONFIG_DIR}")
 
-    config.USER_DATA_DIR = Path(user_data_dir(appauthor=config.APP_AUTHOR, appname=config.APP_NAME))
+    config.USER_DATA_DIR = Path(user_data_dir(appauthor=config.APP_AUTHOR, appname=config.APP_SHORT_NAME))
     config.USER_DATA_DIR.mkdir(
         parents=True,
         exist_ok=True

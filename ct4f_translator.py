@@ -295,19 +295,9 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
         # ---------------------------------------------------
         # PREPARE API REQUEST
         # ---------------------------------------------------
-        fn.LOGGER(f"APIKEY_FILE: {config.APIKEY_FILE}")
-
         client = None
         if not config.MOCK_MODE:
-            api_key = Path(
-                config.APIKEY_FILE
-            ).read_text(
-                encoding="utf-8"
-            ).strip()
-
-            client = OpenAI(
-                api_key=api_key
-            )
+            client = fn.init_api_client()
 
         # ---------------------------------------------------
         # REUSE, CONTINUE OR BUILD MASTER TERMINOLOGY

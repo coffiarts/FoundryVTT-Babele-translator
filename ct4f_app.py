@@ -3,6 +3,7 @@ import ct4f_translator as translator
 import ct4f_translator_dialogs as translator_dialogs
 import ct4f_ui_dialogs as ui_dialogs
 import ct4f_core_functions as fn
+import ct4f_security as security
 import queue
 import threading
 from pathlib import Path
@@ -21,9 +22,17 @@ class App(ctk.CTk):
 
         ui_dialogs.set_logger(self.LOGGER)
 
-        self.title("coffiarts' Translator for Foundry VTT")
+        self.title(config.APP_FULL_NAME)
         self.iconbitmap(fn.resource_path("assets/icon.ico"))
-        self.calculate_window_dimensions(min_width=1000, min_height=700, factor=0.8)
+        self.calculate_window_dimensions(min_width=1000, min_height=900, factor=0.85)
+
+        # =========================================
+        # Settings button
+        # =========================================
+        self.settings_button = ctk.CTkButton(
+            self, text="⚙ Settings", command=self.open_settings
+        )
+        self.settings_button.pack(padx=20, pady=(10, 5))
 
         # =========================================
         # File picker
@@ -207,6 +216,7 @@ class App(ctk.CTk):
         self.cancel_event = threading.Event()
         self.render_dialog_requests()
 
+
     # ===========================================
     # Function: Select File
     # Generated a UI File Picker for selecting the Input File
@@ -239,6 +249,11 @@ class App(ctk.CTk):
     # Checks which run mode to apply, then delegates to the respective follow-up function
     # ===========================================
     def prepare_start(self):
+
+        # Pre-flight check: Do we have an API key on board?
+        if not config.MOCK_MODE and not security.has_api_key():
+            self.open_settings(callback=self.prepare_start)
+            return
 
         # Check for existing progress-info
         config.INPUT_TYPE = self.input_type_var.get()
@@ -617,10 +632,11 @@ class App(ctk.CTk):
     # ===========================================
     def worker_exception_handler(self, args):
 
-        msg = f"An Exception occurred:\n{args}"
+        msg = f"An Exception occurred:\n{args.exc_value}"
         self.LOGGER(msg, config.TAG_ERROR)
         if self.LOGGER != print:
             print(msg)
+        ui_dialogs.ErrorDialog(self, message=msg)
         # self.LOGGER("Cancelled.", config.TAG_ERROR)
 
         self.cancel_button.configure(text="Cancel", state="enabled")
@@ -655,6 +671,14 @@ class App(ctk.CTk):
         geometry = f"{width}x{height}+{x}+{y}"
         self.minsize(min_width, min_height)
         self.geometry(geometry)
+
+
+    # ===========================================
+    # Function: Open Settings
+    #
+    # ===========================================
+    def open_settings(self, callback=None):
+        ui_dialogs.SettingsDialog(self, on_save_callback=callback)
 
 
 # Finally, run it!

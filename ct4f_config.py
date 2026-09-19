@@ -242,7 +242,8 @@ TERMINOLOGY_OUTPUT_STRUCTURE = {
 # String Constants (better not edit at all!)
 # ------------------------------------------------------------
 APP_AUTHOR = "coffiarts"
-APP_NAME = "CT4F"
+APP_SHORT_NAME = "CT4F"
+APP_FULL_NAME = "Coffiarts' Translator for Foundry VTT"
 
 # Run Modes
 NEW_RUN = "NEW_RUN"
@@ -310,7 +311,6 @@ INPUT_FOLDER_NAME = "input"
 OUTPUT_FOLDER_NAME = "output"
 PROGRESS_FOLDER_NAME = "progress"
 TERMINOLOGY_FOLDER_NAME = "terminology"
-SECRETS_FOLDER_NAME = "local_secret_do_not_commit"
 
 PROGRESS_INFO_FILE_NAME = "00-progress-info.json"
 TRANSLATABLES_FILE_NAME = "01-translatables.json"
@@ -322,7 +322,6 @@ TRANSLATIONS_FINAL_FILE_NAME = "06-translations-final.json"
 PROGRESS_REVIEW_ITEMS_FILE_NAME = "07-progress-review-items.json"
 POST_MORTEM_DUMP_FILE_NAME = "99-post-mortem-dump.json"
 
-APIKEY_FILE_NAME = "openai_api_key.txt"
 
 # ---------------------------------------------------------------
 # Preprocess configuration (do not edit under ANY circumstance!)
@@ -354,9 +353,6 @@ POST_MORTEM_DUMP_FILE = None
 REVIEW_ITEMS_FILE = None
 
 REBUILD_TERMINOLOGY_IF_EXISTS = False
-
-APIKEY_FILE = None
-
 
 
 

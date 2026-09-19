@@ -1,5 +1,7 @@
 import ct4f_config as config
 import ct4f_translator_dialogs as dialogs
+import customtkinter as ctk
+import ct4f_security as security
 
 
 LOGGER = print
@@ -65,4 +67,83 @@ def suggest_module_name(input_file, input_type):
             current = current.parent
 
     return suggested
+
+
+class SettingsDialog(ctk.CTkToplevel):
+
+    def __init__(self, parent, on_save_callback=None):
+        super().__init__(parent)
+        self.title("Settings")
+        self.geometry("550x210")
+        self.resizable(False, False)
+        self.transient(parent)
+        self.grab_set()
+
+        self.on_save_callback = on_save_callback
+
+        # Input field
+        ctk.CTkLabel(self, text="API Key:", font=("Arial", 14, "bold")).pack(
+            padx=20, pady=(15, 5), anchor="w"
+        )
+        self.entry = ctk.CTkEntry(self, width=500, show="•")
+        self.entry.pack(padx=20, pady=5)
+
+        # Load existing key
+        current_key = security.get_api_key()
+        if current_key:
+            self.entry.insert(0, current_key)
+
+        # Toggle visibility
+        self.show_var = ctk.BooleanVar(value=False)
+        ctk.CTkCheckBox(
+            self,
+            text="Show key",
+            variable=self.show_var,
+            command=self._toggle_show,
+        ).pack(padx=20, pady=5, anchor="w")
+
+        # Buttons
+        btn_frame = ctk.CTkFrame(self, fg_color="transparent")
+        btn_frame.pack(padx=20, pady=(10, 15), fill="x")
+        ctk.CTkButton(btn_frame, text="Save", command=self._save).pack(
+            side="right", padx=(5, 0)
+        )
+        ctk.CTkButton(
+            btn_frame, text="Cancel", fg_color="gray", command=self.destroy
+        ).pack(side="right")
+
+    def _toggle_show(self):
+        self.entry.configure(show="" if self.show_var.get() else "•")
+
+    def _save(self):
+        security.set_api_key(self.entry.get().strip())
+        if self.on_save_callback:
+            self.on_save_callback()
+        self.destroy()
+
+
+class ErrorDialog(ctk.CTkToplevel):
+
+    def __init__(self, parent, message:str=""):
+        super().__init__(parent)
+        self.title("Ooops... we have a problem!")
+        self.geometry("400x400")
+        self.resizable(True, True)
+        self.transient(parent)
+        self.grab_set()
+
+        # =========================================
+        # Error Message Window
+        # =========================================
+        self.err_window = ctk.CTkTextbox(self, width=300, height=300, fg_color="black", text_color="white")
+        self.err_window.tag_config(config.TAG_ERROR, foreground="red")
+        self.err_window.pack(padx=20, pady=20, fill="both", expand=False)
+        self.err_window.insert("end", message, config.TAG_ERROR)
+
+        # Buttons
+        btn_frame = ctk.CTkFrame(self, fg_color="transparent")
+        btn_frame.pack(padx=20, pady=(10, 15), fill="x")
+        ctk.CTkButton(
+            btn_frame, text="Close", fg_color="gray", command=self.destroy
+        ).pack(side="right")
 
