@@ -217,8 +217,9 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-#local IntelliJ project files
+#local IntelliJ files
 *.iml
+.mcp.json
 /.idea/
 /.junie/
 

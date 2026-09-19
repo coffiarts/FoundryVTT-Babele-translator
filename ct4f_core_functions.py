@@ -1234,51 +1234,51 @@ def adapt_file_paths():
     if config.INPUT_TYPE != config.INPUT_TYPE_BABELE and config.INPUT_TYPE != config.INPUT_TYPE_LOCALIZATION:
         raise Exception(f"Invalid input type: {config.INPUT_TYPE}")
 
+    lang_code = config.TARGET_LANGUAGE["code"]
+
+    # Type-specific parts: sub paths below the root folders + file names
     if config.INPUT_TYPE == config.INPUT_TYPE_BABELE:
-
-        config.PROGRESS_FOLDER_NAME = config.USER_DATA_DIR / config.PROGRESS_FOLDER_NAME / config.MODULE_NAME / "babele" / config.TARGET_LANGUAGE["code"] / config.INPUT_FILE_NAME.removesuffix(".json")
-        config.TERMINOLOGY_FOLDER_NAME = config.USER_DATA_DIR / config.TERMINOLOGY_FOLDER_NAME / config.MODULE_NAME / "babele"  / config.TARGET_LANGUAGE["code"]
-        config.OUTPUT_FOLDER_NAME = config.USER_DATA_DIR / config.OUTPUT_FOLDER_NAME / config.MODULE_NAME / "babele" / config.TARGET_LANGUAGE["code"]
-        config.OUTPUT_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
-
+        input_stem = config.INPUT_FILE_NAME.removesuffix(".json")
+        module_sub_path = Path(config.MODULE_NAME) / "babele" / lang_code
+        progress_sub_path = module_sub_path / input_stem
+        output_file_name = config.INPUT_FILE_NAME
+        terminology_file_name = f"{input_stem}-terminology.json"
+        review_items_file_name = f"{input_stem}-review-items.json"
     else:
+        module_sub_path = Path(config.MODULE_NAME) / "lang"
+        progress_sub_path = module_sub_path
+        output_file_name = f"{lang_code}.json"
+        terminology_file_name = f"{lang_code}-terminology.json"
+        review_items_file_name = f"{lang_code}-review-items.json"
 
-        config.PROGRESS_FOLDER_NAME = config.APP_DIR / config.PROGRESS_FOLDER_NAME / config.MODULE_NAME / "lang"
-        config.TERMINOLOGY_FOLDER_NAME = config.APP_DIR / config.TERMINOLOGY_FOLDER_NAME / config.MODULE_NAME  / "lang"
-        config.OUTPUT_FOLDER_NAME = config.APP_DIR / config.OUTPUT_FOLDER_NAME / config.MODULE_NAME / "lang"
-        config.OUTPUT_FILE = config.APP_DIR / config.OUTPUT_FOLDER_NAME / f"{config.TARGET_LANGUAGE["code"]}.json"
+    # Only the output may be redirected by the user
+    output_root = config.BASE_OUTPUT_DIR or config.USER_DATA_DIR
 
-    # Create folders where necessary
-    if not os.path.exists(config.OUTPUT_FOLDER_NAME):
-        os.makedirs(config.OUTPUT_FOLDER_NAME)
-    if not os.path.exists(config.PROGRESS_FOLDER_NAME):
-        os.makedirs(config.PROGRESS_FOLDER_NAME)
-    if not os.path.exists(config.TERMINOLOGY_FOLDER_NAME):
-        os.makedirs(config.TERMINOLOGY_FOLDER_NAME)
+    # Directories (the *_FOLDER_NAME constants are only read, never overwritten)
+    config.OUTPUT_DIR = output_root / config.OUTPUT_FOLDER_NAME / module_sub_path
+    config.PROGRESS_DIR = config.USER_DATA_DIR / config.PROGRESS_FOLDER_NAME / progress_sub_path
+    config.TERMINOLOGY_DIR = config.USER_DATA_DIR / config.TERMINOLOGY_FOLDER_NAME / module_sub_path
 
-    if config.INPUT_TYPE == config.INPUT_TYPE_BABELE:
+    for directory in (config.OUTPUT_DIR, config.PROGRESS_DIR, config.TERMINOLOGY_DIR):
+        directory.mkdir(parents=True, exist_ok=True)
 
-        config.TERMINOLOGY_FILE_NAME = f"{config.INPUT_FILE_NAME.removesuffix(".json")}-terminology.json"
-        config.REVIEW_ITEMS_FILE_NAME = f"{config.INPUT_FILE_NAME.removesuffix(".json")}-review-items.json"
-        config.OUTPUT_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
+    # Files in OUTPUT_DIR
+    config.OUTPUT_FILE = config.OUTPUT_DIR / output_file_name
+    config.REVIEW_ITEMS_FILE = config.OUTPUT_DIR / review_items_file_name
 
-    else:
+    # Files in TERMINOLOGY_DIR
+    config.TERMINOLOGY_FILE = config.TERMINOLOGY_DIR / terminology_file_name
 
-        config.TERMINOLOGY_FILE_NAME = f"{config.TARGET_LANGUAGE["code"]}-terminology.json"
-        config.REVIEW_ITEMS_FILE_NAME = f"{config.TARGET_LANGUAGE["code"]}-review-items.json"
-        config.OUTPUT_FILE = Path(config.OUTPUT_FOLDER_NAME) / f"{config.TARGET_LANGUAGE["code"]}.json"
-
-    config.PROGRESS_INFO_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.PROGRESS_INFO_FILE_NAME
-    config.TERMINOLOGY_FILE = Path(config.TERMINOLOGY_FOLDER_NAME) / config.TERMINOLOGY_FILE_NAME
-    config.REVIEW_ITEMS_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.REVIEW_ITEMS_FILE_NAME
-    config.TRANSLATABLES_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.TRANSLATABLES_FILE_NAME
-    config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME
-    config.PLACEHOLDERS_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.PLACEHOLDERS_FILE_NAME
-    config.BATCHES_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.BATCHES_FILE_NAME
-    config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME
-    config.TRANSLATIONS_FINAL_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.TRANSLATIONS_FINAL_FILE_NAME
-    config.PROGRESS_REVIEW_ITEMS_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.PROGRESS_REVIEW_ITEMS_FILE_NAME
-    config.POST_MORTEM_DUMP_FILE = Path(config.PROGRESS_FOLDER_NAME) / config.POST_MORTEM_DUMP_FILE_NAME
+    # Files in PROGRESS_DIR
+    config.PROGRESS_INFO_FILE = config.PROGRESS_DIR / config.PROGRESS_INFO_FILE_NAME
+    config.TRANSLATABLES_FILE = config.PROGRESS_DIR / config.TRANSLATABLES_FILE_NAME
+    config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE = config.PROGRESS_DIR / config.TRANSLATABLES_WITH_PLACEHOLDERS_FILE_NAME
+    config.PLACEHOLDERS_FILE = config.PROGRESS_DIR / config.PLACEHOLDERS_FILE_NAME
+    config.BATCHES_FILE = config.PROGRESS_DIR / config.BATCHES_FILE_NAME
+    config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE = config.PROGRESS_DIR / config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE_NAME
+    config.TRANSLATIONS_FINAL_FILE = config.PROGRESS_DIR / config.TRANSLATIONS_FINAL_FILE_NAME
+    config.PROGRESS_REVIEW_ITEMS_FILE = config.PROGRESS_DIR / config.PROGRESS_REVIEW_ITEMS_FILE_NAME
+    config.POST_MORTEM_DUMP_FILE = config.PROGRESS_DIR / config.POST_MORTEM_DUMP_FILE_NAME
 
 
 # ------------------------------------------------------------
