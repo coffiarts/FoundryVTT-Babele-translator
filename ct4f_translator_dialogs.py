@@ -1,5 +1,4 @@
 import ct4f_config as config
-import ct4f_core_functions as fn
 import ct4f_exceptions as exceptions
 import queue
 

@@ -29,7 +29,6 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
     # Processing is automatically be resumed after aborts, given that some crucial config params haven't been changed
     # -------------------------------------------------------------------------------------------------------
 
-    fn.set_logger(logger)
     translator_dialogs.set_logger(logger)
 
     # ---------------------------------------------------

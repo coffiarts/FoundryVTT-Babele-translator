@@ -1,5 +1,3 @@
-from pathlib import Path
-
 # ------------------------------------------------------------
 # Language to translate from/to
 # ------------------------------------------------------------
@@ -243,6 +241,8 @@ TERMINOLOGY_OUTPUT_STRUCTURE = {
 # ------------------------------------------------------------
 # String Constants (better not edit at all!)
 # ------------------------------------------------------------
+APP_AUTHOR = "coffiarts"
+APP_NAME = "CT4F"
 
 # Run Modes
 NEW_RUN = "NEW_RUN"
@@ -303,8 +303,8 @@ UNKNOWN_MODULE_NAME = "unknown-module"
 
 # ---------------------------------------------------------------
 # Folders and file names (usually no reason to change any of these)
-# If you adjust this, never add language suffixes here (like input/en),
-# because these will be added dynamically by the application.
+# If you adjust this anyway, do not add module names or language suffixes (like input/my-module/en),
+# because all of these will be added dynamically later in ct4j.core_functions.adapt_file_paths()
 # ---------------------------------------------------------------
 INPUT_FOLDER_NAME = "input"
 OUTPUT_FOLDER_NAME = "output"
@@ -329,11 +329,13 @@ APIKEY_FILE_NAME = "openai_api_key.txt"
 # These are just for initializing. Parameter is handled by user prompt
 # ---------------------------------------------------------------
 APP_DIR = None
-INPUT_TYPE = None
+USER_CONFIG_DIR = None
+USER_DATA_DIR = None
 
-INPUT_FILE_NAME = None
+INPUT_TYPE = None
 MODULE_NAME = None
 
+INPUT_FILE_NAME = None
 REVIEW_ITEMS_FILE_NAME = None
 TERMINOLOGY_FILE_NAME = None
 

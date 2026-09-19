@@ -4,6 +4,7 @@ import json
 import os
 import sys
 import re
+from platformdirs import user_config_dir, user_data_dir
 from pathlib import Path
 from openai import OpenAI
 
@@ -1239,10 +1240,10 @@ def adapt_file_paths():
 
     if config.INPUT_TYPE == config.INPUT_TYPE_BABELE:
 
-        config.PROGRESS_FOLDER_NAME = config.APP_DIR / config.PROGRESS_FOLDER_NAME / config.MODULE_NAME / "babele" / config.TARGET_LANGUAGE["code"] / config.INPUT_FILE_NAME.removesuffix(".json")
-        config.TERMINOLOGY_FOLDER_NAME = config.APP_DIR / config.TERMINOLOGY_FOLDER_NAME / config.MODULE_NAME / "babele"  / config.TARGET_LANGUAGE["code"]
-        config.OUTPUT_FOLDER_NAME = config.APP_DIR / config.OUTPUT_FOLDER_NAME / config.MODULE_NAME / "babele" / config.TARGET_LANGUAGE["code"]
-        config.OUTPUT_FILE = config.APP_DIR / config.OUTPUT_FOLDER_NAME / config.INPUT_FILE_NAME
+        config.PROGRESS_FOLDER_NAME = config.USER_DATA_DIR / config.PROGRESS_FOLDER_NAME / config.MODULE_NAME / "babele" / config.TARGET_LANGUAGE["code"] / config.INPUT_FILE_NAME.removesuffix(".json")
+        config.TERMINOLOGY_FOLDER_NAME = config.USER_DATA_DIR / config.TERMINOLOGY_FOLDER_NAME / config.MODULE_NAME / "babele"  / config.TARGET_LANGUAGE["code"]
+        config.OUTPUT_FOLDER_NAME = config.USER_DATA_DIR / config.OUTPUT_FOLDER_NAME / config.MODULE_NAME / "babele" / config.TARGET_LANGUAGE["code"]
+        config.OUTPUT_FILE = Path(config.OUTPUT_FOLDER_NAME) / config.INPUT_FILE_NAME
 
     else:
 
@@ -1286,6 +1287,7 @@ def adapt_file_paths():
 
 # ------------------------------------------------------------
 # Function: Find Resume Batch
+#
 # ------------------------------------------------------------
 def find_resume_batch(progress_info):
 
@@ -1301,6 +1303,10 @@ def find_resume_batch(progress_info):
     return None
 
 
+# ------------------------------------------------------------
+# Function: Check and warn if MOCK_MODE is True
+#
+# ------------------------------------------------------------
 def check_and_warn_if_mock_mode(additionalMsg=None):
 
     msg = "MOCK MODE IS ON!"
@@ -1314,6 +1320,10 @@ def check_and_warn_if_mock_mode(additionalMsg=None):
     return config.MOCK_MODE
 
 
+# ------------------------------------------------------------
+# Function: Resource Patch
+# Returns a localized path to the assets included in the app package
+# ------------------------------------------------------------
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -1323,8 +1333,32 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
-def app_dir():
-    if getattr(sys, "frozen", False):
-        return Path(sys.executable).parent
-    return Path(__file__).parent
+# ------------------------------------------------------------
+# Function: Init System Dirs
+# Initialized the localized root paths:
+# - APP_DIR: The directory in which the app is running
+# - USER_CONFIG_DIR: The config directory in the local user profile
+# - USER_DATA_DIR: The userdata directory in the local user profile
+# ------------------------------------------------------------
+def init_system_dirs():
+    config.APP_DIR = (
+        Path(sys.executable).parent
+        if getattr(sys, "frozen", False)
+        else Path(__file__).parent
+    )
+    LOGGER(f"APP_DIR: {config.APP_DIR}")
+
+    config.USER_CONFIG_DIR = Path(user_config_dir(appauthor=config.APP_AUTHOR, appname=config.APP_NAME))
+    config.USER_CONFIG_DIR.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+    LOGGER(f"USER_CONFIG_DIR: {config.USER_CONFIG_DIR}")
+
+    config.USER_DATA_DIR = Path(user_data_dir(appauthor=config.APP_AUTHOR, appname=config.APP_NAME))
+    config.USER_DATA_DIR.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+    LOGGER(f"USER_DATA_DIR: {config.USER_DATA_DIR}")
 

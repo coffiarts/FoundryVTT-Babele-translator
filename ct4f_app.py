@@ -659,6 +659,11 @@ class App(ctk.CTk):
 
 # Finally, run it!
 app = App()
-config.APP_DIR = fn.app_dir()
+fn.set_logger(app.LOGGER)
+
+fn.init_system_dirs()
+
+app.worker_exception_handler = app.worker_exception_handler
 threading.excepthook = app.worker_exception_handler
+
 app.mainloop()
