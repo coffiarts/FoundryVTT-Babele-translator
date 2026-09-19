@@ -97,7 +97,25 @@ def test_assemble_batch_payload(batch, batch_translatables):
         exit("Terminated with Unit Test Failure!")
 
 
+def test_adapt_file_paths_idempotent():
 
+    def snapshot():
+        return {
+            name: str(value)
+            for name, value in vars(config).items()
+            if name.endswith(("_DIR", "_FILE"))
+        }
 
+    before = snapshot()
+    fn.adapt_file_paths()
+    after = snapshot()
 
-
+    result = check_result(before == after)
+    print(
+        f"UNIT TEST - adapt_file_paths() is idempotent: "
+        f"{result["color"]}{result["status"]}{config.RESET}"
+    )
+    if result["status"] == config.FAILED:
+        changed = {k: {"before": before[k], "after": v} for k, v in after.items() if before[k] != v}
+        print(f"{result["color"]}{fn.to_prettified_json(changed)}{config.RESET}")
+        exit("Terminated with Unit Test Failure!")

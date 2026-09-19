@@ -305,7 +305,7 @@ UNKNOWN_MODULE_NAME = "unknown-module"
 # ---------------------------------------------------------------
 # Folders and file names (usually no reason to change any of these)
 # If you adjust this anyway, do not add module names or language suffixes (like input/my-module/en),
-# because all of these will be added dynamically later in ct4j.core_functions.adapt_file_paths()
+# because all of these will be added dynamically later in ct4f_core_functions.adapt_file_paths()
 # ---------------------------------------------------------------
 INPUT_FOLDER_NAME = "input"
 OUTPUT_FOLDER_NAME = "output"
@@ -340,8 +340,6 @@ INPUT_TYPE = None
 MODULE_NAME = None
 
 INPUT_FILE_NAME = None
-REVIEW_ITEMS_FILE_NAME = None
-TERMINOLOGY_FILE_NAME = None
 
 INPUT_FILE = None
 OUTPUT_FILE = None

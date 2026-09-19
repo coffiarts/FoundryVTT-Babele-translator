@@ -4,6 +4,7 @@ import ct4f_translator_dialogs as translator_dialogs
 import ct4f_ui_dialogs as ui_dialogs
 import ct4f_core_functions as fn
 import ct4f_security as security
+#import ct4f_unit_tests as unit_tests
 import queue
 import threading
 from pathlib import Path
@@ -35,7 +36,7 @@ class App(ctk.CTk):
         self.settings_button.pack(padx=20, pady=(10, 5))
 
         # =========================================
-        # File picker
+        # Input File picker
         # =========================================
         self.selected_file = None
 
@@ -54,6 +55,37 @@ class App(ctk.CTk):
         )
 
         self.file_label.pack(padx=20, pady=(0, 20))
+
+        # =========================================
+        # Output folder picker (optional)
+        # =========================================
+        self.selected_output_dir = None
+        self.output_dir_default_text = "Default: user data folder"
+
+        self.output_dir_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.output_dir_frame.pack(padx=20, pady=(0, 5))
+
+        self.output_dir_button = ctk.CTkButton(
+            self.output_dir_frame,
+            text="Select Output Folder (optional)",
+            command=self.select_output_dir
+        )
+        self.output_dir_button.pack(side="left", padx=(0, 10))
+
+        self.output_dir_reset_button = ctk.CTkButton(
+            self.output_dir_frame,
+            text="Reset",
+            width=70,
+            command=self.reset_output_dir
+        )
+        self.output_dir_reset_button.pack(side="left")
+
+        self.output_dir_label = ctk.CTkLabel(
+            self,
+            text=self.output_dir_default_text,
+            font=("Arial", 14)
+        )
+        self.output_dir_label.pack(padx=20, pady=(0, 20))
 
         # =========================================
         # Input type selector
@@ -133,7 +165,7 @@ class App(ctk.CTk):
         self.mock_mode_var = ctk.BooleanVar(value=config.MOCK_MODE)
         self.mock_switch = ctk.CTkSwitch(
             self,
-            text="Mock Mode",
+            text="Simulate only",
             variable=self.mock_mode_var,
             command=self.on_mock_mode_changed,
             progress_color="red",
@@ -208,12 +240,22 @@ class App(ctk.CTk):
         self.hide_all_prompts()
 
         # =========================================
-        # Now go for it!
+        # Enable only the UI elements that are relevant first
         # =========================================
-        self.current_request = None
         self.disable_configuration_controls()
         self.file_button.configure(state="normal")
+        self.output_dir_button.configure(state="normal")
+        self.output_dir_reset_button.configure(state="normal")
+
+        # =========================================
+        # Some initialization of dialog-relevant queues
+        # =========================================
+        self.current_request = None
         self.cancel_event = threading.Event()
+
+        # =========================================
+        # Now go for it!
+        # =========================================
         self.render_dialog_requests()
 
 
@@ -224,7 +266,8 @@ class App(ctk.CTk):
     def select_file(self):
         filename = filedialog.askopenfilename(
             title="Select file to translate",
-            filetypes=[("JSON files", "*.json")]
+            filetypes=[("JSON files", "*.json")],
+            initialdir=str(self.selected_file.parent) if self.selected_file else None
         )
 
         if not filename:
@@ -245,6 +288,32 @@ class App(ctk.CTk):
 
 
     # ===========================================
+    # Function: Select Output Dir
+    # Generates a UI Folder Picker for the optional Output Folder
+    # ===========================================
+    def select_output_dir(self):
+        dirname = filedialog.askdirectory(
+            title="Select output folder",
+            initialdir=str(self.selected_output_dir) if self.selected_output_dir else None
+        )
+
+        if not dirname:
+            return
+
+        self.selected_output_dir = Path(dirname)
+        self.output_dir_label.configure(text=str(self.selected_output_dir))
+
+
+    # ===========================================
+    # Function: Reset Output Dir
+    # Discards the user-selected Output Folder, so that the default applies again
+    # ===========================================
+    def reset_output_dir(self):
+        self.selected_output_dir = None
+        self.output_dir_label.configure(text=self.output_dir_default_text)
+
+
+    # ===========================================
     # Function: Prepare Start
     # Checks which run mode to apply, then delegates to the respective follow-up function
     # ===========================================
@@ -258,7 +327,12 @@ class App(ctk.CTk):
         # Check for existing progress-info
         config.INPUT_TYPE = self.input_type_var.get()
         config.MODULE_NAME = self.module_name_entry.get().strip()
+        config.BASE_OUTPUT_DIR = self.selected_output_dir  # None => fall back to USER_DATA_DIR
         fn.adapt_file_paths()
+
+        fn.adapt_file_paths()
+        #unit_tests.test_adapt_file_paths_idempotent()
+
 
         progress_info = fn.analyze_progress_info()
         # self.LOGGER(f"progress_info:\n:{fn.to_prettified_json(progress_info)}")
@@ -485,6 +559,8 @@ class App(ctk.CTk):
     def disable_configuration_controls(self):
 
         self.file_button.configure(state="disabled")
+        self.output_dir_button.configure(state="disabled")
+        self.output_dir_reset_button.configure(state="disabled")
         self.radio_input_type_babele.configure(state="disabled")
         self.radio_input_type_localization.configure(state="disabled")
         self.module_name_entry.configure(state="disabled")
@@ -499,6 +575,8 @@ class App(ctk.CTk):
     def enable_configuration_controls(self):
 
         self.file_button.configure(state="normal")
+        self.output_dir_button.configure(state="normal")
+        self.output_dir_reset_button.configure(state="normal")
         self.radio_input_type_babele.configure(state="normal")
         self.radio_input_type_localization.configure(state="normal")
         self.module_name_entry.configure(state="normal")

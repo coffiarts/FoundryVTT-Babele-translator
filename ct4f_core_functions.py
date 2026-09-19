@@ -1251,11 +1251,11 @@ def adapt_file_paths():
         terminology_file_name = f"{lang_code}-terminology.json"
         review_items_file_name = f"{lang_code}-review-items.json"
 
-    # Only the output may be redirected by the user
-    output_root = config.BASE_OUTPUT_DIR or config.USER_DATA_DIR
+    # The user-selected folder replaces the default output folder (<USER_DATA_DIR>/output)
+    output_root = config.BASE_OUTPUT_DIR or (config.USER_DATA_DIR / config.OUTPUT_FOLDER_NAME)
 
     # Directories (the *_FOLDER_NAME constants are only read, never overwritten)
-    config.OUTPUT_DIR = output_root / config.OUTPUT_FOLDER_NAME / module_sub_path
+    config.OUTPUT_DIR = output_root / module_sub_path
     config.PROGRESS_DIR = config.USER_DATA_DIR / config.PROGRESS_FOLDER_NAME / progress_sub_path
     config.TERMINOLOGY_DIR = config.USER_DATA_DIR / config.TERMINOLOGY_FOLDER_NAME / module_sub_path
 
