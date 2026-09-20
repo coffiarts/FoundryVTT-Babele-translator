@@ -5,39 +5,22 @@ import ct4f_exceptions as exceptions
 import json
 import time
 from datetime import datetime
-from pathlib import Path
-from openai import OpenAI
 from collections.abc import Callable
 
 
-def run_translation(logger: Callable[str], finished=None, cancel_event=None):
-    # -------------------------------------------------------------------------------------------------------
-    # This controls the main process of translating a Babele input file:
-    # - import from Babele file
-    # - extract translatables
-    # - protect translatables by replacing Foundry specific syntax with placeholders
-    # - build batches for processing
-    # - extract master terminology from the input (or reuse an existing one)
-    # - translate (using an external LLM)
-    # - validate
-    # - restore Foundry specific syntax from placeholders
-    # - reassemble
-    # - export to a new Babele file
-    #
-    # The input file to process, plus any other relevant parameters are configured in config.py
-    #
-    # Processing is automatically be resumed after aborts, given that some crucial config params haven't been changed
-    # -------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------
+# Function: Prepare Translation
+# Offline part: validation, run mode, extraction, placeholders and batch building.
+# Returns the info needed by run_translation(), or None if the user aborted.
+# ------------------------------------------------------------
+def prepare(logger: Callable[str], on_prepared=None, finished=None):
 
     translator_dialogs.set_logger(logger)
 
-    # ---------------------------------------------------
-    # WARN IF MOCK MODE IS ON
-    # ---------------------------------------------------
-    fn.check_and_warn_if_mock_mode("API Calls to the remote LLM will only be simulated.")
+    resume_batch = None  # only set in RESUME mode
 
     # ---------------------------------------------------
-    # ASK FOR WHICH FILE TO TRANSLATE
+    # CHECK IF INPUT_FILE HAS BEEN SET
     # ---------------------------------------------------
     if config.INPUT_FILE is None:
         raise ValueError("❌ Input File is not defined.")
@@ -75,18 +58,11 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
         if not fn.is_lang_file_name(config.INPUT_FILE_NAME):
 
             if not translator_dialogs.confirm_unusual_lang_file_name():
-
                 fn.LOGGER(fn.batch_log_msg("Aborted by user. Nothing has been changed."), config.TAG_INFO)
 
                 if finished:
                     finished()
-
                 return
-
-
-    # If Terminology exists, ask the user what to do with it
-    config.REBUILD_TERMINOLOGY_IF_EXISTS = translator_dialogs.check_for_terminology_rebuild()
-
 
     # ---------------------------------------------------
     # DETERMINE RUN MODE
@@ -142,17 +118,8 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
 
     elif run_mode == config.POSTPROCESSING_ONLY:
 
-        # Nothing to do here. This mode skips the whole first section
-        # (INPUT PROCESSING & TRANSLATION) and joins in later in the
-        # POST-PROCESSING section, where everything relevant will be initialized properly
+        # Nothing to do here.
         pass
-
-    # ------------------------------------------------------------
-    # Start global timer
-    # ------------------------------------------------------------
-    global_timer_start = time.perf_counter()
-    current_time = datetime.now().strftime("%H:%M:%S")
-    fn.LOGGER(fn.batch_log_msg(f"Start global timer (time: {current_time})"), config.TAG_INFO)
 
     if run_mode != config.POSTPROCESSING_ONLY:
 
@@ -333,6 +300,54 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
         # loaded_batches = fn.load_batches()
         # unit_tests.test_save_to_file(batches, loaded_batches)
 
+
+    if on_prepared:
+        on_prepared({
+            "run_mode": run_mode,
+            "analysis": fn.analyze_progress_info()
+        })
+
+
+# -------------------------------------------------------------------------------------------------------
+# This controls the main process of translating a Babele input file:
+# - extract master terminology from the input (using the online LLM)
+# - translate (using the external LLM)
+# - validate
+# - Post-Processing: Restore Foundry specific syntax from placeholders, reassemble, export to a new Babele file
+# -------------------------------------------------------------------------------------------------------
+def run(logger: Callable[str], finished=None, cancel_event=None):
+
+    translator_dialogs.set_logger(logger)
+
+    # ---------------------------------------------------
+    # WARN IF MOCK MODE IS ON
+    # ---------------------------------------------------
+    fn.check_and_warn_if_mock_mode("API Calls to the remote LLM will only be simulated.")
+
+    # ---------------------------------------------------
+    # RETRIEVE PREPARATION DATA
+    # ---------------------------------------------------
+    run_mode = fn.determine_run_mode()
+    progress_info = None
+    resume_batch = None
+
+    if run_mode != config.POSTPROCESSING_ONLY:
+
+        progress_info = fn.load_json_input(config.PROGRESS_INFO_FILE)
+
+        if run_mode == config.RESUME:
+            resume_batch = fn.find_resume_batch(progress_info)
+
+    # ------------------------------------------------------------
+    # Start global timer
+    # ------------------------------------------------------------
+    global_timer_start = time.perf_counter()
+    current_time = datetime.now().strftime("%H:%M:%S")
+    fn.LOGGER(fn.batch_log_msg(f"Start global timer (time: {current_time})"), config.TAG_INFO)
+
+    if run_mode != config.POSTPROCESSING_ONLY:
+        batches = progress_info["batches"]
+
         # ---------------------------------------------------
         # PREPARE API REQUEST
         # ---------------------------------------------------
@@ -343,13 +358,13 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
         # ---------------------------------------------------
         # REUSE, CONTINUE OR BUILD MASTER TERMINOLOGY
         # ---------------------------------------------------
-        if run_mode != config.RESUME and config.TERMINOLOGY_FILE.exists() and not config.REBUILD_TERMINOLOGY_IF_EXISTS:
+        if run_mode != config.RESUME and config.TERMINOLOGY_FILE.exists():
 
             master_terminology = fn.load_json_input(
                 config.TERMINOLOGY_FILE
             )
 
-            # We're skipping terminology completely, so we need to tell process control (progress-info) that everything's completed here.
+            # As we're skipping terminology completely, tell process control (progress-info) that everything's completed here.
             # Otherwise, there would be an abort due to "missing terminology" later
             for batch in batches:
                 batch[config.TERMINOLOGY_STATUS] = config.COMPLETED
@@ -959,5 +974,5 @@ def abort_if_cancelled(cancel_event):
 
 
 if __name__ == "__main__":
-    run_translation(print)
+    run(print)
 

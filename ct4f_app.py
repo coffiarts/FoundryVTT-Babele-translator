@@ -151,16 +151,6 @@ class App(ctk.CTk):
         self.module_name_entry.insert(0, "(Please pick a file first)")
 
         # =========================================
-        # Start Translation Button
-        # =========================================
-        self.start_button = ctk.CTkButton(
-            self,
-            text="Start Translation",
-            command=self.prepare_start
-        )
-        self.start_button.pack(padx=20, pady=20)
-
-        # =========================================
         # Mock Mode Switch
         # =========================================
         self.mock_mode_var = ctk.BooleanVar(value=config.MOCK_MODE)
@@ -173,6 +163,27 @@ class App(ctk.CTk):
             fg_color="gray"
         )
         self.mock_switch.pack(padx=20, pady=20)
+
+        # =========================================
+        # Prepare / Start / Reset Buttons
+        # =========================================
+        self.start_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.start_frame.pack(padx=20, pady=20)
+
+        self.start_button = ctk.CTkButton(
+            self.start_frame,
+            text="Prepare",
+            command=self.prepare
+        )
+        self.start_button.pack(side="left")
+
+        # Only visible after a successful preparation (see show_reset_button)
+        self.reset_button = ctk.CTkButton(
+            self.start_frame,
+            text="Reset",
+            fg_color="gray",
+            command=self.reset_preparation
+        )
 
         # =========================================
         # Log Output Window
@@ -324,53 +335,77 @@ class App(ctk.CTk):
 
 
     # ===========================================
-    # Function: Prepare Start
-    # Checks which run mode to apply, then delegates to the respective follow-up function
+    # Function: Prepare
+    # Takes over the user's selections and runs the preparation (offline part)
+    # in a worker thread
     # ===========================================
-    def prepare_start(self):
+    def prepare(self):
 
-        # Pre-flight check: Do we have an API key on board?
-        if not config.MOCK_MODE and not security.has_api_key():
-            self.open_settings(callback=self.prepare_start)
-            return
-
-        # Check for existing progress-info
         config.INPUT_TYPE = self.input_type_var.get()
         config.MODULE_NAME = self.module_name_entry.get().strip()
         config.BASE_OUTPUT_DIR = self.selected_output_dir  # None => fall back to USER_DATA_DIR
 
         fn.adapt_file_paths()
-        #unit_tests.test_adapt_file_paths_idempotent()
-
         self.persist_settings()
 
+        self.disable_configuration_controls()
 
-        progress_info = fn.analyze_progress_info()
-        # self.LOGGER(f"progress_info:\n:{fn.to_prettified_json(progress_info)}")
-
-        if progress_info is not None:
-
-            self.init_visual_process_status()
-
-            ui_dialogs.confirm_yes_no(
-                question="Do you want to resume the incomplete process for this file?",
-                on_yes=self.run_translation,
-                on_no=self.start_from_scratch
-            )
-
-        else:
-
-            self.run_translation()
+        threading.Thread(
+            target=translator.prepare,
+            kwargs={
+                "logger": self.log_message,
+                "on_prepared": self.preparation_finished,
+                "finished": self.translation_finished  # only used if the user aborts during preparation
+            },
+            daemon=True
+        ).start()
 
 
     # ===========================================
-    # Function: Initialize Visual Process Status
-    # Visualizes the last state of an existing, resumable process
+    # Function: Preparation Finished
+    # Callback invoked by the worker thread when the preparation is complete.
+    # Hands over to the UI thread
     # ===========================================
-    def start_from_scratch(self):
-        # TODO: reset_ui()
-        # TODO: start_translation()
-        self.run_translation()
+    def preparation_finished(self, result):
+        self.after(
+            0,
+            lambda: self.enter_prepared_state(result)
+        )
+
+
+    # ===========================================
+    # Function: Enter Prepared State
+    # The selections are now final: the "Prepare" button turns into "Start",
+    # and "Reset" allows to go back
+    # ===========================================
+    def enter_prepared_state(self, result):
+        self.prepared_result = result
+
+        self.start_button.configure(text="Start", command=self.run_translation, state="normal")
+        self.show_reset_button()
+
+
+    # ===========================================
+    # Function: Reset Preparation
+    # Goes back from the prepared state to the initial "choose" state
+    # ===========================================
+    def reset_preparation(self):
+        self.prepared_result = None
+
+        self.hide_reset_button()
+        self.start_button.configure(text="Prepare", command=self.prepare)
+        self.enable_configuration_controls()
+
+
+    # ===========================================
+    # Function: Reset UI
+    # Restores the initial state before pressing
+    # the "Prepare" Button
+    # (without dropping existing input)
+    # ===========================================
+    def reset_ui(self):
+        self.hide_all_prompts()
+        self.reset_preparation()
 
 
     # ===========================================
@@ -378,20 +413,24 @@ class App(ctk.CTk):
     # Starts the main worker thread (translation) asynchronously
     # ===========================================
     def run_translation(self) -> bool:
+
+        # Pre-flight check: Do we have an API key on board?
+        if not config.MOCK_MODE and not security.has_api_key():
+            self.open_settings(callback=self.run_translation)
+            return False
+
         self.cancel_event.clear()
+        self.hide_reset_button()
         self.show_cancel_button()
 
         if config.INPUT_FILE is None:
             self.LOGGER("Please select an input file first.", config.TAG_ERROR)
             return False
 
-        config.INPUT_TYPE = self.input_type_var.get()
-        config.MODULE_NAME = self.module_name_entry.get().strip()
-
         self.disable_configuration_controls()
 
         threading.Thread(
-            target=translator.run_translation,
+            target=translator.run,
             kwargs={
                 "logger": self.log_message,
                 "finished": self.translation_finished,
@@ -413,16 +452,6 @@ class App(ctk.CTk):
             0,
             lambda: self.reset_ui()
         )
-
-
-    # ===========================================
-    # Function: Reset UI
-    # Restores the initial state before pressing
-    # the "Start Translation" Button
-    # ===========================================
-    def reset_ui(self):
-        self.hide_all_prompts()
-        self.enable_configuration_controls()
 
 
     # ===========================================
@@ -679,6 +708,20 @@ class App(ctk.CTk):
     # ===========================================
     def hide_cancel_button(self):
         self.cancel_button.pack_forget()
+
+
+    # ===========================================
+    # Function: Show Reset Button
+    # ===========================================
+    def show_reset_button(self):
+        self.reset_button.pack(side="left", padx=(10, 0))
+
+
+    # ===========================================
+    # Function: Hide Reset Button
+    # ===========================================
+    def hide_reset_button(self):
+        self.reset_button.pack_forget()
 
 
     # ===========================================

@@ -848,19 +848,20 @@ def determine_run_mode():
         config.PROGRESS_INFO_FILE
     )
 
-    if len(progress_info["batches"]) == 0:
+    # Nothing has been processed yet (no batches at all, or all of them still UNPROCESSED,
+    # e.g. after a process terminated during preparation): this is a new run
+    if all(
+            batch[config.TERMINOLOGY_STATUS] == config.UNPROCESSED
+            and batch[config.TRANSLATION_STATUS] == config.UNPROCESSED
+            for batch in progress_info["batches"]
+    ):
         return config.NEW_RUN
 
     if find_resume_batch(progress_info) is None:
 
-        # Run is already complete. So we need to ask the user what they want:
-        if translator_dialogs.confirm_replace_results():
-
-            return config.NEW_RUN
-
-        else:
-
-            return config.POSTPROCESSING_ONLY
+        # Run is already complete, so only Post-Processing remains
+        # (a fresh start will be triggered by the Clear buttons in the UI)
+        return config.POSTPROCESSING_ONLY
 
     return config.RESUME
 
