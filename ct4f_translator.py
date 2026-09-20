@@ -56,6 +56,34 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
     # Just as info: print out the resume-relevant params
     fn.LOGGER(f"{fn.to_multiline_text(fn.get_resume_relevant_config())}")
 
+    # ---------------------------------------------------
+    # VALIDATE INPUT FILE
+    # Before anything is asked or any progress file is touched
+    # ---------------------------------------------------
+    if config.INPUT_TYPE == config.INPUT_TYPE_LOCALIZATION:
+
+        try:
+
+            fn.validate_lang_file_content(fn.load_json_input(config.INPUT_FILE))
+
+        except ValueError as e:
+
+            fn.LOGGER(fn.batch_log_msg(f"❌ {e.args[0]}"), config.TAG_ERROR)
+            raise RuntimeError(str(e))
+
+        # Unusual file name: not a hard block, the user decides
+        if not fn.is_lang_file_name(config.INPUT_FILE_NAME):
+
+            if not translator_dialogs.confirm_unusual_lang_file_name():
+
+                fn.LOGGER(fn.batch_log_msg("Aborted by user. Nothing has been changed."), config.TAG_INFO)
+
+                if finished:
+                    finished()
+
+                return
+
+
     # If Terminology exists, ask the user what to do with it
     config.REBUILD_TERMINOLOGY_IF_EXISTS = translator_dialogs.check_for_terminology_rebuild()
 
@@ -84,7 +112,8 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
         # Case 1: INITIALIZE PROGRESS
         # ---------------------------------------------------
         fn.LOGGER(fn.log_header(f"\nINITIALIZE PROGRESS"))
-        fn.cleanup_progress_files()
+        if not config.MOCK_MODE:
+            fn.cleanup_progress_files()
         progress_info = fn.init_progress_info()
 
     elif run_mode == config.RESUME:
@@ -176,6 +205,18 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
         # Tests:
         # -------
         # unit_tests.test_extract_translatables_from_babele(translatables)
+
+        # ---------------------------------------------------
+        # VALIDATE EXTRACTION RESULT
+        # ---------------------------------------------------
+        try:
+
+            fn.validate_translatables_found(translatables)
+
+        except ValueError as e:
+
+            fn.LOGGER(fn.batch_log_msg(f"❌ {e.args[0]}"), config.TAG_ERROR)
+            raise RuntimeError(str(e))
 
         # ---------------------------------------------------
         # SAVE TRANSLATABLES TO PROGRESS FOLDER

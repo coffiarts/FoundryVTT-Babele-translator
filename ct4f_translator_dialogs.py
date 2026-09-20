@@ -129,6 +129,24 @@ def confirm_replace_results():
 
 
 # ------------------------------------------------------------
+# Function: Confirm Unusual Lang File Name
+# Lang files are conventionally named <language code>.json (e.g. en.json, pt-BR.json).
+# Asks whether to continue anyway with a differently named file
+# ------------------------------------------------------------
+def confirm_unusual_lang_file_name() -> bool:
+
+    question = \
+        f"\n=== UNUSUAL FILE NAME FOR A LOCALIZATION FILE ===\n" \
+        f"The selected file is named '{config.INPUT_FILE_NAME}', but Localization (lang) files " \
+        f"are usually named <language code>.json (like en.json, or pt-BR.json).\n" \
+        "Are you sure that this is a Localization file and not a Babele file?\n" \
+        f"[{config.YES}] Yes, continue anyway.\n" \
+        f"[{config.NO}] No, abort."
+
+    return confirm_yes_no(question)
+
+
+# ------------------------------------------------------------
 # Function: Prompt confirmation for keeping batch after non-fatal errors
 # ------------------------------------------------------------
 def confirm_batch_nonfatal_errors():

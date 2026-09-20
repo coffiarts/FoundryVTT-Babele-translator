@@ -231,93 +231,6 @@ def analyze_progress_info():
     }
 
 
-# ------------------------------------------------------------
-# Function: Validate Progress
-# Used by Run Mode = RESUME
-# Checks if the status sequence of subsequent Batches is valid for being resumed.
-# As each Batch's lifecycle consists of two separate loops (first: Terminology, then: Translation),
-# these sequences need to be checked separately
-# Returns (if valid):
-# - the existing Progress Info
-# - the Batch to restart from (resume_batch)
-# (if invalid): an Error is thrown.
-# ------------------------------------------------------------
-def validate_progress_info(progress_info=None):
-
-    LOGGER(batch_log_msg("Validating existing Progress Info ..."))
-
-    if progress_info is None:
-        progress_info = load_json_input(config.PROGRESS_INFO_FILE)
-
-    # Check for proper status sequence:
-    try:
-
-        terminology_completed = validate_status_sequence(
-            progress_info["batches"],
-            config.TERMINOLOGY_STATUS
-        )
-
-        LOGGER(batch_log_msg(f"Terminology loop completed: {terminology_completed}"), config.TAG_SUCCESS)
-
-        translation_completed = validate_status_sequence(
-            progress_info["batches"],
-            config.TRANSLATION_STATUS
-        )
-
-        LOGGER(batch_log_msg(f"Translation loop completed: {translation_completed}"), config.TAG_SUCCESS)
-
-    except ValueError:
-
-        raise
-
-    LOGGER(batch_log_msg("... valid."), config.TAG_SUCCESS)
-
-    resume_batch = find_resume_batch(
-        progress_info
-    )
-
-    if resume_batch is None:
-        raise ValueError(
-            "Internal consistency error: "
-            "Run mode RESUME detected, but no resume batch found."
-        )
-
-    return progress_info, resume_batch
-
-
-# ------------------------------------------------------------
-# Function: Validate Status Sequence
-# Does the detailed checks for validate_progress_info(), for a specific
-# status_phase (TERMINOLOGY_STATUS vs. TRANSLATION_STATUS)
-# ------------------------------------------------------------
-def validate_status_sequence(
-        batches_progress_info,
-        status_phase):
-
-    phase_completed = True
-
-    for batch_progress_info in batches_progress_info:
-
-        if phase_completed:
-
-            if batch_progress_info[status_phase] not in (config.COMPLETED, config.REVIEW_REQUIRED):
-                phase_completed = False
-
-        else:
-
-            if batch_progress_info[status_phase] in (config.COMPLETED, config.REVIEW_REQUIRED):
-
-                raise ValueError(
-                    f"Corrupt ProgressInfo: "
-                    f"{status_phase}="
-                    f"{config.COMPLETED} or {config.REVIEW_REQUIRED} found after non-"
-                    f"{config.COMPLETED}/{config.REVIEW_REQUIRED} batch "
-                    f"(id={batch_progress_info['id']})."
-                )
-
-    return phase_completed
-
-
 #------------------------------------------------------------
 # Function: Build and return Batches
 # Traverse all Translatables (with placeholders) and bundle them into Batches,
@@ -731,6 +644,93 @@ def get_resume_relevant_config():
 
 
 # ------------------------------------------------------------
+# Function: Validate Progress
+# Used by Run Mode = RESUME
+# Checks if the status sequence of subsequent Batches is valid for being resumed.
+# As each Batch's lifecycle consists of two separate loops (first: Terminology, then: Translation),
+# these sequences need to be checked separately
+# Returns (if valid):
+# - the existing Progress Info
+# - the Batch to restart from (resume_batch)
+# (if invalid): an Error is thrown.
+# ------------------------------------------------------------
+def validate_progress_info(progress_info=None):
+
+    LOGGER(batch_log_msg("Validating existing Progress Info ..."))
+
+    if progress_info is None:
+        progress_info = load_json_input(config.PROGRESS_INFO_FILE)
+
+    # Check for proper status sequence:
+    try:
+
+        terminology_completed = validate_status_sequence(
+            progress_info["batches"],
+            config.TERMINOLOGY_STATUS
+        )
+
+        LOGGER(batch_log_msg(f"Terminology loop completed: {terminology_completed}"), config.TAG_SUCCESS)
+
+        translation_completed = validate_status_sequence(
+            progress_info["batches"],
+            config.TRANSLATION_STATUS
+        )
+
+        LOGGER(batch_log_msg(f"Translation loop completed: {translation_completed}"), config.TAG_SUCCESS)
+
+    except ValueError:
+
+        raise
+
+    LOGGER(batch_log_msg("... valid."), config.TAG_SUCCESS)
+
+    resume_batch = find_resume_batch(
+        progress_info
+    )
+
+    if resume_batch is None:
+        raise ValueError(
+            "Internal consistency error: "
+            "Run mode RESUME detected, but no resume batch found."
+        )
+
+    return progress_info, resume_batch
+
+
+# ------------------------------------------------------------
+# Function: Validate Status Sequence
+# Does the detailed checks for validate_progress_info(), for a specific
+# status_phase (TERMINOLOGY_STATUS vs. TRANSLATION_STATUS)
+# ------------------------------------------------------------
+def validate_status_sequence(
+        batches_progress_info,
+        status_phase):
+
+    phase_completed = True
+
+    for batch_progress_info in batches_progress_info:
+
+        if phase_completed:
+
+            if batch_progress_info[status_phase] not in (config.COMPLETED, config.REVIEW_REQUIRED):
+                phase_completed = False
+
+        else:
+
+            if batch_progress_info[status_phase] in (config.COMPLETED, config.REVIEW_REQUIRED):
+
+                raise ValueError(
+                    f"Corrupt ProgressInfo: "
+                    f"{status_phase}="
+                    f"{config.COMPLETED} or {config.REVIEW_REQUIRED} found after non-"
+                    f"{config.COMPLETED}/{config.REVIEW_REQUIRED} batch "
+                    f"(id={batch_progress_info['id']})."
+                )
+
+    return phase_completed
+
+
+# ------------------------------------------------------------
 # Function: Validate Resume-relevant config
 # Used prior to Resume run scenario:
 # Checks if any of the parameters defined by get_resume_relevant_config()
@@ -763,6 +763,73 @@ def validate_resume_relevant_config(progress_info=None):
 
             f"Please either adjust config.py accordingly and retry, "
             f"or start a fresh process for file {config.PROGRESS_INFO_FILE} (discarding all hitherto results)."
+        )
+
+
+# ------------------------------------------------------------
+# Function: Validate Lang File
+# A Localization "lang" file is a (nested) dict whose leaf values are all texts.
+# Raises a ValueError naming the first offending entries otherwise
+# (e.g. if a non-lang file has been selected by mistake)
+# ------------------------------------------------------------
+def validate_lang_file_content(data, max_reported=5):
+
+    if not isinstance(data, dict):
+        raise ValueError(
+            "INVALID INPUT FILE\n"
+            "The file does not look like a Localization (lang) file: "
+            f"the top level must be an object, but is a {type(data).__name__}."
+        )
+
+    invalid_entries = []
+
+    def collect_invalid_entries(node, path):
+
+        if isinstance(node, dict):
+            for key, child in node.items():
+                collect_invalid_entries(child, path + [key])
+
+        elif not isinstance(node, str):
+            invalid_entries.append(f"{'.'.join(path)} ({type(node).__name__})")
+
+    collect_invalid_entries(data, [])
+
+    if invalid_entries:
+        raise ValueError(
+            "INVALID INPUT FILE\n"
+            "The file does not look like a Localization (lang) file: "
+            f"all values must be texts, but {len(invalid_entries)} entries are not.\n"
+            f"First offending entries:\n" + "\n".join(invalid_entries[:max_reported])
+        )
+
+
+# ------------------------------------------------------------
+# Function: Is Lang File Name
+# Lang files are conventionally named <language code>.json (e.g. en.json, pt-BR.json).
+# Returns True if the given file name follows this convention
+# ------------------------------------------------------------
+def is_lang_file_name(file_name) -> bool:
+
+    return re.fullmatch(
+        r"[a-z]{2,3}([-_][a-z0-9]{2,4})?\.json",
+        file_name,
+        flags=re.IGNORECASE
+    ) is not None
+
+
+# ------------------------------------------------------------
+# Function: Validate Translatables Found
+# Raises a ValueError if the extraction yielded nothing to translate
+# (typically because the wrong input type has been selected)
+# ------------------------------------------------------------
+def validate_translatables_found(translatables):
+
+    if len(translatables) == 0:
+        raise ValueError(
+            "NO TRANSLATABLE ELEMENTS FOUND\n"
+            "This file doesn't contain any identifiable translatable elements.\n"
+            "Are you sure that you've picked the right input type (Babele vs. Localization)?\n"
+            f"Currently selected: {config.INPUT_TYPE}"
         )
 
 
@@ -1357,4 +1424,8 @@ def init_system_dirs():
         exist_ok=True
     )
     LOGGER(f"USER_DATA_DIR: {config.USER_DATA_DIR}")
+
+    config.SETTINGS_FILE = config.USER_CONFIG_DIR / config.SETTINGS_FILE_NAME
+    LOGGER(f"SETTINGS_FILE: {config.SETTINGS_FILE}")
+
 

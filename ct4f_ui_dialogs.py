@@ -127,7 +127,7 @@ class ErrorDialog(ctk.CTkToplevel):
     def __init__(self, parent, message:str=""):
         super().__init__(parent)
         self.title("Ooops... we have a problem!")
-        self.geometry("400x400")
+        self.geometry("500x500")
         self.resizable(True, True)
         self.transient(parent)
         self.grab_set()

@@ -4,6 +4,7 @@ import ct4f_translator_dialogs as translator_dialogs
 import ct4f_ui_dialogs as ui_dialogs
 import ct4f_core_functions as fn
 import ct4f_security as security
+import ct4f_settings as settings
 #import ct4f_unit_tests as unit_tests
 import queue
 import threading
@@ -273,7 +274,16 @@ class App(ctk.CTk):
         if not filename:
             return
 
-        self.selected_file = Path(filename)
+        self.set_input_file(Path(filename))
+
+
+    # ===========================================
+    # Function: Set Input File
+    # Applies the given file as Input File
+    # (shared by the file picker and the settings restore)
+    # ===========================================
+    def set_input_file(self, file: Path):
+        self.selected_file = file
 
         config.INPUT_FILE = self.selected_file
         config.INPUT_FILE_NAME = self.selected_file.name
@@ -328,10 +338,11 @@ class App(ctk.CTk):
         config.INPUT_TYPE = self.input_type_var.get()
         config.MODULE_NAME = self.module_name_entry.get().strip()
         config.BASE_OUTPUT_DIR = self.selected_output_dir  # None => fall back to USER_DATA_DIR
-        fn.adapt_file_paths()
 
         fn.adapt_file_paths()
         #unit_tests.test_adapt_file_paths_idempotent()
+
+        self.persist_settings()
 
 
         progress_info = fn.analyze_progress_info()
@@ -710,7 +721,7 @@ class App(ctk.CTk):
     # ===========================================
     def worker_exception_handler(self, args):
 
-        msg = f"An Exception occurred:\n{args.exc_value}"
+        msg = f"An Exception occurred (please check the console window for details):\n{args.exc_type}: {args.exc_value}\n\n{args}"
         self.LOGGER(msg, config.TAG_ERROR)
         if self.LOGGER != print:
             print(msg)
@@ -720,6 +731,8 @@ class App(ctk.CTk):
         self.cancel_button.configure(text="Cancel", state="enabled")
         self.hide_all_prompts()
         self.enable_configuration_controls()
+
+        raise
 
 
     # ===========================================
@@ -759,11 +772,75 @@ class App(ctk.CTk):
         ui_dialogs.SettingsDialog(self, on_save_callback=callback)
 
 
+    # ===========================================
+    # Function: Persist Settings
+    # Saves the current selections to the settings file (called when a translation starts)
+    # ===========================================
+    def persist_settings(self):
+        settings.save_settings({
+            "base_output_dir": str(config.BASE_OUTPUT_DIR) if config.BASE_OUTPUT_DIR else None,
+            "input_file": str(config.INPUT_FILE),
+            "input_type": config.INPUT_TYPE,
+            "module_name": config.MODULE_NAME
+        })
+
+
+    # ===========================================
+    # Function: Restore Settings
+    # Restores the persisted selections into the UI (called once at app start)
+    # ===========================================
+    def restore_settings(self):
+
+        try:
+            saved = settings.load_settings()
+
+        except (OSError, ValueError):
+            msg = \
+                 "Couldn't restore previous settings - falling back to defaults.\n\n" \
+                f"Please check your local settings file (something seems to be corrupt with it):\n" \
+                f"{config.SETTINGS_FILE}."
+            self.LOGGER(msg, config.TAG_ERROR)
+            if self.LOGGER != print:
+                print(msg)
+            ui_dialogs.ErrorDialog(self, message=msg)
+
+            return
+
+        # Output folder: independent of the input file
+        output_dir = saved.get("base_output_dir")
+        if output_dir and Path(output_dir).is_dir():
+            self.selected_output_dir = Path(output_dir)
+            self.output_dir_label.configure(text=str(self.selected_output_dir))
+
+        # Input file, input type and module name are restored as a unit,
+        # so they are dropped together if any part is no longer valid
+        input_file = saved.get("input_file")
+        input_type = saved.get("input_type")
+        module_name = saved.get("module_name")
+
+        if not (input_file and Path(input_file).is_file()):
+            return
+
+        if input_type not in (config.INPUT_TYPE_BABELE, config.INPUT_TYPE_LOCALIZATION):
+            return
+
+        self.set_input_file(Path(input_file))
+
+        # Changing the input type re-triggers the module name suggestion,
+        # so the stored module name must be applied last
+        self.input_type_var.set(input_type)
+
+        if module_name:
+            self.module_name_entry.delete(0, "end")
+            self.module_name_entry.insert(0, module_name)
+
+
 # Finally, run it!
 app = App()
 fn.set_logger(app.LOGGER)
 
 fn.init_system_dirs()
+app.restore_settings()
 
 app.worker_exception_handler = app.worker_exception_handler
 threading.excepthook = app.worker_exception_handler
