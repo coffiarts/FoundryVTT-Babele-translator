@@ -5,6 +5,7 @@ import ct4f_ui_dialogs as ui_dialogs
 import ct4f_core_functions as fn
 import ct4f_security as security
 import ct4f_settings as settings
+import ct4f_ui_widgets as ui_widgets
 #import ct4f_unit_tests as unit_tests
 import queue
 import threading
@@ -186,6 +187,17 @@ class App(ctk.CTk):
         )
 
         # =========================================
+        # Batch status bars (hidden until the batches are known)
+        # =========================================
+        self.bars_frame = ctk.CTkFrame(self, fg_color="transparent")
+
+        self.terminology_bar = ui_widgets.BatchStatusBar(self.bars_frame, "Terminology")
+        self.terminology_bar.pack(fill="x", pady=(0, 10))
+
+        self.translation_bar = ui_widgets.BatchStatusBar(self.bars_frame, "Translation")
+        self.translation_bar.pack(fill="x")
+
+        # =========================================
         # Log Output Window
         # =========================================
         self.log_window = ctk.CTkTextbox(self, width=600, height=300, fg_color="black", text_color="white")
@@ -271,7 +283,7 @@ class App(ctk.CTk):
         self.render_dialog_requests()
 
 
-# ===========================================
+    # ===========================================
     # Function: Select File
     # Generated a UI File Picker for selecting the Input File
     # ===========================================
@@ -383,6 +395,7 @@ class App(ctk.CTk):
 
         self.start_button.configure(text="Start", command=self.run_translation, state="normal")
         self.show_reset_button()
+        self.show_bars(result["analysis"])
 
 
     # ===========================================
@@ -395,6 +408,42 @@ class App(ctk.CTk):
         self.hide_reset_button()
         self.start_button.configure(text="Prepare", command=self.prepare)
         self.enable_configuration_controls()
+        self.hide_bars()
+
+
+    # ===========================================
+    # Function: Show Bars
+    # Renders the batch status bars from the analysis delivered by the preparation
+    # ===========================================
+    def show_bars(self, analysis):
+        batches = analysis["batches"]
+
+        self.terminology_bar.set_batches([
+            {
+                "batch_id": batch["id"],
+                "status": batch[config.TERMINOLOGY_STATUS],
+                "char_count": batch["char_count"]
+            }
+            for batch in batches
+        ])
+
+        self.translation_bar.set_batches([
+            {
+                "batch_id": batch["id"],
+                "status": batch[config.TRANSLATION_STATUS],
+                "char_count": batch["char_count"]
+            }
+            for batch in batches
+        ])
+
+        self.bars_frame.pack(before=self.log_window, padx=20, pady=5, fill="x")
+
+
+    # ===========================================
+    # Function: Hide Bars
+    # ===========================================
+    def hide_bars(self):
+        self.bars_frame.pack_forget()
 
 
     # ===========================================

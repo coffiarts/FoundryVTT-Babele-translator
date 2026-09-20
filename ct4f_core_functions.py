@@ -260,6 +260,7 @@ def build_batches(translatables_with_placeholders):
         # No Translatable must exceed the Batch size limit by itself, this requires an abort.
         if text_size > config.MAX_BATCH_SIZE:
             error = (
+                f"TRANSLATABLE TEXT EXCEEDS MAX_BATCH_SIZE.\n" +
                 f"Translatable {translatable['id']} " +
                 f"contains {text_size} chars and exceeds " +
                 f"MAX_BATCH_SIZE={config.MAX_BATCH_SIZE}" +
