@@ -268,17 +268,17 @@ ERROR = "ERROR"
 PASSED = "PASSED" # FAILED can be reused from above
 
 # Console Colors &  Formatting
-RED    = "\033[31m"
-GREEN  = "\033[32m"
-YELLOW = "\033[33m"
-BLUE   = "\033[34m"
-MAGENTA = "\033[35m"
-CYAN = "\033[36m"
-WHITE = "\033[37m"
-HEADER = "\033[95m"
-BOLD = "\033[1m"
-UNDERLINE = "\033[4m"
-RESET  = "\033[0m" # Used to end any coloring or formatting
+CONSOLE_RED    = "\033[31m"
+CONSOLE_GREEN  = "\033[32m"
+CONSOLE_YELLOW = "\033[33m"
+CONSOLE_BLUE   = "\033[34m"
+CONSOLE_MAGENTA = "\033[35m"
+CONSOLE_CYAN = "\033[36m"
+CONSOLE_WHITE = "\033[37m"
+CONSOLE_HEADER = "\033[95m"
+CONSOLE_BOLD = "\033[1m"
+CONSOLE_UNDERLINE = "\033[4m"
+CONSOLE_RESET  = "\033[0m" # Used to end any coloring or formatting
 
 # UI Colors & Formatting
 TAG_ERROR = "error"
@@ -286,6 +286,22 @@ TAG_SUCCESS = "success"
 TAG_WARNING = "warning"
 TAG_INFO = "info"
 TAG_QUESTION = "question"
+
+# UI Colors (hex values for CustomTkinter widgets, not to be mixed up with the CONSOLE_ colors)
+GREY = "#8a8a8a"
+YELLOW = "#e0b400"
+GREEN = "#3fa34d"
+RED = "#d64545"
+MAGENTA = "#b04fc0"
+
+# Batch status => UI color
+STATUS_COLORS = {
+    UNPROCESSED: GREY,
+    PROCESSING: YELLOW,
+    COMPLETED: GREEN,
+    FAILED: RED,
+    REVIEW_REQUIRED: MAGENTA
+}
 
 # Error Types
 PLACEHOLDER_TRANSLATION_ERROR = "PLACEHOLDER_TRANSLATION_ERROR"

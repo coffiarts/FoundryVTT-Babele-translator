@@ -94,7 +94,7 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
     try:
 
         run_mode = fn.determine_run_mode()
-        fn.LOGGER(fn.log_header(f"Run mode: {run_mode}", color=config.YELLOW))
+        fn.LOGGER(fn.log_header(f"Run mode: {run_mode}", color=config.CONSOLE_YELLOW))
 
     except ValueError as e:
 
@@ -695,7 +695,7 @@ def run_translation(logger: Callable[str], finished=None, cancel_event=None):
                             fn.batch_log_msg(f"... completeness check: PASSED",
                                              batch_id=batch["id"],
                                              batch_cnt=len(batches),
-                                             color=config.GREEN)
+                                             color=config.CONSOLE_GREEN)
                         )
 
                         # ---------------------------------------------------

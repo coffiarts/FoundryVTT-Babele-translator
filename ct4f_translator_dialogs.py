@@ -91,7 +91,7 @@ def check_for_terminology_rebuild() -> bool:
     if config.TERMINOLOGY_FILE.exists():
 
         question = \
-            f"\n{config.MAGENTA}" \
+            f"\n{config.CONSOLE_MAGENTA}" \
             f"=== REBUILD TERMINOLOGY? ===\n" \
             f"Found existing Terminology for this input file: {config.TERMINOLOGY_FILE}\n" \
             "Do you want to rebuild it online before translating?\n" \
@@ -117,7 +117,7 @@ def confirm_replace_results():
     )
 
     question =\
-        f"\n{config.MAGENTA}=== REPLACE PREVIOUS RESULTS? ===\n" \
+        f"\n{config.CONSOLE_MAGENTA}=== REPLACE PREVIOUS RESULTS? ===\n" \
         f"The last run for this file is marked as fully {config.COMPLETED}.\n" \
         f"{text_if_output_still_exists}" \
         "Do you want to discard the results and start a complete, FRESH translation?\n" \

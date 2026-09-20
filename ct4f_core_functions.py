@@ -1066,7 +1066,7 @@ def log_header(text, batch_id=None, batch_cnt=None, color=None) -> str:
     )
 
     format_prefix = ("" if color is None else color)
-    format_postfix = ("" if color is None else config.RESET)
+    format_postfix = ("" if color is None else config.CONSOLE_RESET)
 
     return f"\n{format_prefix}"\
            f"{separator(extra_line_breaks=1)}"\
@@ -1089,7 +1089,7 @@ def batch_log_msg(text, batch_id=None, batch_cnt=None, color=None) -> str:
     )
 
     format_prefix = ("" if color is None else color)
-    format_postfix = ("" if color is None else config.RESET)
+    format_postfix = ("" if color is None else config.CONSOLE_RESET)
 
     return f"{format_prefix}{batch_prefix}{text}{format_postfix}"
 
