@@ -21,13 +21,13 @@
 
 ☐ Handle the following specific exception scenarios explicitly (without hard-block/ErrorDialog):
 
-    ☐ CANCELLED => return to "prepared" state?
+- ~~CANCELLED => return to "prepared" state?~~
 
-    ☐ INVALID INPUT FILE (no lang file) => confirm with hint, return to "configuration" phase?
+- ~~INVALID INPUT FILE (no lang file) => confirm with hint, return to "configuration" phase?~~
 
-    ☐ CONFIGURATION MISMATCH => confirm with hint, allow to cleanup progress-info (trigger "clear") return to "prepared" phase?
+- ~~TRANSLATABLE TEXT EXCEEDS MAX_BATCH_SIZE => confirm with hint, return to preparation phase~~
 
-    ☐ TRANSLATABLE TEXT EXCEEDS MAX_BATCH_SIZE => confirm with hint, return to configuration phase => propably depending on TODO item "Disclose and persist setting: MAX_BATCH_SIZE" below
+- CONFIGURATION MISMATCH => confirm with hint, allow to cleanup progress-info (trigger "clear") return to "prepared" phase?
 
 ☐ Improve readability of ErrorDialog contents (get rid of "technical noise", less stressful bg/fd colors)
 

@@ -953,7 +953,7 @@ class App(ctk.CTk):
 
         elif kind == config.OUTCOME_EXPECTED_ERROR:
             self.LOGGER(outcome["message"], config.TAG_ERROR)
-            ui_dialogs.ErrorDialog(self, message=outcome["message"])
+            ui_dialogs.HintDialog(self, message=outcome["message"])
 
         elif kind == config.OUTCOME_UNEXPECTED_ERROR:
             msg = f"An unexpected error occurred:\n{outcome['message']}"

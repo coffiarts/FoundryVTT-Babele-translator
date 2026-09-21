@@ -89,14 +89,7 @@ def _prepare(logger: Callable[str]):
     # ---------------------------------------------------
     if config.INPUT_TYPE == config.INPUT_TYPE_LOCALIZATION:
 
-        try:
-
-            fn.validate_lang_file_content(fn.load_json_input(config.INPUT_FILE))
-
-        except ValueError as e:
-
-            fn.LOGGER(fn.batch_log_msg(f"❌ {e.args[0]}"), config.TAG_ERROR)
-            raise RuntimeError(str(e))
+        fn.validate_lang_file_content(fn.load_json_input(config.INPUT_FILE))
 
         # Unusual file name: not a hard block, the user decides
         if not fn.is_lang_file_name(config.INPUT_FILE_NAME):
@@ -164,19 +157,6 @@ def _prepare(logger: Callable[str]):
     if run_mode != config.POSTPROCESSING_ONLY:
 
         # ---------------------------------------------------
-        # START OF INPUT PROCESSING AND TRANSLATION
-        # ---------------------------------------------------
-        # Everything from here on is either the preparation of
-        # or the execution of batch-based processing of the
-        # translatable texts from the input file through an
-        # online translation service (LLM like OpenAI). It ends
-        # at the point where all raw translations have been
-        # received from the remote LLM and safely stored locally.
-        # It includes recoverability logic for handling
-        # unexpected errors, thus avoiding unnecessary remote calls.
-        # ---------------------------------------------------
-
-        # ---------------------------------------------------
         # IMPORT INPUT FILE
         # ---------------------------------------------------
         fn.LOGGER(fn.log_header(f"IMPORT INPUT FILE: {config.INPUT_FILE}"))
@@ -216,14 +196,7 @@ def _prepare(logger: Callable[str]):
         # ---------------------------------------------------
         # VALIDATE EXTRACTION RESULT
         # ---------------------------------------------------
-        try:
-
-            fn.validate_translatables_found(translatables)
-
-        except ValueError as e:
-
-            fn.LOGGER(fn.batch_log_msg(f"❌ {e.args[0]}"), config.TAG_ERROR)
-            raise RuntimeError(str(e))
+        fn.validate_translatables_found(translatables)
 
         # ---------------------------------------------------
         # SAVE TRANSLATABLES TO PROGRESS FOLDER
@@ -300,20 +273,10 @@ def _prepare(logger: Callable[str]):
 
         except ValueError as e:
 
-            details = e.args[0]
+            # A failed preparation must leave nothing behind, so that the next attempt starts fresh
+            fn.cleanup_progress_files()
 
-            # Update ProgressInfo to register error
-            progress_info["batches"] = details["batches"]
-            fn.save_json_output(data=progress_info, output_file=config.PROGRESS_INFO_FILE)
-
-            # Also persist all hitherto known
-            # Batches in BATCHES_FILE right away (before aborting)
-            # But we do not want to store the last failed batch here, so we pop it off first
-            details["batches"].pop()
-            fn.save_json_output(data=details["batches"], output_file=config.BATCHES_FILE)
-
-            fn.LOGGER(fn.batch_log_msg(f"❌ {details["error"]}"), config.TAG_ERROR)
-            raise RuntimeError(str(e))
+            raise exceptions.ExpectedException(e.args[0]["error"])
 
         # -------
         # Tests:

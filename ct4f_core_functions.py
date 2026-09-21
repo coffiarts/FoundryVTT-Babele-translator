@@ -1,6 +1,6 @@
 import ct4f_config as config
-import ct4f_translator_dialogs as translator_dialogs
 from ct4f_security import get_api_key
+import ct4f_exceptions as exceptions
 import json
 import os
 import sys
@@ -301,7 +301,7 @@ def build_batches(translatables_with_placeholders):
                 f"Translatable {translatable['id']} " +
                 f"contains {text_size} chars and exceeds " +
                 f"MAX_BATCH_SIZE={config.MAX_BATCH_SIZE}" +
-                f"\nProposed solution: Increase MAX_BATCH_SIZE in config.py and resume process."
+                f"\nProposed solution: Increase Max Batch Size and prepare again."
             )
 
             current_batch[config.TERMINOLOGY_STATUS] = config.FAILED
@@ -813,7 +813,7 @@ def validate_resume_relevant_config(progress_info=None):
 def validate_lang_file_content(data, max_reported=5):
 
     if not isinstance(data, dict):
-        raise ValueError(
+        raise exceptions.ExpectedException(
             "INVALID INPUT FILE\n"
             "The file does not look like a Localization (lang) file: "
             f"the top level must be an object, but is a {type(data).__name__}."
@@ -833,7 +833,7 @@ def validate_lang_file_content(data, max_reported=5):
     collect_invalid_entries(data, [])
 
     if invalid_entries:
-        raise ValueError(
+        raise exceptions.ExpectedException(
             "INVALID INPUT FILE\n"
             "The file does not look like a Localization (lang) file: "
             f"all values must be texts, but {len(invalid_entries)} entries are not.\n"
@@ -863,10 +863,13 @@ def is_lang_file_name(file_name) -> bool:
 def validate_translatables_found(translatables):
 
     if len(translatables) == 0:
-        raise ValueError(
+        raise exceptions.ExpectedException(
             "NO TRANSLATABLE ELEMENTS FOUND\n"
             "This file doesn't contain any identifiable translatable elements.\n"
-            "Are you sure that you've picked the right input type (Babele vs. Localization)?\n"
+            "\n"
+            f"Are you sure that you've picked the right input type:\n"
+            f"\"{config.INPUT_TYPE_BABELE}\" vs. \"{config.INPUT_TYPE_LOCALIZATION})\"?\n"
+            "\n"
             f"Currently selected: {config.INPUT_TYPE}"
         )
 

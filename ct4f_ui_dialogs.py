@@ -147,3 +147,25 @@ class ErrorDialog(ctk.CTkToplevel):
             btn_frame, text="Close", fg_color="gray", command=self.destroy
         ).pack(side="right")
 
+class HintDialog(ctk.CTkToplevel):
+
+    def __init__(self, parent, message: str = ""):
+        super().__init__(parent)
+        self.title("Please note")
+        self.minsize(400, 150)
+        self.transient(parent)
+        self.grab_set()
+
+        # Message (wrapped)
+        ctk.CTkLabel(
+            self,
+            text=message,
+            wraplength=400,
+            justify="left",
+            font=("Arial", 14)
+        ).pack(padx=20, pady=(20, 10), fill="both", expand=True)
+
+        # Buttons
+        btn_frame = ctk.CTkFrame(self, fg_color="transparent")
+        btn_frame.pack(padx=20, pady=(10, 15), fill="x")
+        ctk.CTkButton(btn_frame, text="OK", command=self.destroy).pack(side="right")
