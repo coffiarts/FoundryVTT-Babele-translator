@@ -82,53 +82,6 @@ def prompt_radio(question, options):
 
 
 # ------------------------------------------------------------
-# Function: Prompt for Terminology Rebuild
-# ------------------------------------------------------------
-def check_for_terminology_rebuild() -> bool:
-
-    LOGGER(f"TERMINOLOGY_FILE: {config.TERMINOLOGY_FILE}")
-
-    if config.TERMINOLOGY_FILE.exists():
-
-        question = \
-            f"\n{config.CONSOLE_MAGENTA}" \
-            f"=== REBUILD TERMINOLOGY? ===\n" \
-            f"Found existing Terminology for this input file: {config.TERMINOLOGY_FILE}\n" \
-            "Do you want to rebuild it online before translating?\n" \
-            f"[{config.YES}] Rebuild terminology from scratch (replace) \n" \
-            f"[{config.NO}] No, reuse existing Terminology (or continue, in case of aborts)"
-
-        return confirm_yes_no(question)
-
-    else:
-
-        return True
-
-
-# ------------------------------------------------------------
-# Function: Confirm Replacement of Results
-# ------------------------------------------------------------
-def confirm_replace_results():
-
-    text_if_output_still_exists = (
-        f"A translated output file can still be found at: {config.OUTPUT_FILE}\n"
-        if config.OUTPUT_FILE.exists()
-        else ""
-    )
-
-    question =\
-        f"\n{config.CONSOLE_MAGENTA}=== REPLACE PREVIOUS RESULTS? ===\n" \
-        f"The last run for this file is marked as fully {config.COMPLETED}.\n" \
-        f"{text_if_output_still_exists}" \
-        "Do you want to discard the results and start a complete, FRESH translation?\n" \
-        "Or do you want to keep them and just rerun Post-Processing steps (integrity checks and rebuilding of the output file)?\n" \
-        f"[{config.YES}] Discard and replace previous results.\n" \
-        f"[{config.NO}] No, just rerun Post-Processing (this will also skip Terminology rebuild!)"
-
-    return confirm_yes_no(question)
-
-
-# ------------------------------------------------------------
 # Function: Confirm Unusual Lang File Name
 # Lang files are conventionally named <language code>.json (e.g. en.json, pt-BR.json).
 # Asks whether to continue anyway with a differently named file

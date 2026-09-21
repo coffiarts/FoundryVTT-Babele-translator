@@ -797,15 +797,6 @@ class App(ctk.CTk):
 
 
     # ===========================================
-    # Function: Initialize Visual Process Status
-    # Visualizes the last state of an existing, resumable process
-    # ===========================================
-    def init_visual_process_status(self):
-        self.LOGGER("init_visual_process_status # TODO - not implemented")
-        pass # TODO - not implemented
-
-
-    # ===========================================
     # Function: Submit YES
     # Used by the "Yes" button
     # ===========================================
@@ -915,26 +906,6 @@ class App(ctk.CTk):
     def show_yesno_buttons(self):
         self.yes_button.pack(side="left", padx=5)
         self.no_button.pack(side="left", padx=5)
-
-
-    # ===========================================
-    # Function: Worker Exception Handler
-    # Responsible for catching any error occurring within the asynchronous translation thread
-    # Primarily useful for intercepting when user has pressed CANCEL
-    # ===========================================
-    def worker_exception_handler(self, args):
-
-        msg = f"An Exception occurred (please check the console window for details):\n{args.exc_type}: {args.exc_value}\n\n{args}"
-        self.LOGGER(msg, config.TAG_ERROR)
-        if self.LOGGER != print:
-            print(msg)
-        ui_dialogs.ErrorDialog(self, message=msg)
-        # self.LOGGER("Cancelled.", config.TAG_ERROR)
-
-        self.hide_all_prompts()
-        self.enable_configuration_controls()
-
-        raise
 
 
     # ===========================================
@@ -1070,9 +1041,6 @@ fn.set_batch_listener(app.batches_changed)
 
 fn.init_system_dirs()
 app.restore_settings()
-
-app.worker_exception_handler = app.worker_exception_handler
-threading.excepthook = app.worker_exception_handler
 
 # Finally, run it!
 app.mainloop()
