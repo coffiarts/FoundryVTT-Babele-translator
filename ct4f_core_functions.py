@@ -682,6 +682,24 @@ def get_resume_relevant_config():
 
 
 # ------------------------------------------------------------
+# Function: Get Resume Config Differences
+# Compares the resume-relevant config stored with an existing process
+# to the current one. Returns the differing parameters as
+# {name: {"stored": ..., "current": ...}} (empty if identical)
+# ------------------------------------------------------------
+def get_resume_config_differences(progress_info):
+
+    current_config = get_resume_relevant_config()
+    stored_config = progress_info["config"]
+
+    return {
+        name: {"stored": stored_config.get(name), "current": current_config.get(name)}
+        for name in {**stored_config, **current_config}
+        if stored_config.get(name) != current_config.get(name)
+    }
+
+
+# ------------------------------------------------------------
 # Function: Validate Progress
 # Used by Run Mode = RESUME
 # Checks if the status sequence of subsequent Batches is valid for being resumed.
@@ -766,42 +784,6 @@ def validate_status_sequence(
                 )
 
     return phase_completed
-
-
-# ------------------------------------------------------------
-# Function: Validate Resume-relevant config
-# Used prior to Resume run scenario:
-# Checks if any of the parameters defined by get_resume_relevant_config()
-# have changed since last run. If so, an Exception is thrown
-# ------------------------------------------------------------
-def validate_resume_relevant_config(progress_info=None):
-
-    current_config = get_resume_relevant_config()
-
-    if progress_info is None:
-        progress_info = load_json_input(config.PROGRESS_INFO_FILE)
-
-    if progress_info["config"] != current_config:
-
-        raise ValueError(
-            f"CONFIGURATION MISMATCH\n"
-            f"======================\n"
-            f"At least one essential parameter in config.py "
-            f"has changed since the last attempt to run this process.\n"
-            f"The following parameters are not allowed to change when resuming a process for the same input file.\n"
-            f"(File to be processed: {config.INPUT_FILE})\n\n"
-
-            f"Current configuration:\n"
-            f"----------------------\n"
-            f"{to_multiline_text(current_config)}\n\n"
-
-            f"Configuration values expected from last attempt:\n"
-            f"------------------------------------------------\n"
-            f"{to_multiline_text(progress_info['config'])}\n\n"
-
-            f"Please either adjust config.py accordingly and retry, "
-            f"or start a fresh process for file {config.PROGRESS_INFO_FILE} (discarding all hitherto results)."
-        )
 
 
 # ------------------------------------------------------------

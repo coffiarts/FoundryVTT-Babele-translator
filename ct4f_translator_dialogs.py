@@ -100,6 +100,29 @@ def confirm_unusual_lang_file_name() -> bool:
 
 
 # ------------------------------------------------------------
+# Function: Confirm Discard Progress
+# Asked if settings have changed since the last run of this input file.
+# Returns True if the existing progress may be discarded
+# ------------------------------------------------------------
+def confirm_discard_progress(differences) -> bool:
+
+    changed = "\n".join(
+        f"- {name}: {change['stored']}  =>  {change['current']}"
+        for name, change in differences.items()
+    )
+
+    question = \
+        f"\n=== SETTINGS CHANGED SINCE THE LAST RUN ===\n" \
+        f"These settings differ from those of the existing progress for this input file:\n" \
+        f"{changed}\n" \
+        "They cannot be applied to a process that is already under way.\n" \
+        f"[{config.YES}] Discard the existing progress and start fresh with the current settings.\n" \
+        f"[{config.NO}] No, keep the progress (restore the previous settings yourself, then prepare again)."
+
+    return confirm_yes_no(question)
+
+
+# ------------------------------------------------------------
 # Function: Prompt confirmation for keeping batch after non-fatal errors
 # ------------------------------------------------------------
 def confirm_batch_nonfatal_errors():

@@ -19,7 +19,7 @@
 - ~~how/what to interrupt by "Cancel"~~
 - ~~where to return to after "Cancel" or unexpected exceptions~~
 
-☐ Handle the following specific exception scenarios explicitly (without hard-block/ErrorDialog):
+☑ Handle the following specific exception scenarios explicitly (without hard-block/ErrorDialog):
 
 - ~~CANCELLED => return to "prepared" state?~~
 
@@ -27,9 +27,11 @@
 
 - ~~TRANSLATABLE TEXT EXCEEDS MAX_BATCH_SIZE => confirm with hint, return to preparation phase~~
 
-- CONFIGURATION MISMATCH => confirm with hint, allow to cleanup progress-info (trigger "clear") return to "prepared" phase?
+- ~~CONFIGURATION MISMATCH => confirm with hint, allow to cleanup progress-info (like auto-triggering both "clear" buttons), then return to "prepared" phase~~
 
-☐ Improve readability of ErrorDialog contents (get rid of "technical noise", less stressful bg/fd colors)
+☑ ~~Improve readability of ErrorDialog contents (get rid of "technical noise", less stressful bg/fd colors)~~
+
+☐ Visually improve confirmation prompts (currently clumsily placed inline, wiht ugly format, and not going away after being answered)
 
 ☐ Bugfix: Localization mode produces strict output filename <language>.json, dropping
 any postfix from input file (like in en-US.json). Instead, it should keep the postfix, by only replacing the source language part of the name (e.g. "en") by the target language part (e.g. "de"): en-US.json => de-US.json
@@ -45,8 +47,6 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 ☐ Render popup details for each bar
 
 ☐ (optional?) Calculate and render "Status"
-
-☑ Improve translation dialog prompts (visualization, hide after answer)
 
 ☐ Disclose and persist setting: SOURCE_LANGUAGE / TARGET_LANGUAGE
 

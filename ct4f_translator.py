@@ -111,6 +111,26 @@ def _prepare(logger: Callable[str]):
         raise RuntimeError(str(e))
 
     # ---------------------------------------------------
+    # CHECK RESUME-RELEVANT CONFIG
+    # If settings have changed since the last run, the user decides whether to discard the progress
+    # ---------------------------------------------------
+    if run_mode == config.RESUME:
+
+        differences = fn.get_resume_config_differences(
+            fn.load_json_input(config.PROGRESS_INFO_FILE)
+        )
+
+        if differences:
+
+            if not translator_dialogs.confirm_discard_progress(differences):
+                raise exceptions.DeclinedException()
+
+            # Start fresh: the NEW_RUN branch below initializes the progress
+            fn.cleanup_progress_files()
+            run_mode = config.NEW_RUN
+            fn.LOGGER(fn.log_header(f"Run mode: {run_mode}", color=config.CONSOLE_YELLOW))
+
+    # ---------------------------------------------------
     # INITIALIZE RUN, DEPENDING ON RUN MODE
     # ---------------------------------------------------
     progress_info = None
@@ -135,8 +155,6 @@ def _prepare(logger: Callable[str]):
             progress_info, resume_batch = (
                 fn.validate_progress_info()
             )
-
-            fn.validate_resume_relevant_config(progress_info)
 
             if resume_batch is not None:
                 starting_text = fn.load_translatables_for_batch(resume_batch, limit=1)[0]["text"][:100]
