@@ -4,8 +4,52 @@ import ct4f_core_functions as fn
 import ct4f_exceptions as exceptions
 import json
 import time
+import traceback
 from datetime import datetime
 from collections.abc import Callable
+
+
+# ------------------------------------------------------------
+# Function: Report Outcome
+# Runs the given work and reports exactly ONE outcome to on_ended.
+# The outcome is a dict: {"outcome", "result", "message", "details"}
+# ------------------------------------------------------------
+def report_outcome(work, on_ended):
+
+    outcome = {
+        "outcome": config.OUTCOME_SUCCESS,
+        "result": None,
+        "message": None,
+        "details": None
+    }
+
+    try:
+        outcome["result"] = work()
+
+    except exceptions.CancelledException:
+        outcome["outcome"] = config.OUTCOME_CANCELLED
+
+    except exceptions.DeclinedException:
+        outcome["outcome"] = config.OUTCOME_DECLINED
+
+    except exceptions.ExpectedException as e:
+        outcome["outcome"] = config.OUTCOME_EXPECTED_ERROR
+        outcome["message"] = str(e)
+
+    except Exception as e:
+        outcome["outcome"] = config.OUTCOME_UNEXPECTED_ERROR
+        outcome["message"] = f"{type(e).__name__}: {e}"
+        outcome["details"] = traceback.format_exc()
+
+    on_ended(outcome)
+
+
+def prepare(logger: Callable[str], on_ended):
+    report_outcome(lambda: _prepare(logger), on_ended)
+
+
+def run(logger: Callable[str], on_ended, cancel_event):
+    report_outcome(lambda: _run(logger, cancel_event), on_ended)
 
 
 # ------------------------------------------------------------
@@ -13,7 +57,7 @@ from collections.abc import Callable
 # Offline part: validation, run mode, extraction, placeholders and batch building.
 # Returns the info needed by run_translation(), or None if the user aborted.
 # ------------------------------------------------------------
-def prepare(logger: Callable[str], on_prepared=None, on_aborted=None):
+def _prepare(logger: Callable[str]):
 
     translator_dialogs.set_logger(logger)
 
@@ -58,11 +102,7 @@ def prepare(logger: Callable[str], on_prepared=None, on_aborted=None):
         if not fn.is_lang_file_name(config.INPUT_FILE_NAME):
 
             if not translator_dialogs.confirm_unusual_lang_file_name():
-                fn.LOGGER(fn.batch_log_msg("Aborted by user. Nothing has been changed."), config.TAG_INFO)
-
-                if on_aborted:
-                    on_aborted()
-                return
+                raise exceptions.DeclinedException()
 
     # ---------------------------------------------------
     # DETERMINE RUN MODE
@@ -300,12 +340,10 @@ def prepare(logger: Callable[str], on_prepared=None, on_aborted=None):
         # loaded_batches = fn.load_batches()
         # unit_tests.test_save_to_file(batches, loaded_batches)
 
-
-    if on_prepared:
-        on_prepared({
-            "run_mode": run_mode,
-            "analysis": fn.analyze_progress_info()
-        })
+    return {
+        "run_mode": run_mode,
+        "analysis": fn.analyze_progress_info()
+    }
 
 
 # -------------------------------------------------------------------------------------------------------
@@ -315,7 +353,7 @@ def prepare(logger: Callable[str], on_prepared=None, on_aborted=None):
 # - validate
 # - Post-Processing: Restore Foundry specific syntax from placeholders, reassemble, export to a new Babele file
 # -------------------------------------------------------------------------------------------------------
-def run(logger: Callable[str], finished=None, cancel_event=None):
+def _run(logger: Callable[str], cancel_event):
 
     translator_dialogs.set_logger(logger)
 
@@ -396,10 +434,13 @@ def run(logger: Callable[str], finished=None, cancel_event=None):
 
                 fn.LOGGER(fn.batch_log_msg(f"BUILDING FRESH TERMINOLOGY ..."))
 
+
             # ---------------------------------------------------
             # BEGIN TERMINOLOGY BATCH LOOP ...
             # ---------------------------------------------------
             fn.LOGGER(fn.log_header(f"BEGIN TERMINOLOGY BATCH LOOP ..."))
+
+            mock_delay_per_batch = calc_mock_delay_per_batch(batches, config.TERMINOLOGY_STATUS, logger)
 
             for batch in batches:
 
@@ -410,7 +451,7 @@ def run(logger: Callable[str], finished=None, cancel_event=None):
                         and batch[config.TERMINOLOGY_STATUS] in (config.COMPLETED, config.REVIEW_REQUIRED)):
                     fn.LOGGER(
                         fn.batch_log_msg(
-                        "Terminology skipped (already completed)",
+                            "Terminology skipped (already completed)",
                             batch_id=batch['id'], batch_cnt=len(batches)
                         ), config.TAG_SUCCESS
                     )
@@ -419,6 +460,9 @@ def run(logger: Callable[str], finished=None, cancel_event=None):
 
                 batch[config.TERMINOLOGY_STATUS] = config.PROCESSING
                 fn.save_batch(batch, batches, progress_info)
+
+                if config.MOCK_MODE:
+                    time.sleep(mock_delay_per_batch)
 
                 batch_translatables = fn.load_translatables_for_batch(
                     batch,
@@ -486,7 +530,7 @@ def run(logger: Callable[str], finished=None, cancel_event=None):
 
                     fn.LOGGER(
                         fn.batch_log_msg(
-                        f"API duration: {api_timer_end - api_timer_start:.2f} seconds",
+                            f"API duration: {api_timer_end - api_timer_start:.2f} seconds",
                             batch_id=batch['id'], batch_cnt=len(batches)
                         ), config.TAG_INFO
                     )
@@ -500,6 +544,9 @@ def run(logger: Callable[str], finished=None, cancel_event=None):
                 fn.save_batch(batch, batches, progress_info)
 
                 abort_if_cancelled(cancel_event)
+
+                if config.MOCK_MODE:
+                    time.sleep(mock_delay_per_batch)
 
             # ---------------------------------------------------
             # ... END OF TERMINOLOGY BATCH LOOP
@@ -527,7 +574,7 @@ def run(logger: Callable[str], finished=None, cancel_event=None):
             )
 
         # ---------------------------------------------------
-        # BEGIN BATCH TRANSLATION LOOP ...
+        # BEGIN TRANSLATION ...
         # ---------------------------------------------------
         fn.LOGGER(fn.log_header(f"BEGIN TRANSLATION BATCH LOOP ..."))
 
@@ -554,10 +601,9 @@ def run(logger: Callable[str], finished=None, cancel_event=None):
 
             translations_with_placeholders = []
 
-            for batch in batches:
+            mock_delay_per_batch = calc_mock_delay_per_batch(batches, config.TRANSLATION_STATUS, logger)
 
-                # if batch["id"] > 0:
-                #     raise Exception("!!! TEST ABORT !!!")
+            for batch in batches:
 
                 # ---------------------------------------------------
                 # ABORT IF TERMINOLOGY IS MISSING
@@ -568,25 +614,21 @@ def run(logger: Callable[str], finished=None, cancel_event=None):
                         "Translation cannot start."
                     )
 
-                # In RUN_MODE = RESUME, skip all Batches until current batch is the resume_batch
-                if run_mode == config.RESUME:
+                # In RUN_MODE = RESUME, skip all Batches whose translation is already completed.
+                # This is decided per Batch, because Terminology and Translation progress are independent
+                if (run_mode == config.RESUME
+                        and batch[config.TRANSLATION_STATUS] in (config.COMPLETED, config.REVIEW_REQUIRED)):
 
-                    if resume_batch is not None and batch["id"] != resume_batch["id"]:
+                    already_translated = fn.load_translations_for_batch(batch)
+                    translations_with_placeholders.extend(already_translated)
 
-                        already_translated = fn.load_translations_for_batch(batch)
-                        translations_with_placeholders.extend(already_translated)
+                    fn.LOGGER(fn.batch_log_msg(
+                        f"Translation skipped (already completed)",
+                        batch_id=batch["id"], batch_cnt=len(batches)
+                        ), config.TAG_SUCCESS
+                    )
 
-                        fn.LOGGER(fn.batch_log_msg(
-                            f"Translation skipped (already completed)",
-                                batch_id=batch["id"], batch_cnt=len(batches)
-                            ), config.TAG_SUCCESS
-                        )
-
-                        continue
-
-                    else:
-
-                        resume_batch = None
+                    continue
 
                 # ---------------------------------------------------
                 # ASSEMBLE BATCH PAYLOAD
@@ -672,6 +714,9 @@ def run(logger: Callable[str], finished=None, cancel_event=None):
                 batch[config.TRANSLATION_STATUS] = config.PROCESSING
                 fn.save_batch(batch, batches, progress_info)
 
+                if config.MOCK_MODE:
+                    time.sleep(mock_delay_per_batch)
+
                 fn.LOGGER(fn.batch_log_msg(f"Translation status: [{batch[config.TRANSLATION_STATUS]}]...", batch_id=batch["id"],
                                            batch_cnt=len(batches)))
 
@@ -749,7 +794,7 @@ def run(logger: Callable[str], finished=None, cancel_event=None):
 
                             if not translator_dialogs.confirm_batch_nonfatal_errors():
 
-                                raise Exception(config.ABORTED_BY_USER_ERROR)
+                                raise exceptions.DeclinedException()
 
                             else:
 
@@ -773,8 +818,23 @@ def run(logger: Callable[str], finished=None, cancel_event=None):
 
                                 batch[config.TRANSLATION_STATUS] = config.REVIEW_REQUIRED
 
+                    except exceptions.DeclinedException:
+
+                        # The user declined to keep this Batch: mark it, but this is no fatal error
+                        batch[config.TRANSLATION_STATUS] = config.FAILED
+                        fn.save_batch(batch, batches, progress_info)
+                        raise
+
+                    except exceptions.CancelledException:
+
+                        # The user cancelled while a prompt was pending: the Batch has to be redone later
+                        batch[config.TRANSLATION_STATUS] = config.UNPROCESSED
+                        fn.save_batch(batch, batches, progress_info)
+                        raise
+
                     except Exception as e:
 
+                        # A final catcher for any "Tales of the Unexpected" - a case for a post-mortem dump
                         batch[config.TRANSLATION_STATUS] = config.FAILED
                         fn.save_batch(batch, batches, progress_info)
 
@@ -832,6 +892,9 @@ def run(logger: Callable[str], finished=None, cancel_event=None):
                                     batch_id=batch["id"], batch_cnt=len(batches)),
                        config.TAG_SUCCESS
                 )
+
+                if config.MOCK_MODE:
+                    time.sleep(mock_delay_per_batch)
 
             # ---------------------------------------------------
             # ... END OF BATCH PROCESSING LOOP
@@ -965,14 +1028,35 @@ def run(logger: Callable[str], finished=None, cancel_event=None):
         current_time = datetime.now().strftime("%H:%M:%S")
         fn.LOGGER(fn.log_header(f"PROCESS COMPLETED SUCCESSFULLY (time: {current_time})"), config.TAG_SUCCESS)
 
-    if finished:
-        finished()
+
+def calc_mock_delay_per_batch(batches:list, status_key:str, logger) -> int | float:
+    if not config.MOCK_MODE or batches is None or len(batches) == 0:
+        return 0
+
+    else:
+        completed_statuses = ([config.COMPLETED]
+                              if status_key == config.TERMINOLOGY_STATUS
+                              else [config.COMPLETED, config.REVIEW_REQUIRED])
+
+        cnt_batches = sum(1 for batch in batches if
+                  batch[status_key] not in completed_statuses)
+
+        if (cnt_batches == 0):
+            return 0
+
+        else:
+
+            delay = fn.clamp(
+                    config.MOCK_PROGRESSBAR_DURATION_SEC / cnt_batches,
+                    0.25,
+                    1)
+            logger(f"Mock delay per batch: {delay} sec.")
+            return delay
+
 
 def abort_if_cancelled(cancel_event):
     if cancel_event is not None and cancel_event.is_set():
         raise exceptions.CancelledException()
 
 
-if __name__ == "__main__":
-    run(print)
 

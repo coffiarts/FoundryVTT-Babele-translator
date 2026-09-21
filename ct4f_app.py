@@ -166,17 +166,17 @@ class App(ctk.CTk):
         self.mock_switch.pack(padx=20, pady=20)
 
         # =========================================
-        # Prepare / Start / Reset Buttons
+        # Prepare / Start / Reset / Cancel Buttons
         # =========================================
         self.start_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.start_frame.pack(padx=20, pady=20)
 
-        self.start_button = ctk.CTkButton(
+        self.main_button = ctk.CTkButton(
             self.start_frame,
             text="Prepare",
             command=self.prepare
         )
-        self.start_button.pack(side="left")
+        self.main_button.pack(side="left")
 
         # Only visible after a successful preparation (see show_reset_button)
         self.reset_button = ctk.CTkButton(
@@ -261,15 +261,7 @@ class App(ctk.CTk):
             command=self.submit_no
         )
 
-        # CANCEL Button
-        self.cancel_button = ctk.CTkButton(
-            self.buttons_frame,
-            text="Cancel",
-            command=self.cancel
-        )
-
         # Set them all initially to invisible
-        self.hide_cancel_button()
         self.hide_all_prompts()
 
         # =========================================
@@ -375,23 +367,10 @@ class App(ctk.CTk):
             target=translator.prepare,
             kwargs={
                 "logger": self.log_message,
-                "on_prepared": self.preparation_finished,
-                "on_aborted": self.preparation_aborted  # only used if the user aborts during preparation
+                "on_ended": self.preparation_ended
             },
             daemon=True
         ).start()
-
-
-    # ===========================================
-    # Function: Preparation Finished
-    # Callback invoked by the worker thread when the preparation is complete.
-    # Hands over to the UI thread
-    # ===========================================
-    def preparation_finished(self, result):
-        self.after(
-            0,
-            lambda: self.enter_prepared_state(result)
-        )
 
 
     # ===========================================
@@ -402,7 +381,7 @@ class App(ctk.CTk):
     def enter_prepared_state(self, result):
         self.prepared_result = result
 
-        self.start_button.configure(text="Start", command=self.run_translation, state="normal")
+        self.main_button.configure(text="Start", command=self.run_translation, state="normal")
         self.show_reset_button()
         self.show_bars(result["analysis"])
         self.update_clear_buttons(result["analysis"])
@@ -416,7 +395,7 @@ class App(ctk.CTk):
         self.prepared_result = None
 
         self.hide_reset_button()
-        self.start_button.configure(text="Prepare", command=self.prepare)
+        self.main_button.configure(text="Prepare", command=self.prepare)
         self.enable_configuration_controls()
         self.hide_bars()
 
@@ -565,7 +544,6 @@ class App(ctk.CTk):
         self.cancel_event.clear()
         self.hide_reset_button()
         self.set_clear_buttons_enabled(False)
-        self.show_cancel_button()
 
         if config.INPUT_FILE is None:
             self.LOGGER("Please select an input file first.", config.TAG_ERROR)
@@ -573,11 +551,14 @@ class App(ctk.CTk):
 
         self.disable_configuration_controls()
 
+        # The main button turns into the Cancel button while running
+        self.main_button.configure(text="Cancel", command=self.cancel, state="normal")
+
         threading.Thread(
             target=translator.run,
             kwargs={
                 "logger": self.log_message,
-                "finished": self.run_finished,
+                "on_ended": self.run_ended,
                 "cancel_event": self.cancel_event
             },
             daemon=True
@@ -586,29 +567,53 @@ class App(ctk.CTk):
         return True
 
 
-    # ===========================================
-    # Function: Preparation Aborted
-    # Callback invoked when the user aborts during preparation
-    # (e.g. answers "No" to the unusual file name prompt).
-    # Goes back to the initial state
-    # ===========================================
-    def preparation_aborted(self):
-        self.after(
-            0,
-            lambda: self.reset_ui()
-        )
-
-
-    # ===========================================
-    # Function: Run Finished
-    # Callback invoked by the worker thread when the run completes.
+        # ===========================================
+    # Function: Preparation Ended
+    # Callback invoked by the worker thread, however the preparing phase ended.
     # Hands over to the UI thread
     # ===========================================
-    def run_finished(self):
+    def preparation_ended(self, outcome):
         self.after(
             0,
-            lambda: self.return_to_prepared_state()
+            lambda: self.handle_preparation_outcome(outcome)
         )
+
+
+    # ===========================================
+    # Function: Handle Preparation Outcome
+    # ===========================================
+    def handle_preparation_outcome(self, outcome):
+
+        if outcome["outcome"] == config.OUTCOME_SUCCESS:
+            self.enter_prepared_state(outcome["result"])
+            return
+
+        # Nothing has been prepared, so back to the start
+        self.show_outcome_message(outcome)
+        self.reset_ui()
+
+
+    # ===========================================
+    # Function: Run Ended
+    # Callback invoked by the worker thread, however the running phase ended.
+    # Hands over to the UI thread
+    # ===========================================
+    def run_ended(self, outcome):
+        self.after(
+            0,
+            lambda: self.handle_run_outcome(outcome)
+        )
+
+
+    # ===========================================
+    # Function: Handle Run Outcome
+    # ===========================================
+    def handle_run_outcome(self, outcome):
+
+        self.show_outcome_message(outcome)
+
+        # The progress is persisted, whatever happened, so continue from it
+        self.return_to_prepared_state()
 
 
     # ===========================================
@@ -771,7 +776,7 @@ class App(ctk.CTk):
         self.radio_input_type_babele.configure(state="disabled")
         self.radio_input_type_localization.configure(state="disabled")
         self.module_name_entry.configure(state="disabled")
-        self.start_button.configure(state="disabled")
+        self.main_button.configure(state="disabled")
         self.mock_switch.configure(state="disabled")
 
 
@@ -787,7 +792,7 @@ class App(ctk.CTk):
         self.radio_input_type_babele.configure(state="normal")
         self.radio_input_type_localization.configure(state="normal")
         self.module_name_entry.configure(state="normal")
-        self.start_button.configure(state="normal")
+        self.main_button.configure(state="normal")
         self.mock_switch.configure(state="normal")
 
 
@@ -828,13 +833,16 @@ class App(ctk.CTk):
 
     # ===========================================
     # Function: Cancel
-    # Used by the "Cancel" button
+    # Used by the main button while running.
+    # Effective at the next Batch boundary, so a running API call has to be waited out
     # ===========================================
     def cancel(self):
         self.cancel_event.set()
-        self.cancel_button.configure(text="Please wait ...",
-                                     state="disabled")  # This one's needed for interrupting running API calls
-        self.current_request["response_queue"].put(config.CANCEL)  # ... this one for interrupting user prompts
+        self.main_button.configure(text="Please wait for batch to complete ...", state="disabled")
+
+        # A pending prompt has to be released as well, because the worker thread blocks while waiting for the answer
+        if self.current_request is not None and "response_queue" in self.current_request:
+            self.current_request["response_queue"].put(config.CANCEL)
 
 
     # ===========================================
@@ -860,22 +868,6 @@ class App(ctk.CTk):
             padx=20,
             pady=5
         )
-
-
-    # ===========================================
-    # Function: Show Cancel Button
-    #
-    # ===========================================
-    def show_cancel_button(self):
-        self.cancel_button.pack(side="right", padx=5)
-
-
-    # ===========================================
-    # Function: Hide Cancel Button
-    #
-    # ===========================================
-    def hide_cancel_button(self):
-        self.cancel_button.pack_forget()
 
 
     # ===========================================
@@ -939,11 +931,35 @@ class App(ctk.CTk):
         ui_dialogs.ErrorDialog(self, message=msg)
         # self.LOGGER("Cancelled.", config.TAG_ERROR)
 
-        self.cancel_button.configure(text="Cancel", state="enabled")
         self.hide_all_prompts()
         self.enable_configuration_controls()
 
         raise
+
+
+    # ===========================================
+    # Function: Show Outcome Message
+    # Tells the user what happened, depending on how a phase (preparing/running) ended
+    # ===========================================
+    def show_outcome_message(self, outcome):
+
+        kind = outcome["outcome"]
+
+        if kind == config.OUTCOME_CANCELLED:
+            self.LOGGER("Cancelled by user.", config.TAG_WARNING)
+
+        elif kind == config.OUTCOME_DECLINED:
+            self.LOGGER("Aborted by user.", config.TAG_WARNING)
+
+        elif kind == config.OUTCOME_EXPECTED_ERROR:
+            self.LOGGER(outcome["message"], config.TAG_ERROR)
+            ui_dialogs.ErrorDialog(self, message=outcome["message"])
+
+        elif kind == config.OUTCOME_UNEXPECTED_ERROR:
+            msg = f"An unexpected error occurred:\n{outcome['message']}"
+            self.LOGGER(msg, config.TAG_ERROR)
+            print(outcome["details"])  # full traceback to the console
+            ui_dialogs.ErrorDialog(self, message=msg)
 
 
     # ===========================================

@@ -1556,3 +1556,10 @@ def init_system_dirs():
     LOGGER(f"SETTINGS_FILE: {config.SETTINGS_FILE}")
 
 
+def clamp(value, min_value, max_value):
+    if (value < min_value):
+        return min_value
+    elif (value > max_value):
+        return max_value
+    else:
+        return value

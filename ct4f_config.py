@@ -243,7 +243,7 @@ TERMINOLOGY_OUTPUT_STRUCTURE = {
 # ------------------------------------------------------------
 APP_AUTHOR = "coffiarts"
 APP_SHORT_NAME = "CT4F"
-APP_FULL_NAME = "Coffiarts' Translator for Foundry VTT"
+APP_FULL_NAME = "coffiarts' Translator for Foundry VTT"
 
 # Run Modes
 NEW_RUN = "NEW_RUN"
@@ -254,6 +254,13 @@ POSTPROCESSING_ONLY = "POSTPROCESSING_ONLY"
 INPUT_TYPE_BABELE = "Babele JSON export"
 INPUT_TYPE_LOCALIZATION = "Localization file (lang/*.json)"
 
+# Process Outcomes
+OUTCOME_SUCCESS = "SUCCESS"
+OUTCOME_CANCELLED = "CANCELLED"
+OUTCOME_DECLINED = "DECLINED"
+OUTCOME_EXPECTED_ERROR = "EXPECTED_ERROR"
+OUTCOME_UNEXPECTED_ERROR = "UNEXPECTED_ERROR"
+
 # Batch Status
 TERMINOLOGY_STATUS = "terminology_status"
 TRANSLATION_STATUS = "translation_status"
@@ -263,6 +270,7 @@ FAILED = "FAILED"
 REVIEW_REQUIRED = "REVIEW_REQUIRED"
 COMPLETED = "COMPLETED"
 ERROR = "ERROR"
+
 
 # Test Result
 PASSED = "PASSED" # FAILED can be reused from above
@@ -305,7 +313,6 @@ STATUS_COLORS = {
 
 # Error Types
 PLACEHOLDER_TRANSLATION_ERROR = "PLACEHOLDER_TRANSLATION_ERROR"
-ABORTED_BY_USER_ERROR = "Aborted by user."
 
 # Prompt Types
 PROMPT_TYPE_RADIO = "radio"
@@ -375,5 +382,6 @@ REVIEW_ITEMS_FILE = None
 
 REBUILD_TERMINOLOGY_IF_EXISTS = False
 
-
+# And last but not least ...
+MOCK_PROGRESSBAR_DURATION_SEC = 5
 
