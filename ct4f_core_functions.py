@@ -8,13 +8,50 @@ import re
 from platformdirs import user_config_dir, user_data_dir
 from pathlib import Path
 from openai import OpenAI
+from collections.abc import Callable
+
 
 LOGGER = print
+
+BATCH_LISTENER: Callable[[list], None] | None = None
 
 def set_logger(logger):
     global LOGGER
     LOGGER = logger
-    
+
+
+# ------------------------------------------------------------
+# Function: Set Batch Listener
+# Registers a callback that gets informed whenever Batches have been saved
+# ------------------------------------------------------------
+def set_batch_listener(listener):
+    global BATCH_LISTENER
+    BATCH_LISTENER = listener
+
+
+# ------------------------------------------------------------
+# Function: Notify Batch Listener
+# Sends a snapshot of the Batch statuses to the registered listener (if any).
+# It is a copy, because the worker thread keeps mutating the live Batches
+# ------------------------------------------------------------
+def notify_batch_listener(batches):
+
+    global  BATCH_LISTENER # workaround for IntelliJ quirk: Apparently necessary for properly recognizing BATCH_LISTENER below
+
+    if BATCH_LISTENER is None:
+        return
+
+    BATCH_LISTENER([
+        {
+            "id": batch["id"],
+            config.TERMINOLOGY_STATUS: batch[config.TERMINOLOGY_STATUS],
+            config.TRANSLATION_STATUS: batch[config.TRANSLATION_STATUS],
+            "char_count": batch["char_count"]
+        }
+        for batch in batches
+    ])
+
+
 # ------------------------------------------------------------
 # Function: Load and return data (as list) from JSON input_file (path)
 # ------------------------------------------------------------
@@ -1200,6 +1237,8 @@ def save_batch(updated_batch, all_batches, all_progress_info):
 
     save_json_output(all_batches, config.BATCHES_FILE)
     save_json_output(all_progress_info, config.PROGRESS_INFO_FILE)
+    notify_batch_listener(all_batches)
+
 
 
 # ------------------------------------------------------------
@@ -1213,6 +1252,7 @@ def save_batches(all_batches, progress_info):
 
     save_json_output(all_batches, config.BATCHES_FILE)
     save_json_output(progress_info, config.PROGRESS_INFO_FILE)
+    notify_batch_listener(all_batches)
 
 
 # ------------------------------------------------------------

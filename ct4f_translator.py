@@ -13,7 +13,7 @@ from collections.abc import Callable
 # Offline part: validation, run mode, extraction, placeholders and batch building.
 # Returns the info needed by run_translation(), or None if the user aborted.
 # ------------------------------------------------------------
-def prepare(logger: Callable[str], on_prepared=None, finished=None):
+def prepare(logger: Callable[str], on_prepared=None, on_aborted=None):
 
     translator_dialogs.set_logger(logger)
 
@@ -60,8 +60,8 @@ def prepare(logger: Callable[str], on_prepared=None, finished=None):
             if not translator_dialogs.confirm_unusual_lang_file_name():
                 fn.LOGGER(fn.batch_log_msg("Aborted by user. Nothing has been changed."), config.TAG_INFO)
 
-                if finished:
-                    finished()
+                if on_aborted:
+                    on_aborted()
                 return
 
     # ---------------------------------------------------

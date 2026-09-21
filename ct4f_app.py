@@ -27,7 +27,7 @@ class App(ctk.CTk):
 
         self.title(config.APP_FULL_NAME)
         self.iconbitmap(fn.resource_path("assets/icon.ico"))
-        self.calculate_window_dimensions(min_width=1000, min_height=900, factor=0.85)
+        self.calculate_window_dimensions(min_width=800, min_height=800, factor=0.80)
 
         # =========================================
         # Settings button
@@ -376,7 +376,7 @@ class App(ctk.CTk):
             kwargs={
                 "logger": self.log_message,
                 "on_prepared": self.preparation_finished,
-                "finished": self.translation_finished  # only used if the user aborts during preparation
+                "on_aborted": self.preparation_aborted  # only used if the user aborts during preparation
             },
             daemon=True
         ).start()
@@ -454,6 +454,18 @@ class App(ctk.CTk):
     # ===========================================
     def hide_bars(self):
         self.bars_frame.pack_forget()
+
+
+    # ===========================================
+    # Function: Batches Changed
+    # Listener for Batch status changes (see fn.set_batch_listener).
+    # Invoked by the worker thread, so it hands over to the UI thread
+    # ===========================================
+    def batches_changed(self, batches):
+        self.after(
+            0,
+            lambda: self.show_bars({"batches": batches})
+        )
 
 
     # ===========================================
@@ -565,7 +577,7 @@ class App(ctk.CTk):
             target=translator.run,
             kwargs={
                 "logger": self.log_message,
-                "finished": self.translation_finished,
+                "finished": self.run_finished,
                 "cancel_event": self.cancel_event
             },
             daemon=True
@@ -575,15 +587,37 @@ class App(ctk.CTk):
 
 
     # ===========================================
-    # Function: Translation Finished
-    # A callback invoked when start_translation() completes
-    # Its main function is to reactivate the start button
+    # Function: Preparation Aborted
+    # Callback invoked when the user aborts during preparation
+    # (e.g. answers "No" to the unusual file name prompt).
+    # Goes back to the initial state
     # ===========================================
-    def translation_finished(self):
+    def preparation_aborted(self):
         self.after(
             0,
             lambda: self.reset_ui()
         )
+
+
+    # ===========================================
+    # Function: Run Finished
+    # Callback invoked by the worker thread when the run completes.
+    # Hands over to the UI thread
+    # ===========================================
+    def run_finished(self):
+        self.after(
+            0,
+            lambda: self.return_to_prepared_state()
+        )
+
+
+    # ===========================================
+    # Function: Return To Prepared State
+    # After a run, the progress is persisted, so the UI continues from a fresh analysis of it
+    # ===========================================
+    def return_to_prepared_state(self):
+        self.hide_all_prompts()
+        self.enter_prepared_state({"analysis": fn.analyze_progress_info()})
 
 
     # ===========================================
@@ -1012,9 +1046,11 @@ class App(ctk.CTk):
             self.module_name_entry.insert(0, module_name)
 
 
-# Finally, run it!
+# Initialize the app
 app = App()
+
 fn.set_logger(app.LOGGER)
+fn.set_batch_listener(app.batches_changed)
 
 fn.init_system_dirs()
 app.restore_settings()
@@ -1022,4 +1058,5 @@ app.restore_settings()
 app.worker_exception_handler = app.worker_exception_handler
 threading.excepthook = app.worker_exception_handler
 
+# Finally, run it!
 app.mainloop()
