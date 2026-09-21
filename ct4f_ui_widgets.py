@@ -90,3 +90,10 @@ class BatchStatusBar(ctk.CTkFrame):
                 padx=(0, ICON_GAP),
                 pady=(0, ICON_GAP)
             )
+
+    # ===========================================
+    # Function: Set Clear Enabled
+    # Locks/unlocks the Clear button (e.g. while a process is running)
+    # ===========================================
+    def set_clear_enabled(self, enabled):
+        self.clear_button.configure(state="normal" if enabled else "disabled")

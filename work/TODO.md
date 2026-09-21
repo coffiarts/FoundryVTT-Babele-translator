@@ -22,6 +22,8 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☐ Handle INVALID INPUT FILE case explicitly (without ErrorDialog)
 
+☐ Better concept for Cancel button (when to show, how/what to interrupt)
+
 ☐ Handle CancelledException explicitly (without ErrorDialog)
 
 ☐ In RESUME Mode: Also render "Project Size" and "Review Items" and "Status"

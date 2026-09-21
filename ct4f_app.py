@@ -191,11 +191,20 @@ class App(ctk.CTk):
         # =========================================
         self.bars_frame = ctk.CTkFrame(self, fg_color="transparent")
 
-        self.terminology_bar = ui_widgets.BatchStatusBar(self.bars_frame, "Terminology")
+        self.terminology_bar = ui_widgets.BatchStatusBar(
+            self.bars_frame,
+            "Terminology",
+            on_clear=self.confirm_clear_terminology
+        )
         self.terminology_bar.pack(fill="x", pady=(0, 10))
 
-        self.translation_bar = ui_widgets.BatchStatusBar(self.bars_frame, "Translation")
+        self.translation_bar = ui_widgets.BatchStatusBar(
+            self.bars_frame,
+            "Translation",
+            on_clear=self.confirm_clear_translation
+        )
         self.translation_bar.pack(fill="x")
+
 
         # =========================================
         # Log Output Window
@@ -206,7 +215,7 @@ class App(ctk.CTk):
         self.log_window.tag_config(config.TAG_WARNING, foreground="yellow")
         self.log_window.tag_config(config.TAG_INFO, foreground="blue")
         self.log_window.tag_config(config.TAG_QUESTION, foreground="magenta")
-        self.log_window.pack(padx=20, pady=20, fill="both", expand=False)
+        self.log_window.pack(padx=20, pady=20, fill="both", expand=True)
 
 
         # =========================================
@@ -396,9 +405,10 @@ class App(ctk.CTk):
         self.start_button.configure(text="Start", command=self.run_translation, state="normal")
         self.show_reset_button()
         self.show_bars(result["analysis"])
+        self.update_clear_buttons(result["analysis"])
 
 
-    # ===========================================
+        # ===========================================
     # Function: Reset Preparation
     # Goes back from the prepared state to the initial "choose" state
     # ===========================================
@@ -447,6 +457,78 @@ class App(ctk.CTk):
 
 
     # ===========================================
+    # Function: Set Clear Buttons Enabled
+    # Locks/unlocks both Clear buttons at once
+    # ===========================================
+    def set_clear_buttons_enabled(self, enabled):
+        self.terminology_bar.set_clear_enabled(enabled)
+        self.translation_bar.set_clear_enabled(enabled)
+
+
+    # ===========================================
+    # Function: Update Clear Buttons
+    # Enables each Clear button only if there is anything to discard
+    # ===========================================
+    def update_clear_buttons(self, analysis):
+        batches = analysis["batches"]
+
+        self.terminology_bar.set_clear_enabled(fn.is_terminology_clearable(batches))
+        self.translation_bar.set_clear_enabled(fn.is_translation_clearable(batches))
+
+
+    # ===========================================
+    # Function: Confirm Clear
+    # Asks for confirmation, then runs the given clear function and refreshes the bars
+    # ===========================================
+    def confirm_clear(self, question, clear_function):
+
+        def on_yes():
+            self.hide_all_prompts()
+            clear_function()
+            analysis = fn.analyze_progress_info()
+            self.show_bars(analysis)
+            self.update_clear_buttons(analysis)
+
+        ui_dialogs.confirm_yes_no(
+            question=question,
+            on_yes=on_yes,
+            on_no=self.hide_all_prompts
+        )
+
+
+    # ===========================================
+    # Function: Confirm Clear Terminology
+    # ===========================================
+    def confirm_clear_terminology(self):
+        self.confirm_clear(
+            question=(
+                "Clear Terminology?\n\n"
+                "This discards the terminology already built for this input file. "
+                "It will be rebuilt from scratch with new remote AI calls.\n"
+                "Existing translations stay as they are, based on the old terminology. "
+                "To apply the new terminology to them as well, clear the translations too.\n\n"
+                "Do you want to proceed?"
+            ),
+            clear_function=fn.clear_terminology
+        )
+
+
+    # ===========================================
+    # Function: Confirm Clear Translation
+    # ===========================================
+    def confirm_clear_translation(self):
+        self.confirm_clear(
+            question=(
+                "Clear Translations?\n\n"
+                "This discards all translations already made for this input file. "
+                "Everything will be translated from scratch with new remote AI calls.\n\n"
+                "Do you want to proceed?"
+            ),
+            clear_function=fn.clear_translation
+        )
+
+
+    # ===========================================
     # Function: Reset UI
     # Restores the initial state before pressing
     # the "Prepare" Button
@@ -470,6 +552,7 @@ class App(ctk.CTk):
 
         self.cancel_event.clear()
         self.hide_reset_button()
+        self.set_clear_buttons_enabled(False)
         self.show_cancel_button()
 
         if config.INPUT_FILE is None:
@@ -535,6 +618,7 @@ class App(ctk.CTk):
                         value=option
                     )
                     radio.pack(
+                        before=self.log_window,
                         padx=20,
                         anchor="w"
                     )
@@ -738,6 +822,7 @@ class App(ctk.CTk):
     # ===========================================
     def show_buttons_frame(self):
         self.buttons_frame.pack(
+            before=self.log_window,
             padx=20,
             pady=5
         )
@@ -778,7 +863,7 @@ class App(ctk.CTk):
     #
     # ===========================================
     def show_question_label(self):
-        self.question_label.pack(padx=20, pady=(10, 5), anchor="w")
+        self.question_label.pack(before=self.log_window, padx=20, pady=(10, 5), anchor="w")
 
 
     # ===========================================
@@ -786,7 +871,7 @@ class App(ctk.CTk):
     #
     # ===========================================
     def show_text_answer_entry(self):
-        self.text_answer_entry.pack(padx=20, pady=5, fill="x")
+        self.text_answer_entry.pack(before=self.log_window, padx=20, pady=5, fill="x")
 
 
     # ===========================================
