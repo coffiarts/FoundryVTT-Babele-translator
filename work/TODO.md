@@ -13,18 +13,26 @@
 
 ☑ Auto-update status bars during processing
 
+☐ Refine concept for "Cancel" functionality and work_exception_handler:
+
+    - when to show/hide "Cancel"
+    - how/what to interrupt by "Cancel"
+    - where to return to after "Cancel" or unexpected exceptions
+
+☐ Handle the following specific exception scenarios explicitly (without hard-block/ErrorDialog):
+
+    ☐ CANCELLED => return to "prepared" state?
+
+    ☐ INVALID INPUT FILE (no lang file) => confirm with hint, return to "configuration" phase?
+
+    ☐ TRANSLATABLE TEXT EXCEEDS MAX_BATCH_SIZE => confirm with hint, return to configuration phase => propably depending on TODO item "Disclose and persist setting: MAX_BATCH_SIZE" below
+
+☐ Improve readability of ErrorDialog contents (get rid of "technical noise", less stressful bg/fd colors)
+
 ☐ Bugfix: Localization mode produces strict output filename <language>.json, dropping
 any postfix from input file (like in en-US.json). Instead, it should keep the postfix, by only replacing the source language part of the name (e.g. "en") by the target language part (e.g. "de"): en-US.json => de-US.json
 
 ☐ Disclose and persist setting: MAX_BATCH_SIZE
-
-☐ Handle TRANSLATABLE TEXT EXCEEDS MAX_BATCH_SIZE case explicitly (without ErrorDialog)
-
-☐ Handle INVALID INPUT FILE case explicitly (without ErrorDialog)
-
-☐ Better concept for Cancel button (when to show, how/what to interrupt)
-
-☐ Handle CancelledException explicitly (without ErrorDialog)
 
 ☐ In RESUME Mode: Also render "Project Size" and "Review Items" and "Status"
 
@@ -46,7 +54,7 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☐ Improve readability of LogWindow content (make it collapsible, less stressful bg/fd colors)
 
-☐ Improve readability of ErrorDialog contents (get rid of "technical noise", less stressful bg/fd colors)
+
 
 ☐ UI Localization
 
