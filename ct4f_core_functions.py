@@ -1426,9 +1426,10 @@ def adapt_file_paths():
     else:
         module_sub_path = Path(config.MODULE_NAME) / "lang"
         progress_sub_path = module_sub_path
-        output_file_name = f"{lang_code}.json"
-        terminology_file_name = f"{lang_code}-terminology.json"
-        review_items_file_name = f"{lang_code}-review-items.json"
+        output_stem = derive_localization_output_stem()
+        output_file_name = f"{output_stem}.json"
+        terminology_file_name = f"{output_stem}-terminology.json"
+        review_items_file_name = f"{output_stem}-review-items.json"
 
     # The user-selected folder replaces the default output folder (<USER_DATA_DIR>/output)
     output_root = config.BASE_OUTPUT_DIR or (config.USER_DATA_DIR / config.OUTPUT_FOLDER_NAME)
@@ -1458,6 +1459,36 @@ def adapt_file_paths():
     config.TRANSLATIONS_FINAL_FILE = config.PROGRESS_DIR / config.TRANSLATIONS_FINAL_FILE_NAME
     config.PROGRESS_REVIEW_ITEMS_FILE = config.PROGRESS_DIR / config.PROGRESS_REVIEW_ITEMS_FILE_NAME
     config.POST_MORTEM_DUMP_FILE = config.PROGRESS_DIR / config.POST_MORTEM_DUMP_FILE_NAME
+
+
+# ------------------------------------------------------------
+# Function: Derive Localization Output Stem
+# Replaces every isolated occurrence of the source language code in INPUT_FILE_NAME's stem
+# with the target language code, so a prefix/suffix like "-US" or ".en" is preserved
+# (e.g. en-US => de-US, module-en => module-de). "Isolated" means directly bordered
+# only by "-", "_", "." or the start/end of the name, so "en" inside "enhanced" is
+# never touched. Falls back to the plain target language code if the source code
+# isn't found at all. Used to derive OUTPUT_FILE, TERMINOLOGY_FILE and REVIEW_ITEMS_FILE
+# names for Localization mode
+# ------------------------------------------------------------
+def derive_localization_output_stem():
+
+    source_code = config.SOURCE_LANGUAGE["code"]
+    target_code = config.TARGET_LANGUAGE["code"]
+
+    input_stem = config.INPUT_FILE_NAME.removesuffix(".json")
+
+    pattern = re.compile(
+        rf"(?:^|(?<=[-_.])){re.escape(source_code)}(?:$|(?=[-_.]))",
+        flags=re.IGNORECASE
+    )
+
+    output_stem, replaced_count = pattern.subn(target_code, input_stem)
+
+    if replaced_count == 0:
+        return target_code
+
+    return output_stem
 
 
 # ------------------------------------------------------------
