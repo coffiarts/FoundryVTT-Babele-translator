@@ -80,8 +80,11 @@ def _prepare(logger: Callable[str]):
     # ---------------------------------------------------
     fn.LOGGER(fn.log_header("CONFIGURATION"))
 
-    # Just as info: print out the resume-relevant params
+    # Just as info: print out the resume-relevant config (RRC) params
     fn.LOGGER(f"{fn.to_multiline_text(fn.get_resume_relevant_config())}")
+
+    # Not part of RRC (already protected by the progress folder path, see adapt_file_paths()) - just for visibility
+    fn.LOGGER(f"TARGET_LANGUAGE: {config.TARGET_LANGUAGE}")
 
     # ---------------------------------------------------
     # VALIDATE INPUT FILE
@@ -475,7 +478,7 @@ def _run(logger: Callable[str], cancel_event):
 
                         response = client.responses.create(
                             model=config.LLM_MODEL,
-                            instructions=config.TERMINOLOGY_INSTRUCTIONS,
+                            instructions=config.get_terminology_instructions(),
                             input=json.dumps(
                                 batch_payload,
                                 ensure_ascii=False
@@ -680,7 +683,7 @@ def _run(logger: Callable[str], cancel_event):
                 )
 
                 instructions = (
-                        config.TRANSLATION_INSTRUCTIONS
+                        config.get_translation_instructions()
                         + "\n\n"
                         + "=== TERMINOLOGY DATABASE ===\n"
                         + batch_specific_terminology_json

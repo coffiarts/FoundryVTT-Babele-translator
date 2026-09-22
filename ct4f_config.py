@@ -2,12 +2,20 @@
 # Language to translate from/to
 # ------------------------------------------------------------
 
+SUPPORTED_LANGUAGES = [
+    {"code": "en", "name": "English"},
+    {"code": "de", "name": "German"},
+    {"code": "fr", "name": "French"},
+    {"code": "it", "name": "Italian"},
+    {"code": "es", "name": "Spanish"},
+    {"code": "ja", "name": "Japanese"},
+]
+
 SOURCE_LANGUAGE = {
     "code": "en",
     "name": "English"
 }
 
-# Some other supported languages (quickly tested): fr/French, it/Italian, es/Spanish, ja/Japanese
 TARGET_LANGUAGE = {
     "code": "de",
     "name": "German" # Always use the english name here
@@ -94,7 +102,8 @@ PLACEHOLDER_PATTERN = r'<<<PLACEHOLDER_\d{6}>>>' # MUST contain \d{<number>} to 
 # LLM_MODEL = "gpt-5.4-mini"
 LLM_MODEL = "gpt-5.6-luna"
 
-TRANSLATION_INSTRUCTIONS = f"""
+def get_translation_instructions():
+    return f"""
 Translate every text to {TARGET_LANGUAGE["name"]}.
 
 Return ONLY valid JSON.
@@ -133,18 +142,19 @@ requires it.
 However, the placeholder must move together with the label.
 
 Input:
-They are loyal to <<<FOUNDRY_000001>>>{{King Grol}}.
+They are loyal to <<<PLACEHOLDER_000001>>>{{King Grol}}.
 
 German example ...
 
 Correct output:
-Sie sind <<<FOUNDRY_000001>>>{{König Grol}} gegenüber loyal.
+Sie sind <<<PLACEHOLDER_000001>>>{{König Grol}} gegenüber loyal.
 
 Incorrect output:
 Sie sind König Grol gegenüber loyal.
 """
 
-TERMINOLOGY_INSTRUCTIONS = f"""
+def get_terminology_instructions():
+    return f"""
 You are a terminology analyst for a {TARGET_LANGUAGE["name"]} translation of a
 {GAME_SYSTEM_CONTEXT} fantasy role-playing adventure.
 

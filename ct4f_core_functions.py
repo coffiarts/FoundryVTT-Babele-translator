@@ -643,7 +643,7 @@ def find_patterns(text, patterns, leading_trailing_chars = 100):
 def init_api_client():
     api_key = get_api_key()
     if not api_key:
-        raise ValueError("Kein OpenAI API-Key konfiguriert. Bitte in den Einstellungen hinterlegen.")
+        raise ValueError("Missing API Key. Please register it in the app settings.")
 
     client = OpenAI(api_key=api_key)
     return client
@@ -663,9 +663,9 @@ def apply_translations(
 
 
 # ------------------------------------------------------------
-# Function: Get Resume-relevant config
+# Function: Get Resume-relevant config (RRC)
 # Delivers the current snapshot of all config parameters that
-# need to remain stable between incremental process runs.
+# need to remain stable between incremental process runs (aka "Resume" runs).
 # The function's output serves for checking whether a Resume is allowed to start.
 # ------------------------------------------------------------
 def get_resume_relevant_config():
@@ -673,6 +673,7 @@ def get_resume_relevant_config():
     return {
         "GAME_SYSTEM_CONTEXT" : config.GAME_SYSTEM_CONTEXT,
         "MAX_BATCH_SIZE": config.MAX_BATCH_SIZE,
+        "SOURCE_LANGUAGE": config.SOURCE_LANGUAGE,
         "TRANSLATABLE_FIELDS": sorted(config.TRANSLATABLE_FIELDS),
         "TRANSLATABLE_CONTAINERS": sorted(config.TRANSLATABLE_CONTAINERS),
         "PROTECTED_SYNTAX_PATTERNS": sorted(config.PROTECTED_SYNTAX_PATTERNS),

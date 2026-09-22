@@ -131,6 +131,41 @@ class App(ctk.CTk):
         )
 
         # =========================================
+        # Language selection
+        # =========================================
+        self.language_options = [
+            f"{lang['code']}: {lang['name']}" for lang in config.SUPPORTED_LANGUAGES
+        ]
+        self.language_by_option = {
+            option: lang for option, lang in zip(self.language_options, config.SUPPORTED_LANGUAGES)
+        }
+
+        self.language_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.language_frame.pack(padx=20, pady=(15, 5))
+
+        self.source_language_var = ctk.StringVar(
+            value=f"{config.SOURCE_LANGUAGE['code']}: {config.SOURCE_LANGUAGE['name']}"
+        )
+        self.source_language_menu = ctk.CTkOptionMenu(
+            self.language_frame,
+            values=self.language_options,
+            variable=self.source_language_var
+        )
+        self.source_language_menu.pack(side="left")
+
+        ctk.CTkLabel(self.language_frame, text="  →  ", font=("Arial", 16, "bold")).pack(side="left")
+
+        self.target_language_var = ctk.StringVar(
+            value=f"{config.TARGET_LANGUAGE['code']}: {config.TARGET_LANGUAGE['name']}"
+        )
+        self.target_language_menu = ctk.CTkOptionMenu(
+            self.language_frame,
+            values=self.language_options,
+            variable=self.target_language_var
+        )
+        self.target_language_menu.pack(side="left")
+
+        # =========================================
         # Module name suggestion (editable)
         # =========================================
         self.module_name_label = ctk.CTkLabel(
@@ -150,6 +185,27 @@ class App(ctk.CTk):
         self.module_name_entry.pack(padx=20, pady=5, fill="x")
 
         self.module_name_entry.insert(0, "(Please pick a file first)")
+
+        # =========================================
+        # Max Batch Size
+        # =========================================
+        self.max_batch_size_label = ctk.CTkLabel(
+            self,
+            text=f"Max Batch Size: {config.MAX_BATCH_SIZE:,} chars",
+            font=("Arial", 14, "bold")
+        )
+        self.max_batch_size_label.pack(padx=20, pady=(15, 0))
+
+        self.max_batch_size_slider = ctk.CTkSlider(
+            self,
+            from_=500,
+            to=100000,
+            number_of_steps=199,
+            command=self.on_max_batch_size_changed
+        )
+        self.max_batch_size_slider.set(config.MAX_BATCH_SIZE)
+        self.max_batch_size_slider.pack(padx=20, pady=(0, 10), fill="x")
+
 
         # =========================================
         # Mock Mode Switch
@@ -326,6 +382,9 @@ class App(ctk.CTk):
         config.INPUT_TYPE = self.input_type_var.get()
         config.MODULE_NAME = self.module_name_entry.get().strip()
         config.BASE_OUTPUT_DIR = self.selected_output_dir  # None => fall back to USER_DATA_DIR
+        config.SOURCE_LANGUAGE = self.language_by_option[self.source_language_var.get()]
+        config.TARGET_LANGUAGE = self.language_by_option[self.target_language_var.get()]
+        config.MAX_BATCH_SIZE = int(round(self.max_batch_size_slider.get()))
 
         fn.adapt_file_paths()
         self.persist_settings()
@@ -654,6 +713,14 @@ class App(ctk.CTk):
 
 
     # ===========================================
+    # Function: On Max Batch Size Changed
+    # Updates the live readout while the slider is being dragged
+    # ===========================================
+    def on_max_batch_size_changed(self, value):
+        self.max_batch_size_label.configure(text=f"Max Batch Size: {int(round(value)):,} chars")
+
+
+    # ===========================================
     # Function: On Mock Mode Changed
     # Gets alerted whenever a the Mock Mode Switch is toggled
     # ===========================================
@@ -694,6 +761,9 @@ class App(ctk.CTk):
         self.module_name_entry.configure(state="disabled")
         self.main_button.configure(state="disabled")
         self.mock_switch.configure(state="disabled")
+        self.source_language_menu.configure(state="disabled")
+        self.target_language_menu.configure(state="disabled")
+        self.max_batch_size_slider.configure(state="disabled")
 
 
     # ===========================================
@@ -710,6 +780,9 @@ class App(ctk.CTk):
         self.module_name_entry.configure(state="normal")
         self.main_button.configure(state="normal")
         self.mock_switch.configure(state="normal")
+        self.source_language_menu.configure(state="normal")
+        self.target_language_menu.configure(state="normal")
+        self.max_batch_size_slider.configure(state="normal")
 
 
     # ===========================================
@@ -817,7 +890,10 @@ class App(ctk.CTk):
             "base_output_dir": str(config.BASE_OUTPUT_DIR) if config.BASE_OUTPUT_DIR else None,
             "input_file": str(config.INPUT_FILE),
             "input_type": config.INPUT_TYPE,
-            "module_name": config.MODULE_NAME
+            "module_name": config.MODULE_NAME,
+            "source_language_code": config.SOURCE_LANGUAGE["code"],
+            "target_language_code": config.TARGET_LANGUAGE["code"],
+            "max_batch_size": config.MAX_BATCH_SIZE
         })
 
 
@@ -853,6 +929,26 @@ class App(ctk.CTk):
         input_file = saved.get("input_file")
         input_type = saved.get("input_type")
         module_name = saved.get("module_name")
+
+        # Language pair and batch size: also independent of the input file
+        def find_language_option(code):
+            for option, lang in self.language_by_option.items():
+                if lang["code"] == code:
+                    return option
+            return None
+
+        source_option = find_language_option(saved.get("source_language_code"))
+        if source_option:
+            self.source_language_var.set(source_option)
+
+        target_option = find_language_option(saved.get("target_language_code"))
+        if target_option:
+            self.target_language_var.set(target_option)
+
+        max_batch_size = saved.get("max_batch_size")
+        if isinstance(max_batch_size, int):
+            self.max_batch_size_slider.set(max_batch_size)
+            self.on_max_batch_size_changed(max_batch_size)
 
         if not (input_file and Path(input_file).is_file()):
             return

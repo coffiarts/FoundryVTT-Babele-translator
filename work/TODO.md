@@ -42,11 +42,12 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ ~~Mock Mode should not really change batch statuses, to prevent that user is forced to reset them afterwards and lose real progress~~
 
-☐ Disclose and persist setting: MAX_BATCH_SIZE
+☑ ~~Disclose and persist as setting: MAX_BATCH_SIZE~~
 
-☐ Disclose and persist setting: SOURCE_LANGUAGE / TARGET_LANGUAGE
+☑ ~~Disclose and persist as setting: SOURCE_LANGUAGE / TARGET_LANGUAGE~~
 
-☐ Disclose and persist setting: GAME_SYSTEM_CONTEXT
+☐ Disclose and persist as setting: GAME_SYSTEM_CONTEXT
+- integrate a "system-agnostic" option!
 
 ☐ Provide a more convenient output on successful completion - e.g. a message outside the log with a file link, even play a sound? ;-). Important: Also mention the Review Items file, if it exists!!
 
@@ -54,19 +55,25 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☐ Render popup details for each batch icon
 
-☐ Disclose and persist setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list
+☐ Now is the time for a general pimp of layout and style => maybe use a CustomTkinter-Theme
 
-☐ Disclose and persist setting: TRANSLATABLE_CONTAINERS => same as above
+☐ Refactor Is API client connection:
+- is it OpenAI specific, or can we make it exchangeable via Settings?
+- Disclose and persist LLM_MODEL setting
 
-☐ Settings: PROTECTED_SYNTAX_PATTERNS => same as above, plus: These are RegExp patterns that should probably be validated
+☐ Disclose and persist as advanced setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list
 
-☐ Improve readability of LogWindow content (make it collapsible, less stressful bg/fd colors)
+☐ Disclose and persist as advanced setting: TRANSLATABLE_CONTAINERS => same as above
+
+☐ Disclose and persist as advanced setting: PROTECTED_SYNTAX_PATTERNS => same as above, plus: These are RegExp patterns that should probably be validated
+
+☐ Disclose and persist as advanced setting: TRANSLATION_INSTRUCTIONS and TERMINOLOGY_INSTRUCTIONS as user settings
+
+☐ Improve readability of LogWindow content (make it collapsible, consistently use colors, less stressful bg/fd colors)
 
 ☐ Animate current PROCESSING batch?
 
 ☐ UI Localization
-
-☐ Use a CustomTkinter-Theme
 
 ☐ General review and refactoring of ct4f.run_translation() => split it up into better testable units?
 
