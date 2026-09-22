@@ -13,7 +13,7 @@ from collections.abc import Callable
 
 LOGGER = print
 
-BATCH_LISTENER: Callable[[list], None] | None = None
+BATCH_LISTENER: Callable[[dict], None] | None = None
 
 def set_logger(logger):
     global LOGGER
@@ -41,15 +41,22 @@ def notify_batch_listener(batches):
     if BATCH_LISTENER is None:
         return
 
-    BATCH_LISTENER([
-        {
-            "id": batch["id"],
-            config.TERMINOLOGY_STATUS: batch[config.TERMINOLOGY_STATUS],
-            config.TRANSLATION_STATUS: batch[config.TRANSLATION_STATUS],
-            "char_count": batch["char_count"]
-        }
-        for batch in batches
-    ])
+    review_item_count = 0
+    if config.PROGRESS_REVIEW_ITEMS_FILE.exists():
+        review_item_count = len(load_json_input(config.PROGRESS_REVIEW_ITEMS_FILE))
+
+    BATCH_LISTENER({
+        "batches": [
+            {
+                "id": batch["id"],
+                config.TERMINOLOGY_STATUS: batch[config.TERMINOLOGY_STATUS],
+                config.TRANSLATION_STATUS: batch[config.TRANSLATION_STATUS],
+                "char_count": batch["char_count"]
+            }
+            for batch in batches
+        ],
+        "review_item_count": review_item_count
+    })
 
 
 # ------------------------------------------------------------

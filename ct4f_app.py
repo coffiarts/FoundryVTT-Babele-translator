@@ -534,10 +534,10 @@ class App(ctk.CTk):
     # Listener for Batch status changes (see fn.set_batch_listener).
     # Invoked by the worker thread, so it hands over to the UI thread
     # ===========================================
-    def batches_changed(self, batches):
+    def batches_changed(self, data):
         self.after(
             0,
-            lambda: self.show_bars({"batches": batches})
+            lambda: self.show_bars(data)
         )
 
 
