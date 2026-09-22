@@ -672,6 +672,7 @@ def get_resume_relevant_config():
 
     return {
         "GAME_SYSTEM_CONTEXT" : config.GAME_SYSTEM_CONTEXT,
+        "GENRE_CONTEXT": config.GENRE_CONTEXT,
         "MAX_BATCH_SIZE": config.MAX_BATCH_SIZE,
         "SOURCE_LANGUAGE": config.SOURCE_LANGUAGE,
         "TRANSLATABLE_FIELDS": sorted(config.TRANSLATABLE_FIELDS),

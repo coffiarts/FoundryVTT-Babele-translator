@@ -140,6 +140,12 @@ class App(ctk.CTk):
             option: lang for option, lang in zip(self.language_options, config.SUPPORTED_LANGUAGES)
         }
 
+        ctk.CTkLabel(
+            self,
+            text="Source Language → Target Language",
+            font=("Arial", 14, "bold")
+        ).pack(padx=20, pady=(15, 0))
+
         self.language_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.language_frame.pack(padx=20, pady=(15, 5))
 
@@ -164,6 +170,34 @@ class App(ctk.CTk):
             variable=self.target_language_var
         )
         self.target_language_menu.pack(side="left")
+
+        # =========================================
+        # Translation Flavour (Game System / Genre)
+        # =========================================
+        ctk.CTkLabel(
+            self,
+            text="Translation Flavour (Game System / Genre)",
+            font=("Arial", 14, "bold")
+        ).pack(padx=20, pady=(10, 0))
+
+        self.flavour_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.flavour_frame.pack(padx=20, pady=(10, 5))
+
+        self.game_system_var = ctk.StringVar(value=config.GAME_SYSTEM_CONTEXT)
+        self.game_system_menu = ctk.CTkOptionMenu(
+            self.flavour_frame,
+            values=config.SUPPORTED_GAME_SYSTEMS,
+            variable=self.game_system_var
+        )
+        self.game_system_menu.pack(side="left")
+
+        self.genre_var = ctk.StringVar(value=config.GENRE_CONTEXT)
+        self.genre_menu = ctk.CTkOptionMenu(
+            self.flavour_frame,
+            values=config.SUPPORTED_GENRES,
+            variable=self.genre_var
+        )
+        self.genre_menu.pack(side="left", padx=(10, 0))
 
         # =========================================
         # Module name suggestion (editable)
@@ -379,11 +413,17 @@ class App(ctk.CTk):
     # ===========================================
     def prepare(self):
 
+        if self.source_language_var.get() == self.target_language_var.get():
+            ui_dialogs.HintDialog(self, message="Source and Target Language must be different.")
+            return
+
         config.INPUT_TYPE = self.input_type_var.get()
         config.MODULE_NAME = self.module_name_entry.get().strip()
         config.BASE_OUTPUT_DIR = self.selected_output_dir  # None => fall back to USER_DATA_DIR
         config.SOURCE_LANGUAGE = self.language_by_option[self.source_language_var.get()]
         config.TARGET_LANGUAGE = self.language_by_option[self.target_language_var.get()]
+        config.GAME_SYSTEM_CONTEXT = self.game_system_var.get()
+        config.GENRE_CONTEXT = self.genre_var.get()
         config.MAX_BATCH_SIZE = int(round(self.max_batch_size_slider.get()))
 
         fn.adapt_file_paths()
@@ -763,6 +803,8 @@ class App(ctk.CTk):
         self.mock_switch.configure(state="disabled")
         self.source_language_menu.configure(state="disabled")
         self.target_language_menu.configure(state="disabled")
+        self.game_system_menu.configure(state="disabled")
+        self.genre_menu.configure(state="disabled")
         self.max_batch_size_slider.configure(state="disabled")
 
 
@@ -782,6 +824,8 @@ class App(ctk.CTk):
         self.mock_switch.configure(state="normal")
         self.source_language_menu.configure(state="normal")
         self.target_language_menu.configure(state="normal")
+        self.game_system_menu.configure(state="normal")
+        self.genre_menu.configure(state="normal")
         self.max_batch_size_slider.configure(state="normal")
 
 
@@ -893,6 +937,8 @@ class App(ctk.CTk):
             "module_name": config.MODULE_NAME,
             "source_language_code": config.SOURCE_LANGUAGE["code"],
             "target_language_code": config.TARGET_LANGUAGE["code"],
+            "game_system_context": config.GAME_SYSTEM_CONTEXT,
+            "genre_context": config.GENRE_CONTEXT,
             "max_batch_size": config.MAX_BATCH_SIZE
         })
 
@@ -944,6 +990,14 @@ class App(ctk.CTk):
         target_option = find_language_option(saved.get("target_language_code"))
         if target_option:
             self.target_language_var.set(target_option)
+
+        game_system_context = saved.get("game_system_context")
+        if game_system_context in config.SUPPORTED_GAME_SYSTEMS:
+            self.game_system_var.set(game_system_context)
+
+        genre_context = saved.get("genre_context")
+        if genre_context in config.SUPPORTED_GENRES:
+            self.genre_var.set(genre_context)
 
         max_batch_size = saved.get("max_batch_size")
         if isinstance(max_batch_size, int):

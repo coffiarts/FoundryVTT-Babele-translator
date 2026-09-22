@@ -21,6 +21,23 @@ TARGET_LANGUAGE = {
     "name": "German" # Always use the english name here
 }
 
+GAME_SYSTEM_AGNOSTIC = "Generic (system-agnostic)"
+GENRE_AGNOSTIC = "Generic"
+
+SUPPORTED_GAME_SYSTEMS = [
+    "Dungeons & Dragons (DnD5e)",
+    "The Dark Eye/Das Schwarze Auge (TDE5/DSA5)",
+    "Pathfinder (PF2e)",
+    GAME_SYSTEM_AGNOSTIC
+]
+
+SUPPORTED_GENRES = [
+    "Classical Fantasy",
+    "Sci-Fi",
+    "Horror",
+    GENRE_AGNOSTIC
+]
+
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 # --- RESUME-RELEVANT CORE CONFIGURATION
@@ -33,7 +50,9 @@ TARGET_LANGUAGE = {
 
 MOCK_MODE = False # Default: False: If set to True, remote LLM requests/responses are only mocked (for testing surrounding logic without causing costs)
 
-GAME_SYSTEM_CONTEXT = "D&D 5e" # Used in translation instructions. Free prompt-style. Always use the english name here, optionally enrich it by a translation, like: "The Dark Eye (aka 'Das Schwarze Auge')
+# Translation flavour
+GAME_SYSTEM_CONTEXT = "Dungeons & Dragons (DnD5e)"  # pick a value from SUPPORTED_GAME_SYSTEMS
+GENRE_CONTEXT = "Classical Fantasy"  # pick a value from SUPPORTED_GENRES
 
 MAX_BATCH_SIZE = 50000
 
@@ -154,17 +173,33 @@ Sie sind König Grol gegenüber loyal.
 """
 
 def get_terminology_instructions():
+
+    system_is_specific = GAME_SYSTEM_CONTEXT != GAME_SYSTEM_AGNOSTIC
+    genre_is_specific = GENRE_CONTEXT != GENRE_AGNOSTIC
+
+    context_phrase = " ".join(
+        part for part in (
+            GAME_SYSTEM_CONTEXT if system_is_specific else None,
+            GENRE_CONTEXT if genre_is_specific else None
+        )
+        if part
+    )
+    context_phrase = f"{context_phrase} " if context_phrase else ""
+
+    rules_bullet = f"- {GAME_SYSTEM_CONTEXT} rules terminology\n" if system_is_specific else ""
+    genre_bullet = f"- established {GENRE_CONTEXT} vocabulary\n" if genre_is_specific else ""
+    official_terminology_phrase = f"official {GAME_SYSTEM_CONTEXT} terminology" if system_is_specific else "official terminology"
+
     return f"""
 You are a terminology analyst for a {TARGET_LANGUAGE["name"]} translation of a
-{GAME_SYSTEM_CONTEXT} fantasy role-playing adventure.
+{context_phrase}role-playing adventure.
 
 Analyze the supplied {SOURCE_LANGUAGE["name"]} text and identify only terms that
 are likely to require consistent translation across the adventure.
 
 Prioritize:
-- {GAME_SYSTEM_CONTEXT} rules terminology
-- creature and monster names or types
-- established fantasy and setting terminology
+{rules_bullet}- creature and monster names or types
+{genre_bullet}- setting-specific terminology (invented concepts, phenomena, social or cultural terms, etc.)
 - names of places, people, factions, organizations, etc.
 - terms whose {TARGET_LANGUAGE["name"]} grammatical gender, number, or inflection
   could cause recurring translation errors
@@ -188,7 +223,7 @@ For each selected term provide:
   ambiguity, or grammatical consideration
 
 The proposed translations are suggestions only. Do not assume
-that they are official {GAME_SYSTEM_CONTEXT} terminology.
+that they are {official_terminology_phrase}.
 
 Use English for all metadata and notes.
 
@@ -390,4 +425,3 @@ REVIEW_ITEMS_FILE = None
 
 # And last but not least ...
 MOCK_PROGRESSBAR_DURATION_SEC = 5
-

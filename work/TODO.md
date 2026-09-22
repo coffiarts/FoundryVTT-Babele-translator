@@ -46,19 +46,19 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ ~~Disclose and persist as setting: SOURCE_LANGUAGE / TARGET_LANGUAGE~~
 
-☐ Disclose and persist as setting: GAME_SYSTEM_CONTEXT
-- integrate a "system-agnostic" option!
+☑ ~~Disclose and persist as setting: GAME_SYSTEM_CONTEXT~~
+- ~~integrate a "system-agnostic" option!~~
 
-☐ Provide a more convenient output on successful completion - e.g. a message outside the log with a file link, even play a sound? ;-). Important: Also mention the Review Items file, if it exists!!
-
-☐ on prepared: Render "Project Size", "Review Items" and "Status"
-
-☐ Render popup details for each batch icon
+☐ on prepared: Render "Project Stats"
 
 ☐ Now is the time for a general pimp of layout and style => maybe use a CustomTkinter-Theme
 
-☐ Refactor Is API client connection:
-- is it OpenAI specific, or can we make it exchangeable via Settings?
+☐ Provide a more convenient output on successful completion - e.g. a message outside the log with a file link, even play a sound? ;-). Important: Also mention the Review Items file, if it exists!!
+
+☐ Render popup details for each batch icon
+
+☐ Refactor API client connection config:
+- is it strictly OpenAI specific, or can we make it exchangeable via Settings?
 - Disclose and persist LLM_MODEL setting
 
 ☐ Disclose and persist as advanced setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list
