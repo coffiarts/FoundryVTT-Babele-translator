@@ -219,52 +219,6 @@ class App(ctk.CTk):
 
 
         # =========================================
-        # Dynamic prompts (at bottom, initially hidden)
-        # =========================================
-        self.current_radio_buttons = []
-
-        self.question_label = ctk.CTkLabel(
-            self,
-            text="",
-            font=("Arial", 16, "bold")
-        )
-        self.show_question_label()
-
-        self.text_answer_entry = ctk.CTkEntry(
-            self,
-            width=400
-        )
-        self.show_text_answer_entry()
-
-        # Buttons Frame
-        self.buttons_frame = ctk.CTkFrame(self)
-
-        # Submit ("OK") Button
-        self.submit_button = ctk.CTkButton(
-            self.buttons_frame,
-            text="OK",
-            command=self.read_dialog_response
-        )
-        self.show_submit_button()
-
-        # YES Button
-        self.yes_button = ctk.CTkButton(
-            self.buttons_frame,
-            text="Yes",
-            command=self.submit_yes
-        )
-
-        # NO Button
-        self.no_button = ctk.CTkButton(
-            self.buttons_frame,
-            text="No",
-            command=self.submit_no
-        )
-
-        # Set them all initially to invisible
-        self.hide_all_prompts()
-
-        # =========================================
         # Enable only the UI elements that are relevant first
         # =========================================
         self.disable_configuration_controls()
@@ -276,6 +230,7 @@ class App(ctk.CTk):
         # Some initialization of dialog-relevant queues
         # =========================================
         self.current_request = None
+        self.current_confirm_dialog = None
         self.cancel_event = threading.Event()
 
         # =========================================
@@ -474,7 +429,6 @@ class App(ctk.CTk):
     def confirm_clear(self, question, clear_function):
 
         def on_yes():
-            self.hide_all_prompts()
             clear_function()
             analysis = fn.analyze_progress_info()
             self.show_bars(analysis)
@@ -483,7 +437,7 @@ class App(ctk.CTk):
         ui_dialogs.confirm_yes_no(
             question=question,
             on_yes=on_yes,
-            on_no=self.hide_all_prompts
+            on_no=None
         )
 
 
@@ -526,7 +480,6 @@ class App(ctk.CTk):
     # (without dropping existing input)
     # ===========================================
     def reset_ui(self):
-        self.hide_all_prompts()
         self.reset_preparation()
 
 
@@ -621,7 +574,6 @@ class App(ctk.CTk):
     # After a run, the progress is persisted, so the UI continues from a fresh analysis of it
     # ===========================================
     def return_to_prepared_state(self):
-        self.hide_all_prompts()
         self.enter_prepared_state({"analysis": fn.analyze_progress_info()})
 
 
@@ -639,93 +591,42 @@ class App(ctk.CTk):
             pass
 
         else:
-            if request["type"] == config.PROMPT_TYPE_RADIO:
-                self.current_request = request
-
-                self.question_label.configure(
-                    text=request["question"]
-                )
-                self.show_question_label()
-
-                self.radio_var = ctk.StringVar()
-
-                for option in request["options"]:
-                    radio = ctk.CTkRadioButton(
-                        self,
-                        text=option,
-                        variable=self.radio_var,
-                        value=option
-                    )
-                    radio.pack(
-                        before=self.log_window,
-                        padx=20,
-                        anchor="w"
-                    )
-
-                    self.current_radio_buttons.append(radio)
-
-                self.show_buttons_frame()
-                self.show_submit_button()
-
-            elif request["type"] == config.PROMPT_TYPE_YESNO:
-
-                self.current_request = request
-
-                self.question_label.configure(
-                    text=request["question"]
-                )
-
-                self.show_question_label()
-                self.show_buttons_frame()
-                self.show_yesno_buttons()
-
-            elif request["type"] == config.PROMPT_TYPE_TEXT:
-                self.current_request = request
-
-                self.question_label.configure(
-                    text=request["question"]
-                )
-
-                self.show_question_label()
-                self.show_text_answer_entry()
-                self.show_buttons_frame()
-                self.show_submit_button()
-
-                self.text_answer_entry.focus()
+            if request["type"] == config.PROMPT_TYPE_YESNO:
+                self.show_confirm_dialog(request)
 
             else:
-                print("UNKNOWN REQUEST")
+                self.LOGGER("UNKNOWN REQUEST", config.TAG_ERROR)
+                print(f"{config.CONSOLE_RED}UNKNOWN REQUEST{config.CONSOLE_RESET}")
 
         self.after(50, self.render_dialog_requests)
 
 
     # ===========================================
-    # Function: Process Dialog Response
-    # Submits the current dialog response, delivers it to the waiting request,
-    # and removes any temporary dialog controls from the UI.
+    # Function: Show Confirm Dialog
+    # Opens a modal Yes/No dialog for the given request and routes the answer back,
+    # either to the worker thread (response_queue) or to a UI-thread callback (on_yes/on_no)
     # ===========================================
-    def read_dialog_response(self):
+    def show_confirm_dialog(self, request):
 
-        if self.current_request is None:
-            return
+        self.current_request = request
 
-        if self.current_radio_buttons:
-            answer = self.radio_var.get()
+        def answer(is_yes):
+            self.current_request = None
+            self.current_confirm_dialog = None
 
-        else:
-            answer = self.text_answer_entry.get().strip().upper()
+            if "response_queue" in request:
+                request["response_queue"].put(config.YES if is_yes else config.NO)
+            else:
+                callback = request["on_yes"] if is_yes else request["on_no"]
+                if callback:
+                    callback()
 
-        self.current_request["response_queue"].put(answer)
-
-        self.text_answer_entry.delete(0, "end")
-
-        self.hide_all_prompts()
-
-        self.current_request = None
-
-        for radio in self.current_radio_buttons:
-            radio.destroy()
-        self.current_radio_buttons.clear()
+        self.current_confirm_dialog = ui_dialogs.ConfirmDialog(
+            self,
+            question=request["question"],
+            on_yes=lambda: answer(True),
+            on_no=lambda: answer(False)
+        )
 
 
     # ===========================================
@@ -797,32 +698,6 @@ class App(ctk.CTk):
 
 
     # ===========================================
-    # Function: Submit YES
-    # Used by the "Yes" button
-    # ===========================================
-    def submit_yes(self):
-
-        if "response_queue" in self.current_request:
-            self.current_request["response_queue"].put(config.YES)
-
-        elif "on_yes" in self.current_request:
-            self.current_request["on_yes"]()
-
-
-    # ===========================================
-    # Function: Submit NO
-    # Used by the "No" button
-    # ===========================================
-    def submit_no(self):
-
-        if "response_queue" in self.current_request:
-            self.current_request["response_queue"].put(config.NO)
-
-        elif "on_no" in self.current_request:
-            self.current_request["on_no"]()
-
-
-    # ===========================================
     # Function: Cancel
     # Used by the main button while running.
     # Effective at the next Batch boundary, so a running API call has to be waited out
@@ -831,34 +706,15 @@ class App(ctk.CTk):
         self.cancel_event.set()
         self.main_button.configure(text="Please wait for batch to complete ...", state="disabled")
 
-        # A pending prompt has to be released as well, because the worker thread blocks while waiting for the answer
+        # A pending confirm dialog has to be released as well, because the worker thread
+        # blocks while waiting for the answer
+        if self.current_confirm_dialog is not None:
+            self.current_confirm_dialog.destroy()
+            self.current_confirm_dialog = None
+
         if self.current_request is not None and "response_queue" in self.current_request:
             self.current_request["response_queue"].put(config.CANCEL)
-
-
-    # ===========================================
-    # Function: Hide All Prompts
-    #
-    # ===========================================
-    def hide_all_prompts(self):
-        self.question_label.pack_forget()
-        self.text_answer_entry.pack_forget()
-        self.buttons_frame.pack_forget()
-        self.submit_button.pack_forget()
-        self.yes_button.pack_forget()
-        self.no_button.pack_forget()
-
-
-    # ===========================================
-    # Function: Show Buttons Frame
-    #
-    # ===========================================
-    def show_buttons_frame(self):
-        self.buttons_frame.pack(
-            before=self.log_window,
-            padx=20,
-            pady=5
-        )
+            self.current_request = None
 
 
     # ===========================================
@@ -873,39 +729,6 @@ class App(ctk.CTk):
     # ===========================================
     def hide_reset_button(self):
         self.reset_button.pack_forget()
-
-
-    # ===========================================
-    # Function: Show Question Label
-    #
-    # ===========================================
-    def show_question_label(self):
-        self.question_label.pack(before=self.log_window, padx=20, pady=(10, 5), anchor="w")
-
-
-    # ===========================================
-    # Function: Show Text Answer Entry
-    #
-    # ===========================================
-    def show_text_answer_entry(self):
-        self.text_answer_entry.pack(before=self.log_window, padx=20, pady=5, fill="x")
-
-
-    # ===========================================
-    # Function: Show Submit Button
-    #
-    # ===========================================
-    def show_submit_button(self):
-        self.submit_button.pack(side="left", padx=5)
-
-
-    # ===========================================
-    # Function: Show Yes/No Buttons
-    #
-    # ===========================================
-    def show_yesno_buttons(self):
-        self.yes_button.pack(side="left", padx=5)
-        self.no_button.pack(side="left", padx=5)
 
 
     # ===========================================

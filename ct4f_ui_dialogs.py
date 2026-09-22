@@ -147,6 +147,7 @@ class ErrorDialog(ctk.CTkToplevel):
             btn_frame, text="Close", fg_color="gray", command=self.destroy
         ).pack(side="right")
 
+
 class HintDialog(ctk.CTkToplevel):
 
     def __init__(self, parent, message: str = ""):
@@ -169,3 +170,34 @@ class HintDialog(ctk.CTkToplevel):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(10, 15), fill="x")
         ctk.CTkButton(btn_frame, text="OK", command=self.destroy).pack(side="right")
+
+
+class ConfirmDialog(ctk.CTkToplevel):
+
+    def __init__(self, parent, question: str, on_yes, on_no):
+        super().__init__(parent)
+        self.title("Please confirm")
+        self.minsize(400, 150)
+        self.transient(parent)
+        self.grab_set()
+        self.protocol("WM_DELETE_WINDOW", lambda: self._answer(on_no))
+
+        # Message (wrapped)
+        ctk.CTkLabel(
+            self,
+            text=question,
+            wraplength=400,
+            justify="left",
+            font=("Arial", 14)
+        ).pack(padx=20, pady=(20, 10), fill="both", expand=True)
+
+        # Buttons
+        btn_frame = ctk.CTkFrame(self, fg_color="transparent")
+        btn_frame.pack(padx=20, pady=(10, 15), fill="x")
+        ctk.CTkButton(btn_frame, text="Yes", command=lambda: self._answer(on_yes)).pack(side="right", padx=(5, 0))
+        ctk.CTkButton(btn_frame, text="No", fg_color="gray", command=lambda: self._answer(on_no)).pack(side="right")
+
+    def _answer(self, callback):
+        self.destroy()
+        if callback:
+            callback()

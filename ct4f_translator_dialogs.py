@@ -60,28 +60,6 @@ def confirm_yes_no(question="") -> bool:
 
 
 # ------------------------------------------------------------
-# Function: Prompt Radio
-# ------------------------------------------------------------
-def prompt_radio(question, options):
-
-    response_queue = queue.Queue()
-
-    _request_queue.put({
-        "type": config.PROMPT_TYPE_RADIO,
-        "question": question,
-        "options": options,
-        "response_queue": response_queue
-    })
-
-    answer = response_queue.get()
-
-    if answer == config.CANCEL:
-        raise exceptions.CancelledException()
-
-    return answer
-
-
-# ------------------------------------------------------------
 # Function: Confirm Unusual Lang File Name
 # Lang files are conventionally named <language code>.json (e.g. en.json, pt-BR.json).
 # Asks whether to continue anyway with a differently named file

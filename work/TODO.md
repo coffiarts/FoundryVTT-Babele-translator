@@ -19,7 +19,7 @@
 - ~~how/what to interrupt by "Cancel"~~
 - ~~where to return to after "Cancel" or unexpected exceptions~~
 
-☑ Handle the following specific exception scenarios explicitly (without hard-block/ErrorDialog):
+☑ ~~Handle the following specific exception scenarios explicitly (without hard-block/ErrorDialog):~~
 
 - ~~CANCELLED => return to "prepared" state?~~
 
@@ -31,22 +31,24 @@
 
 ☑ ~~Improve readability of ErrorDialog contents (get rid of "technical noise", less stressful bg/fd colors)~~
 
-☐ Visually improve confirmation prompts (currently clumsily placed inline, wiht ugly format, and not going away after being answered)
+☑ ~~Visually improve confirmation prompts (currently clumsily placed inline, with ugly format, and not going away after being answered)~~
+
+☐ Special case: Refine "Placeholder Integrity Error" handling
+- How to show the (potentially large) error output in an easy-to-read way
+- How to handle closing of prompt window: "Yes", "No"?
 
 ☐ Bugfix: Localization mode produces strict output filename <language>.json, dropping
 any postfix from input file (like in en-US.json). Instead, it should keep the postfix, by only replacing the source language part of the name (e.g. "en") by the target language part (e.g. "de"): en-US.json => de-US.json
 
-☐ Mock Mode should not create real Batch Statuses, to prevent that user is forced to reset them afterwards
+☐ Mock Mode should not really change batch statuses, to prevent that user is forced to reset them afterwards and lose real progress
 
 ☐ Disclose and persist setting: MAX_BATCH_SIZE
 
-☐ Provide a more convenient output on successful completion (e.g. a message outside the log with a file link). Important: Also mention the Review Items file, if it exists!!
+☐ Provide a more convenient output on successful completion - e.g. a message outside the log with a file link, even play a sound? ;-). Important: Also mention the Review Items file, if it exists!!
 
-☐ In RESUME Mode: Also render "Project Size" and "Review Items" and "Status"
+☐ on prepared: Render "Project Size", "Review Items" and "Status"
 
-☐ Render popup details for each bar
-
-☐ (optional?) Calculate and render "Status"
+☐ Render popup details for each batch icon
 
 ☐ Disclose and persist setting: SOURCE_LANGUAGE / TARGET_LANGUAGE
 
@@ -61,8 +63,6 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 ☐ Improve readability of LogWindow content (make it collapsible, less stressful bg/fd colors)
 
 ☐ Animate current PROCESSING batch?
-
-
 
 ☐ UI Localization
 
