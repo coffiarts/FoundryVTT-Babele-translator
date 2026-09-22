@@ -37,22 +37,22 @@
 - ~~How to show the (potentially large) error output in an easy-to-read way~~
 - ~~How to handle closing of prompt window: "Yes", "No"?~~
 
-☑ Bugfix: Localization mode produces strict output filename <language>.json, dropping
-any postfix from input file (like in en-US.json). Instead, it should keep the postfix, by only replacing the source language part of the name (e.g. "en") by the target language part (e.g. "de"): en-US.json => de-US.json
+☑ ~~Bugfix: Localization mode produces strict output filename <language>.json, dropping
+any postfix from input file (like in en-US.json). Instead, it should keep the postfix, by only replacing the source language part of the name (e.g. "en") by the target language part (e.g. "de"): en-US.json => de-US.json~~
 
-☐ Mock Mode should not really change batch statuses, to prevent that user is forced to reset them afterwards and lose real progress
+☑ ~~Mock Mode should not really change batch statuses, to prevent that user is forced to reset them afterwards and lose real progress~~
 
 ☐ Disclose and persist setting: MAX_BATCH_SIZE
+
+☐ Disclose and persist setting: SOURCE_LANGUAGE / TARGET_LANGUAGE
+
+☐ Disclose and persist setting: GAME_SYSTEM_CONTEXT
 
 ☐ Provide a more convenient output on successful completion - e.g. a message outside the log with a file link, even play a sound? ;-). Important: Also mention the Review Items file, if it exists!!
 
 ☐ on prepared: Render "Project Size", "Review Items" and "Status"
 
 ☐ Render popup details for each batch icon
-
-☐ Disclose and persist setting: SOURCE_LANGUAGE / TARGET_LANGUAGE
-
-☐ Disclose and persist setting: GAME_SYSTEM_CONTEXT
 
 ☐ Disclose and persist setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list
 

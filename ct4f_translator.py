@@ -141,8 +141,7 @@ def _prepare(logger: Callable[str]):
         # Case 1: INITIALIZE PROGRESS
         # ---------------------------------------------------
         fn.LOGGER(fn.log_header(f"\nINITIALIZE PROGRESS"))
-        if not config.MOCK_MODE:
-            fn.cleanup_progress_files()
+        fn.cleanup_progress_files()
         progress_info = fn.init_progress_info()
 
     elif run_mode == config.RESUME:

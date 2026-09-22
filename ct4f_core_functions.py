@@ -1431,13 +1431,22 @@ def adapt_file_paths():
         terminology_file_name = f"{output_stem}-terminology.json"
         review_items_file_name = f"{output_stem}-review-items.json"
 
-    # The user-selected folder replaces the default output folder (<USER_DATA_DIR>/output)
+    # Root folders. Only the output may be redirected by the user; Mock Mode always
+    # gets its own sandboxed sub-namespace, so simulated runs can never collide with
+    # or overwrite real progress/output
     output_root = config.BASE_OUTPUT_DIR or (config.USER_DATA_DIR / config.OUTPUT_FOLDER_NAME)
+    progress_root = config.USER_DATA_DIR / config.PROGRESS_FOLDER_NAME
+    terminology_root = config.USER_DATA_DIR / config.TERMINOLOGY_FOLDER_NAME
+
+    if config.MOCK_MODE:
+        output_root = output_root / "mock"
+        progress_root = progress_root / "mock"
+        terminology_root = terminology_root / "mock"
 
     # Directories (the *_FOLDER_NAME constants are only read, never overwritten)
     config.OUTPUT_DIR = output_root / module_sub_path
-    config.PROGRESS_DIR = config.USER_DATA_DIR / config.PROGRESS_FOLDER_NAME / progress_sub_path
-    config.TERMINOLOGY_DIR = config.USER_DATA_DIR / config.TERMINOLOGY_FOLDER_NAME / module_sub_path
+    config.PROGRESS_DIR = progress_root / progress_sub_path
+    config.TERMINOLOGY_DIR = terminology_root / module_sub_path
 
     for directory in (config.OUTPUT_DIR, config.PROGRESS_DIR, config.TERMINOLOGY_DIR):
         directory.mkdir(parents=True, exist_ok=True)
