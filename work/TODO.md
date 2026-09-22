@@ -33,9 +33,9 @@
 
 ☑ ~~Visually improve confirmation prompts (currently clumsily placed inline, with ugly format, and not going away after being answered)~~
 
-☐ Special case: Refine "Placeholder Integrity Error" handling
-- How to show the (potentially large) error output in an easy-to-read way
-- How to handle closing of prompt window: "Yes", "No"?
+☑ ~~Special case: Refine "Placeholder Integrity Error" handling~~
+- ~~How to show the (potentially large) error output in an easy-to-read way~~
+- ~~How to handle closing of prompt window: "Yes", "No"?~~
 
 ☐ Bugfix: Localization mode produces strict output filename <language>.json, dropping
 any postfix from input file (like in en-US.json). Instead, it should keep the postfix, by only replacing the source language part of the name (e.g. "en") by the target language part (e.g. "de"): en-US.json => de-US.json

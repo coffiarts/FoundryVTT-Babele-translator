@@ -209,6 +209,20 @@ class App(ctk.CTk):
         # =========================================
         # Log Output Window
         # =========================================
+        self.log_popout_button = ctk.CTkButton(
+            self,
+            text="Pop Out Log",
+            width=100,
+            command=lambda: ui_dialogs.LogViewerDialog(self, self.log_window.get("1.0", "end"))
+        )
+        self.log_popout_button.pack(padx=20, pady=(10, 0), anchor="e")
+
+        self.log_window = ctk.CTkTextbox(self, width=600, height=300, fg_color="black", text_color="white")
+
+
+        # =========================================
+        # Log Output Window
+        # =========================================
         self.log_window = ctk.CTkTextbox(self, width=600, height=300, fg_color="black", text_color="white")
         self.log_window.tag_config(config.TAG_ERROR, foreground="red")
         self.log_window.tag_config(config.TAG_SUCCESS, foreground="green")
@@ -380,7 +394,7 @@ class App(ctk.CTk):
             for batch in batches
         ])
 
-        self.bars_frame.pack(before=self.log_window, padx=20, pady=5, fill="x")
+        self.bars_frame.pack(before=self.log_popout_button, padx=20, pady=5, fill="x")
 
 
     # ===========================================
@@ -625,7 +639,8 @@ class App(ctk.CTk):
             self,
             question=request["question"],
             on_yes=lambda: answer(True),
-            on_no=lambda: answer(False)
+            on_no=lambda: answer(False),
+            get_log_text=lambda: self.log_window.get("1.0", "end")
         )
 
 

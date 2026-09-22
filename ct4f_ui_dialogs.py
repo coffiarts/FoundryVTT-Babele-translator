@@ -174,7 +174,7 @@ class HintDialog(ctk.CTkToplevel):
 
 class ConfirmDialog(ctk.CTkToplevel):
 
-    def __init__(self, parent, question: str, on_yes, on_no):
+    def __init__(self, parent, question: str, on_yes, on_no, get_log_text=None):
         super().__init__(parent)
         self.title("Please confirm")
         self.minsize(400, 150)
@@ -194,10 +194,41 @@ class ConfirmDialog(ctk.CTkToplevel):
         # Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(10, 15), fill="x")
-        ctk.CTkButton(btn_frame, text="Yes", command=lambda: self._answer(on_yes)).pack(side="right", padx=(5, 0))
-        ctk.CTkButton(btn_frame, text="No", fg_color="gray", command=lambda: self._answer(on_no)).pack(side="right")
+        ctk.CTkButton(btn_frame, text="Yes", command=lambda: self._answer(on_yes)).pack(side="left", padx=(0, 5))
+        ctk.CTkButton(btn_frame, text="No", fg_color="gray", command=lambda: self._answer(on_no)).pack(side="left")
+
+        if get_log_text:
+            ctk.CTkButton(
+                btn_frame,
+                text="Show Log",
+                fg_color="gray",
+                command=lambda: LogViewerDialog(self, get_log_text())
+            ).pack(side="left", padx=(20, 0))
 
     def _answer(self, callback):
         self.destroy()
         if callback:
             callback()
+
+
+class LogViewerDialog(ctk.CTkToplevel):
+
+    def __init__(self, parent, log_text: str):
+        super().__init__(parent)
+        self.title("Log")
+        self.geometry("800x600")
+        self.resizable(True, True)
+        self.transient(parent)
+        self.grab_set()
+
+        # Log content (read-only, scrollable)
+        self.log_view = ctk.CTkTextbox(self, fg_color="black", text_color="white")
+        self.log_view.pack(padx=20, pady=20, fill="both", expand=True)
+        self.log_view.insert("end", log_text)
+        self.log_view.see("end")
+        self.log_view.configure(state="disabled")
+
+        # Buttons
+        btn_frame = ctk.CTkFrame(self, fg_color="transparent")
+        btn_frame.pack(padx=20, pady=(0, 15), fill="x")
+        ctk.CTkButton(btn_frame, text="Close", fg_color="gray", command=self.destroy).pack(side="right")

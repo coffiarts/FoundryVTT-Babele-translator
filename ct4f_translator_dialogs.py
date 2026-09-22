@@ -103,12 +103,13 @@ def confirm_discard_progress(differences) -> bool:
 # ------------------------------------------------------------
 # Function: Prompt confirmation for keeping batch after non-fatal errors
 # ------------------------------------------------------------
-def confirm_batch_nonfatal_errors():
+def confirm_batch_nonfatal_errors(batch_id, batch_cnt, error_count) -> bool:
 
     question = \
-        f"\n=== DO YOU WANT TO KEEP THIS BATCH ANYWAY? ===\n" \
-        f"({config.YES.upper()}/{config.YES.lower()}): Yes, keep it and export errors as Review Items for later.\n" \
-        f"({config.NO.upper()}/{config.NO.lower()}) or (Enter): No, abort. I will restart the process myself to retry from this Batch."
+        f"Batch {batch_id + 1}/{batch_cnt} contains {error_count} placeholder translation error(s).\n" \
+        "Click 'Show Log' to investigate the details.\n\n" \
+        "Do you want to keep this batch anyway (exporting the errors as Review Items for later), " \
+        "or discard it so it gets retried on the next run?"
 
     answer = confirm_yes_no(question)
 

@@ -773,7 +773,11 @@ def _run(logger: Callable[str], cancel_event):
                                 config.TAG_WARNING
                             )
 
-                            if not translator_dialogs.confirm_batch_nonfatal_errors():
+                            if not translator_dialogs.confirm_batch_nonfatal_errors(
+                                    batch_id=batch["id"],
+                                    batch_cnt=len(batches),
+                                    error_count=len(expected_placeholder_errors)
+                            ):
 
                                 raise exceptions.DeclinedException()
 
