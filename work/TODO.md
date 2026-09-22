@@ -49,9 +49,9 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 ☑ ~~Disclose and persist as setting: GAME_SYSTEM_CONTEXT~~
 - ~~integrate a "system-agnostic" option!~~
 
-☐ on prepared: Render "Project Stats"
-
 ☐ Now is the time for a general pimp of layout and style => maybe use a CustomTkinter-Theme
+
+☐ on prepared: Render "Project Stats"
 
 ☐ Provide a more convenient output on successful completion - e.g. a message outside the log with a file link, even play a sound? ;-). Important: Also mention the Review Items file, if it exists!!
 

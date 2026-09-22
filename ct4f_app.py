@@ -30,12 +30,38 @@ class App(ctk.CTk):
         self.calculate_window_dimensions(min_width=800, min_height=800, factor=0.80)
 
         # =========================================
+        # Layout skeleton
+        # =========================================
+        self.banner_frame = ctk.CTkFrame(self, height=60)
+        self.banner_frame.pack(side="top", fill="x")
+        self.banner_frame.pack_propagate(False)
+        ctk.CTkLabel(self.banner_frame, text="Banner (logo/image placeholder)").pack(side="left", padx=20)
+
+        self.results_bar = ctk.CTkFrame(self, height=40)
+        self.results_bar.pack(side="bottom", fill="x")
+        self.results_bar.pack_propagate(False)
+        ctk.CTkLabel(self.results_bar, text="Results bar placeholder").pack(side="left", padx=20)
+
+        self.body_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.body_frame.pack(side="top", fill="both", expand=True)
+        self.body_frame.grid_columnconfigure(0, weight=1)
+        self.body_frame.grid_columnconfigure(1, weight=1)
+        self.body_frame.grid_rowconfigure(0, weight=1)
+
+        self.configuration_frame = ctk.CTkFrame(self.body_frame)
+        self.configuration_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+
+        self.monitoring_frame = ctk.CTkFrame(self.body_frame)
+        self.monitoring_frame.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
+
+
+        # =========================================
         # Settings button
         # =========================================
         self.settings_button = ctk.CTkButton(
-            self, text="⚙ Settings", command=self.open_settings
+            self.banner_frame, text="⚙", width=32, command=self.open_settings
         )
-        self.settings_button.pack(padx=20, pady=(10, 5))
+        self.settings_button.pack(side="right", padx=10, pady=10)
 
         # =========================================
         # Input File picker
@@ -43,7 +69,7 @@ class App(ctk.CTk):
         self.selected_file = None
 
         self.file_button = ctk.CTkButton(
-            self,
+            self.configuration_frame,
             text="Select Input File",
             command=self.select_file
         )
@@ -51,7 +77,7 @@ class App(ctk.CTk):
         self.file_button.pack(padx=20, pady=(20, 5))
 
         self.file_label = ctk.CTkLabel(
-            self,
+            self.configuration_frame,
             text="No file selected",
             font=("Arial", 18, "bold")
         )
@@ -64,7 +90,7 @@ class App(ctk.CTk):
         self.selected_output_dir = None
         self.output_dir_default_text = "Default: user data folder"
 
-        self.output_dir_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.output_dir_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
         self.output_dir_frame.pack(padx=20, pady=(0, 5))
 
         self.output_dir_button = ctk.CTkButton(
@@ -83,7 +109,7 @@ class App(ctk.CTk):
         self.output_dir_reset_button.pack(side="left")
 
         self.output_dir_label = ctk.CTkLabel(
-            self,
+            self.configuration_frame,
             text=self.output_dir_default_text,
             font=("Arial", 14)
         )
@@ -141,12 +167,12 @@ class App(ctk.CTk):
         }
 
         ctk.CTkLabel(
-            self,
+            self.configuration_frame,
             text="Source Language → Target Language",
             font=("Arial", 14, "bold")
         ).pack(padx=20, pady=(15, 0))
 
-        self.language_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.language_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
         self.language_frame.pack(padx=20, pady=(15, 5))
 
         self.source_language_var = ctk.StringVar(
@@ -175,12 +201,12 @@ class App(ctk.CTk):
         # Translation Flavour (Game System / Genre)
         # =========================================
         ctk.CTkLabel(
-            self,
+            self.configuration_frame,
             text="Translation Flavour (Game System / Genre)",
             font=("Arial", 14, "bold")
         ).pack(padx=20, pady=(10, 0))
 
-        self.flavour_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.flavour_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
         self.flavour_frame.pack(padx=20, pady=(10, 5))
 
         self.game_system_var = ctk.StringVar(value=config.GAME_SYSTEM_CONTEXT)
@@ -203,7 +229,7 @@ class App(ctk.CTk):
         # Module name suggestion (editable)
         # =========================================
         self.module_name_label = ctk.CTkLabel(
-            self,
+            self.configuration_frame,
             text="Module name (overwrite as needed)",
             font=("Arial", 18, "bold")
         )
@@ -211,7 +237,7 @@ class App(ctk.CTk):
         self.module_name_label.pack(padx=20, pady=(20, 0))
 
         self.module_name_entry = ctk.CTkEntry(
-            self,
+            self.configuration_frame,
             width=300,
             font=("Arial", 14, "bold")
         )
@@ -224,14 +250,14 @@ class App(ctk.CTk):
         # Max Batch Size
         # =========================================
         self.max_batch_size_label = ctk.CTkLabel(
-            self,
+            self.configuration_frame,
             text=f"Max Batch Size: {config.MAX_BATCH_SIZE:,} chars",
             font=("Arial", 14, "bold")
         )
         self.max_batch_size_label.pack(padx=20, pady=(15, 0))
 
         self.max_batch_size_slider = ctk.CTkSlider(
-            self,
+            self.configuration_frame,
             from_=500,
             to=100000,
             number_of_steps=199,
@@ -246,7 +272,7 @@ class App(ctk.CTk):
         # =========================================
         self.mock_mode_var = ctk.BooleanVar(value=config.MOCK_MODE)
         self.mock_switch = ctk.CTkSwitch(
-            self,
+            self.configuration_frame,
             text="Simulate only",
             variable=self.mock_mode_var,
             command=self.on_mock_mode_changed,
@@ -258,7 +284,7 @@ class App(ctk.CTk):
         # =========================================
         # Prepare / Start / Reset / Cancel Buttons
         # =========================================
-        self.start_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.start_frame = ctk.CTkFrame(self.monitoring_frame, fg_color="transparent")
         self.start_frame.pack(padx=20, pady=20)
 
         self.main_button = ctk.CTkButton(
@@ -279,7 +305,7 @@ class App(ctk.CTk):
         # =========================================
         # Batch status bars (hidden until the batches are known)
         # =========================================
-        self.bars_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.bars_frame = ctk.CTkFrame(self.monitoring_frame, fg_color="transparent")
 
         self.terminology_bar = ui_widgets.BatchStatusBar(
             self.bars_frame,
@@ -300,20 +326,20 @@ class App(ctk.CTk):
         # Log Output Window
         # =========================================
         self.log_popout_button = ctk.CTkButton(
-            self,
+            self.monitoring_frame,
             text="Pop Out Log",
             width=100,
-            command=lambda: ui_dialogs.LogViewerDialog(self, self.log_window.get("1.0", "end"))
+            command=lambda: ui_dialogs.LogViewerDialog(self.monitoring_frame, self.log_window.get("1.0", "end"))
         )
         self.log_popout_button.pack(padx=20, pady=(10, 0), anchor="e")
 
-        self.log_window = ctk.CTkTextbox(self, width=600, height=300, fg_color="black", text_color="white")
+        self.log_window = ctk.CTkTextbox(self.monitoring_frame, width=600, height=300, fg_color="black", text_color="white")
 
 
         # =========================================
         # Log Output Window
         # =========================================
-        self.log_window = ctk.CTkTextbox(self, width=600, height=300, fg_color="black", text_color="white")
+        self.log_window = ctk.CTkTextbox(self.monitoring_frame, width=600, height=300, fg_color="black", text_color="white")
         self.log_window.tag_config(config.TAG_ERROR, foreground="red")
         self.log_window.tag_config(config.TAG_SUCCESS, foreground="green")
         self.log_window.tag_config(config.TAG_WARNING, foreground="yellow")
