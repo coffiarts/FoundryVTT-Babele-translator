@@ -5,6 +5,7 @@ import json
 import os
 import sys
 import re
+import subprocess
 from platformdirs import user_config_dir, user_data_dir
 from pathlib import Path
 from openai import OpenAI
@@ -1590,6 +1591,11 @@ def init_system_dirs():
     LOGGER(f"SETTINGS_FILE: {config.SETTINGS_FILE}")
 
 
+# ------------------------------------------------------------
+# Function: Clamp
+# Limit value to min_max value range
+# (just a convenience replacement for Pythion missing a native "clamp"
+# ------------------------------------------------------------
 def clamp(value, min_value, max_value):
     if (value < min_value):
         return min_value
@@ -1597,3 +1603,19 @@ def clamp(value, min_value, max_value):
         return max_value
     else:
         return value
+
+
+# ------------------------------------------------------------
+# Function: Open Folder
+# Opens <path> in the file manager of the current platform
+# ------------------------------------------------------------
+def open_folder(path):
+
+    if sys.platform.startswith("win"):
+        os.startfile(path)
+
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", str(path)])
+
+    else:
+        subprocess.Popen(["xdg-open", str(path)])

@@ -40,7 +40,16 @@ class App(ctk.CTk):
         self.results_bar = ctk.CTkFrame(self, height=40)
         self.results_bar.pack(side="bottom", fill="x")
         self.results_bar.pack_propagate(False)
-        ctk.CTkLabel(self.results_bar, text="Results bar placeholder").pack(side="left", padx=20)
+        self.results_label = ctk.CTkLabel(self.results_bar, text="", anchor="w")
+        self.results_label.pack(side="left", padx=20)
+
+        # Results Bar. Populated on demand by show_results()
+        self.open_output_button = ctk.CTkButton(
+            self.results_bar,
+            text="Open Output Folder",
+            width=140,
+            command=lambda: fn.open_folder(config.OUTPUT_DIR)
+        )
 
         self.body_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.body_frame.pack(side="top", fill="both", expand=True)
@@ -749,6 +758,9 @@ class App(ctk.CTk):
 
         self.show_outcome_message(outcome)
 
+        if outcome["outcome"] == config.OUTCOME_SUCCESS:
+            self.show_results()
+
         # The progress is persisted, whatever happened, so continue from it
         self.return_to_prepared_state()
 
@@ -957,6 +969,15 @@ class App(ctk.CTk):
             self.LOGGER(msg, config.TAG_ERROR)
             print(outcome["details"])  # full traceback to the console
             ui_dialogs.ErrorDialog(self, message=msg)
+
+
+    # ===========================================
+    # Function: Show Results
+    # Announces the output of a successful run in the results bar
+    # ===========================================
+    def show_results(self):
+        self.results_label.configure(text=f"Translated file: {config.OUTPUT_FILE}")
+        self.open_output_button.pack(side="right", padx=20)
 
 
     # ===========================================

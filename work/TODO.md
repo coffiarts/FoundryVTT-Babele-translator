@@ -55,9 +55,13 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ ~~☐ Change Stats Box to multiline, so that Review Items line can be formatted in MAGENTA color☑~~
 
-☐ Feature: Render batch status as popup for each batch icon (live-update)
+☑ ~~Feature: When translation is completed successfully, the output (translated file plus review items file, if any) should be notified and made available conveniently through the status bar (bottom frame). At least the paths should be printed, but maybe (if technically possible) even a clickable link to the output dir? And - as a really nice-to-have addition (not vital, possible for later) - maybe even play a SOUND asset file on successful completion?~~
 
-☐ Feature: Provide a more convenient output on successful completion - e.g. a message outside the log with a file link, even play a sound? ;-). Important: Also mention the Review Items file, if it exists!!
+☐ Feature: Turn "Results Bar" into a "Status Bar", allowing to populate it with meaningful intermediate status messages (idea: encapsulate it in a more generic function than show_results, like show_status, and make show_results use that function as well) 
+
+☐ Feature: Elaborate grid layout
+
+☐ Feature: Render batch status as popup for each batch icon (live-update)
 
 ☐ Feature: On clicking Stats Box->Review Items Counter, open Review Items list as Pop Out View
 
