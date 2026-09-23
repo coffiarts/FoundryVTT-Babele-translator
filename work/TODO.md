@@ -59,7 +59,7 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ ~~Feature: Evolve "Results Bar" into a "Status Bar" (maybe even rename it): Allow to populate it with meaningful intermediate status messages (idea: encapsulate this in a more generic function than show_results, like "show_status", and then make show_results use that function as well)~~ 
 
-☐ Feature: Play a sound on successful completion
+☑ ~~Feature: Play a sound on successful completion~~
 
 ☐ Feature: Elaborate grid layout
 
@@ -94,10 +94,11 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 ☐ Refactoring: Split up ct4f_core_functions into more reasonable sub-libraries
 
 ### Just as a reminder: Frequently retest pyinstaller build:
-with console window (for debugging):
+with console (for debugging):
+
+    pyinstaller --onefile --add-data "assets:assets" --icon assets/icon.ico ct4f_app.py
+
+w/o console:
 
     pyinstaller --onefile --windowed --add-data "assets:assets" --icon assets/icon.ico ct4f_app.py
 
-w/o console window:
-
-    pyinstaller --onefile --add-data "assets:assets" --icon assets/icon.ico ct4f_app.py

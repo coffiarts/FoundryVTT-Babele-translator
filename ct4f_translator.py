@@ -887,10 +887,8 @@ def _run(logger: Callable[str], cancel_event):
 
                 fn.save_batch(batch, batches, progress_info)
 
-                msg = fn.log_header(f"Translation status: [{batch[config.TRANSLATION_STATUS]}]...",
-                                    batch_id=batch["id"], batch_cnt=len(batches))
-                fn.LOGGER(msg, config.TAG_SUCCESS)
-                fn.show_status(msg)
+                fn.LOGGER(fn.log_header(f"Translation status: [{batch[config.TRANSLATION_STATUS]}]...",
+                                    batch_id=batch["id"], batch_cnt=len(batches)), config.TAG_SUCCESS)
 
                 abort_if_cancelled(cancel_event)
 

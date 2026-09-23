@@ -6,6 +6,7 @@ import os
 import sys
 import re
 import subprocess
+import shutil
 from platformdirs import user_config_dir, user_data_dir
 from pathlib import Path
 from openai import OpenAI
@@ -1641,3 +1642,28 @@ def open_folder(path):
 
     else:
         subprocess.Popen(["xdg-open", str(path)])
+
+
+# ------------------------------------------------------------
+# Function: Play Sound
+# Plays the WAV file at <path> asynchronously, using what the current platform offers.
+# Best effort only: a missing player or file must never disturb the app
+# ------------------------------------------------------------
+def play_sound(path):
+
+    try:
+        if sys.platform.startswith("win"):
+            import winsound # Windows-only module, so imported here
+            winsound.PlaySound(str(path), winsound.SND_FILENAME | winsound.SND_ASYNC)
+            return
+
+        players = ["afplay"] if sys.platform == "darwin" else ["paplay", "pw-play", "aplay"]
+
+        for player in players:
+            if shutil.which(player):
+                subprocess.Popen([player, str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return
+        LOGGER(f"Could not play sound: none of {players} found", config.TAG_WARNING)
+
+    except Exception as e:
+        LOGGER(f"Could not play sound: {e}", config.TAG_WARNING)

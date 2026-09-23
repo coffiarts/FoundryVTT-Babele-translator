@@ -778,6 +778,7 @@ class App(ctk.CTk):
 
         if outcome["outcome"] == config.OUTCOME_SUCCESS:
             self.show_results() # needs to be called after return_to_prepared_state, so that results can't get overwritten by the "Ready to start." status message
+            fn.play_sound(fn.resource_path("assets/completed.wav"))
         else:
             self.show_outcome_status(outcome)
 
