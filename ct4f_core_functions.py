@@ -15,6 +15,7 @@ from collections.abc import Callable
 LOGGER = print
 
 BATCH_LISTENER: Callable[[dict], None] | None = None
+STATUS_LISTENER: Callable[[str], None] | None = None
 
 def set_logger(logger):
     global LOGGER
@@ -28,6 +29,15 @@ def set_logger(logger):
 def set_batch_listener(listener):
     global BATCH_LISTENER
     BATCH_LISTENER = listener
+
+
+# ------------------------------------------------------------
+# Function: Set Status Listener
+# Registers a callback that receives status messages for the Status Bar
+# ------------------------------------------------------------
+def set_status_listener(listener):
+    global STATUS_LISTENER
+    STATUS_LISTENER = listener
 
 
 # ------------------------------------------------------------
@@ -58,6 +68,18 @@ def notify_batch_listener(batches):
         ],
         "review_item_count": review_item_count
     })
+
+
+# ------------------------------------------------------------
+# Function: Show Status
+# Passes a status message to the registered listener (if any)
+# ------------------------------------------------------------
+def show_status(message):
+
+    global STATUS_LISTENER # same IntelliJ quirk workaround as in notify_batch_listener
+
+    if STATUS_LISTENER is not None:
+        STATUS_LISTENER(message)
 
 
 # ------------------------------------------------------------
@@ -1307,7 +1329,7 @@ def verify_placeholder_integrity(
             placeholder
         )
 
-        if count == 1:
+        if count != 1: # To temporarily provoke exceptions for testing, replace != by ==
 
             position = (
                 original_text_with_placeholders.find(

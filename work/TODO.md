@@ -55,13 +55,15 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ ~~☐ Change Stats Box to multiline, so that Review Items line can be formatted in MAGENTA color☑~~
 
-☑ ~~Feature: When translation is completed successfully, the output (translated file plus review items file, if any) should be notified and made available conveniently through the status bar (bottom frame). At least the paths should be printed, but maybe (if technically possible) even a clickable link to the output dir? And - as a really nice-to-have addition (not vital, possible for later) - maybe even play a SOUND asset file on successful completion?~~
+☑ ~~Feature: When translation is completed successfully, the output (translated file plus review items file, if any) should be notified and made available conveniently through the status bar (bottom frame). At least the paths should be printed, but maybe (if technically possible) even a clickable link to the output dir?~~
 
-☐ Feature: Turn "Results Bar" into a "Status Bar", allowing to populate it with meaningful intermediate status messages (idea: encapsulate it in a more generic function than show_results, like show_status, and make show_results use that function as well) 
+☑ ~~Feature: Evolve "Results Bar" into a "Status Bar" (maybe even rename it): Allow to populate it with meaningful intermediate status messages (idea: encapsulate this in a more generic function than show_results, like "show_status", and then make show_results use that function as well)~~ 
+
+☐ Feature: Play a sound on successful completion
 
 ☐ Feature: Elaborate grid layout
 
-☐ Feature: Render batch status as popup for each batch icon (live-update)
+☐ Feature: Render batch size (and potentially live-updated status?) as popup for each batch icon (live-update)
 
 ☐ Feature: On clicking Stats Box->Review Items Counter, open Review Items list as Pop Out View
 
@@ -80,6 +82,8 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 ☐ Feature: Feature: Allow storing of setting presets
 
 ☐ Feature: UI Localization
+
+☐ UX: Add meaningful popup help texts to essential buttons and input fields
 
 ☐ UX: Improve readability of LogWindow content (make it collapsible, consistently use colors, less stressful bg/fd colors)
 

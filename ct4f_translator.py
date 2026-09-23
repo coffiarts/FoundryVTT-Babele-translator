@@ -55,7 +55,7 @@ def run(logger: Callable[str], on_ended, cancel_event):
 # ------------------------------------------------------------
 # Function: Prepare Translation
 # Offline part: validation, run mode, extraction, placeholders and batch building.
-# Returns the info needed by run_translation(), or None if the user aborted.
+# Returns the info needed by run(), or None if the user aborted.
 # ------------------------------------------------------------
 def _prepare(logger: Callable[str]):
 
@@ -160,9 +160,11 @@ def _prepare(logger: Callable[str]):
 
             if resume_batch is not None:
                 starting_text = fn.load_translatables_for_batch(resume_batch, limit=1)[0]["text"][:100]
+                msg = f"Resuming from Batch with id={resume_batch["id"]} [Terminology: {resume_batch[config.TERMINOLOGY_STATUS]} / Translation: {resume_batch[config.TRANSLATION_STATUS]}] - starting with: \"{starting_text} ...\""
                 fn.LOGGER(fn.batch_log_msg(
                     f"Resuming from Batch with id={resume_batch["id"]} [Terminology: {resume_batch[config.TERMINOLOGY_STATUS]} / Translation: {resume_batch[config.TRANSLATION_STATUS]}] - starting with: \"{starting_text} ...\"\n")
                     , config.TAG_INFO)
+                fn.show_status(msg)
 
         except ValueError as e:
 
@@ -208,6 +210,7 @@ def _prepare(logger: Callable[str]):
             )
 
         fn.LOGGER(fn.batch_log_msg(f"Extracted translatables: {len(translatables)}\n"))
+        fn.show_status(f"Extracted translatables: {len(translatables)}\n")
         # -------
         # Tests:
         # -------
@@ -408,6 +411,7 @@ def _run(logger: Callable[str], cancel_event):
 
                 fn.LOGGER(fn.batch_log_msg(
                     f"RESUMING TERMINOLOGY BUILD FROM LAST RUN ({len(master_terminology_raw["terms"])} entries) ..."), config.TAG_INFO)
+                fn.show_status(f"RESUMING TERMINOLOGY BUILD FROM LAST RUN ({len(master_terminology_raw["terms"])} entries) ...")
 
             else:
 
@@ -416,6 +420,7 @@ def _run(logger: Callable[str], cancel_event):
                 }
 
                 fn.LOGGER(fn.batch_log_msg(f"BUILDING FRESH TERMINOLOGY ..."))
+                fn.show_status(f"BUILDING FRESH TERMINOLOGY ...")
 
 
             # ---------------------------------------------------
@@ -459,8 +464,10 @@ def _run(logger: Callable[str], cancel_event):
 
                 fn.LOGGER(fn.batch_log_msg(
                     f"Terminology has {len(batch_payload)} chars",
-                    batch_id=batch['id'], batch_cnt=len(batches))
-                )
+                    batch_id=batch['id'], batch_cnt=len(batches)))
+                fn.show_status(fn.batch_log_msg(
+                    f"Extracting terminology from {len(batch_payload)} chars",
+                    batch_id=batch['id'], batch_cnt=len(batches)))
 
                 if fn.check_and_warn_if_mock_mode("Terminology will be empty."):
 
@@ -555,11 +562,13 @@ def _run(logger: Callable[str], cancel_event):
                 f"Saved {len(master_terminology["terms"])} entries in Master Terminology: {config.TERMINOLOGY_FILE}"),
                 config.TAG_SUCCESS
             )
+            fn.show_status(f"Saved {len(master_terminology["terms"])} entries in Master Terminology: {config.TERMINOLOGY_FILE}")
 
         # ---------------------------------------------------
         # BEGIN TRANSLATION ...
         # ---------------------------------------------------
         fn.LOGGER(fn.log_header(f"BEGIN TRANSLATION BATCH LOOP ..."))
+        fn.show_status(f"BEGIN TRANSLATION BATCH LOOP ...")
 
         # In Resume mode with all Translation Batches already completed,
         # reconstruct translations_with_placeholders from file and skip
@@ -571,6 +580,7 @@ def _run(logger: Callable[str], cancel_event):
                 f"All Translation processing already completed. Continuing with post-processing only."),
                 config.TAG_SUCCESS
             )
+            fn.show_status(f"All Translation processing already completed. Continuing with post-processing only.")
 
             translations_with_placeholders = fn.load_json_input(
                 config.TRANSLATIONS_WITH_PLACEHOLDERS_FILE
@@ -701,7 +711,9 @@ def _run(logger: Callable[str], cancel_event):
                     time.sleep(mock_delay_per_batch)
 
                 fn.LOGGER(fn.batch_log_msg(f"Translation status: [{batch[config.TRANSLATION_STATUS]}]...", batch_id=batch["id"],
-                                           batch_cnt=len(batches)))
+                                       batch_cnt=len(batches)))
+                fn.show_status(fn.batch_log_msg(f"Translating {batch["char_count"]} chars...", batch_id=batch["id"],
+                                                batch_cnt=len(batches)))
 
                 if fn.check_and_warn_if_mock_mode("Translations will just be copies of the input text."):
 
@@ -768,12 +780,11 @@ def _run(logger: Callable[str], cancel_event):
                                 list_errors_text += fn.to_multiline_text(error["details"]) + "\n"
 
                             fn.LOGGER(fn.batch_log_msg(f"{list_errors_text}"), config.TAG_WARNING)
-                            fn.LOGGER(
-                                fn.batch_log_msg(
+                            msg = fn.batch_log_msg(
                                 f"WARNING - Confirmation required: Batch contains {len(expected_placeholder_errors)} placeholder translation error(s) - see above.",
-                                    batch_id=batch["id"], batch_cnt=len(batches)),
-                                config.TAG_WARNING
-                            )
+                                batch_id=batch["id"], batch_cnt=len(batches))
+                            fn.LOGGER(msg,config.TAG_WARNING)
+                            fn.show_status(msg)
 
                             if not translator_dialogs.confirm_batch_nonfatal_errors(
                                     batch_id=batch["id"],
@@ -875,10 +886,11 @@ def _run(logger: Callable[str], cancel_event):
                     batch[config.TRANSLATION_STATUS] = config.COMPLETED
 
                 fn.save_batch(batch, batches, progress_info)
-                fn.LOGGER(fn.log_header(f"Translation status: [{batch[config.TRANSLATION_STATUS]}]...",
-                                        batch_id=batch["id"], batch_cnt=len(batches)),
-                          config.TAG_SUCCESS
-                          )
+
+                msg = fn.log_header(f"Translation status: [{batch[config.TRANSLATION_STATUS]}]...",
+                                    batch_id=batch["id"], batch_cnt=len(batches))
+                fn.LOGGER(msg, config.TAG_SUCCESS)
+                fn.show_status(msg)
 
                 abort_if_cancelled(cancel_event)
 
@@ -945,10 +957,9 @@ def _run(logger: Callable[str], cancel_event):
             review_items,
             config.REVIEW_ITEMS_FILE
         )
-        fn.LOGGER(
-            fn.batch_log_msg(f"{len(review_items)} Post-review item(s) written to {config.REVIEW_ITEMS_FILE}"),
-            config.TAG_SUCCESS if len(review_items) == 0 else config.TAG_WARNING
-        )
+        msg = fn.batch_log_msg(f"{len(review_items)} Post-review item(s) written to {config.REVIEW_ITEMS_FILE}")
+        fn.LOGGER(msg, config.TAG_SUCCESS if len(review_items) == 0 else config.TAG_WARNING)
+        fn.show_status(msg)
         # fn.LOGGER(fn.log(f"DEBUG - \n{fn.to_prettified_json(review_items)}"))
     else:
         fn.delete_file(config.REVIEW_ITEMS_FILE)
@@ -984,6 +995,7 @@ def _run(logger: Callable[str], cancel_event):
         translations_final
     )
     fn.LOGGER(fn.batch_log_msg(f"{len(translations_final)} translations applied to original Babele data."))
+    fn.show_status(f"{len(translations_final)} translations applied to original Babele data.")
 
     # -------
     # Tests:

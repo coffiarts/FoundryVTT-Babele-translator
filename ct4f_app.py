@@ -37,15 +37,16 @@ class App(ctk.CTk):
         self.banner_frame.pack_propagate(False)
         ctk.CTkLabel(self.banner_frame, text="Banner (logo/image placeholder)").pack(side="left", padx=20)
 
-        self.results_bar = ctk.CTkFrame(self, height=40)
-        self.results_bar.pack(side="bottom", fill="x")
-        self.results_bar.pack_propagate(False)
-        self.results_label = ctk.CTkLabel(self.results_bar, text="", anchor="w")
-        self.results_label.pack(side="left", padx=20)
+        # Status Bar. Populated on demand by show_status()
+        self.status_bar = ctk.CTkFrame(self, height=40)
+        self.status_bar.pack(side="bottom", fill="x")
+        self.status_bar.pack_propagate(False)
+        self.status_label = ctk.CTkLabel(self.status_bar, text="Ready", anchor="w")
+        self.status_label.pack(side="left", padx=20)
 
-        # Results Bar. Populated on demand by show_results()
+        # The "Open Output" belongs to the status bar, but it will only be shown with the final status by show_results()
         self.open_output_button = ctk.CTkButton(
-            self.results_bar,
+            self.status_bar,
             text="Open Output Folder",
             width=140,
             command=lambda: fn.open_folder(config.OUTPUT_DIR)
@@ -407,6 +408,7 @@ class App(ctk.CTk):
         # =========================================
         # Now go for it!
         # =========================================
+        self.show_status("Waiting for configuration...")
         self.render_dialog_requests()
 
 
@@ -497,6 +499,7 @@ class App(ctk.CTk):
         self.persist_settings()
 
         self.disable_configuration_controls()
+        self.show_status("Preparing...")
 
         threading.Thread(
             target=translator.prepare,
@@ -515,24 +518,24 @@ class App(ctk.CTk):
     # ===========================================
     def enter_prepared_state(self, result):
         self.prepared_result = result
-
         self.main_button.configure(text="Start", command=self.run_translation, state="normal")
         self.show_reset_button()
         self.show_bars(result["analysis"])
         self.update_clear_buttons(result["analysis"])
+        self.show_status("Ready to start.")
 
 
-        # ===========================================
+    # ===========================================
     # Function: Reset Preparation
     # Goes back from the prepared state to the initial "choose" state
     # ===========================================
     def reset_preparation(self):
         self.prepared_result = None
-
         self.hide_reset_button()
         self.main_button.configure(text="Prepare", command=self.prepare)
         self.enable_configuration_controls()
         self.hide_bars()
+        self.show_status("Waiting for configuration...")
 
 
     # ===========================================
@@ -594,6 +597,17 @@ class App(ctk.CTk):
             lambda: self.show_bars(data)
         )
 
+
+    # ===========================================
+    # Function: Status Changed
+    # Listener for status messages (see fn.set_status_listener).
+    # Invoked by the worker thread, so it hands over to the UI thread
+    # ===========================================
+    def status_changed(self, message):
+        self.after(
+            0,
+            lambda: self.show_status(message)
+        )
 
     # ===========================================
     # Function: Set Clear Buttons Enabled
@@ -699,6 +713,7 @@ class App(ctk.CTk):
 
         # The main button turns into the Cancel button while running
         self.main_button.configure(text="Cancel", command=self.cancel, state="normal")
+        self.show_status("Running...")
 
         threading.Thread(
             target=translator.run,
@@ -737,6 +752,7 @@ class App(ctk.CTk):
         # Nothing has been prepared, so back to the start
         self.show_outcome_message(outcome)
         self.reset_ui()
+        self.show_outcome_status(outcome)
 
 
     # ===========================================
@@ -755,14 +771,15 @@ class App(ctk.CTk):
     # Function: Handle Run Outcome
     # ===========================================
     def handle_run_outcome(self, outcome):
-
         self.show_outcome_message(outcome)
-
-        if outcome["outcome"] == config.OUTCOME_SUCCESS:
-            self.show_results()
 
         # The progress is persisted, whatever happened, so continue from it
         self.return_to_prepared_state()
+
+        if outcome["outcome"] == config.OUTCOME_SUCCESS:
+            self.show_results() # needs to be called after return_to_prepared_state, so that results can't get overwritten by the "Ready to start." status message
+        else:
+            self.show_outcome_status(outcome)
 
 
     # ===========================================
@@ -972,11 +989,41 @@ class App(ctk.CTk):
 
 
     # ===========================================
+    # Function: Show Outcome Status
+    # One-line status for a phase that did not end successfully
+    # ===========================================
+    def show_outcome_status(self, outcome):
+
+        kind = outcome["outcome"]
+
+        if kind == config.OUTCOME_CANCELLED:
+            self.show_status("Cancelled by user")
+
+        elif kind == config.OUTCOME_DECLINED:
+            self.show_status("Aborted by user")
+
+        elif kind == config.OUTCOME_EXPECTED_ERROR:
+            self.show_status(f"Error - see log for details: {outcome['message'].splitlines()[0]}")
+
+        elif kind == config.OUTCOME_UNEXPECTED_ERROR:
+            self.show_status("Unexpected error - see log for details")
+
+
+    # ===========================================
+    # Function: Show Status
+    # Shows a message in the status bar (and hides the results button, which only belongs to results)
+    # ===========================================
+    def show_status(self, message):
+        self.status_label.configure(text=message)
+        self.open_output_button.pack_forget() # This is the default, to make sure that the button never stays visible longer than needed
+
+
+    # ===========================================
     # Function: Show Results
-    # Announces the output of a successful run in the results bar
+    # Announces the output of a successful run in the status bar
     # ===========================================
     def show_results(self):
-        self.results_label.configure(text=f"Translated file: {config.OUTPUT_FILE}")
+        self.show_status(f"Translated file: {config.OUTPUT_FILE}")
         self.open_output_button.pack(side="right", padx=20)
 
 
@@ -1117,7 +1164,9 @@ class App(ctk.CTk):
 app = App()
 
 fn.set_logger(app.LOGGER)
+
 fn.set_batch_listener(app.batches_changed)
+fn.set_status_listener(app.status_changed)
 
 fn.init_system_dirs()
 app.restore_settings()
