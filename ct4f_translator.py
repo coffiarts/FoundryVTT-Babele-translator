@@ -804,6 +804,7 @@ def _run(logger: Callable[str], cancel_event):
                                 )
 
                                 batch[config.TRANSLATION_STATUS] = config.REVIEW_REQUIRED
+                                fn.save_batch(batch, batches, progress_info)
 
                     except exceptions.DeclinedException:
 
@@ -860,7 +861,6 @@ def _run(logger: Callable[str], cancel_event):
                        config.TAG_SUCCESS
                 )
 
-                abort_if_cancelled(cancel_event)
 
                 # -------
                 # Tests:
@@ -876,9 +876,11 @@ def _run(logger: Callable[str], cancel_event):
 
                 fn.save_batch(batch, batches, progress_info)
                 fn.LOGGER(fn.log_header(f"Translation status: [{batch[config.TRANSLATION_STATUS]}]...",
-                                    batch_id=batch["id"], batch_cnt=len(batches)),
-                       config.TAG_SUCCESS
-                )
+                                        batch_id=batch["id"], batch_cnt=len(batches)),
+                          config.TAG_SUCCESS
+                          )
+
+                abort_if_cancelled(cancel_event)
 
                 if config.MOCK_MODE:
                     time.sleep(mock_delay_per_batch)

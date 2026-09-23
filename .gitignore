@@ -223,6 +223,9 @@ __marimo__/
 /.idea/
 /.junie/
 
+#local Claude Code settings and memory (kept strictly local, synced via FreeFileSync instead of git)
+/.claude/
+
 #local input and output files
 /input/
 /terminology/

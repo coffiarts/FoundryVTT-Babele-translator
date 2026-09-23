@@ -49,37 +49,47 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 ☑ ~~Disclose and persist as setting: GAME_SYSTEM_CONTEXT~~
 - ~~integrate a "system-agnostic" option!~~
 
-☐ Now is the time for a general pimp of layout and style => maybe use a CustomTkinter-Theme
+☑ ~~Now is the time for a general pimp of layout and style => maybe use a CustomTkinter-Theme~~
 
-☐ on prepared: Render "Project Stats"
+☑ ~~on prepared: Render "Project Stats"~~
 
-☐ Provide a more convenient output on successful completion - e.g. a message outside the log with a file link, even play a sound? ;-). Important: Also mention the Review Items file, if it exists!!
+☑ ~~☐ Change Stats Box to multiline, so that Review Items line can be formatted in MAGENTA color☑~~
 
-☐ Render popup details for each batch icon
+☐ Feature: Render batch status as popup for each batch icon (live-update)
 
-☐ Refactor API client connection config:
+☐ Feature: Provide a more convenient output on successful completion - e.g. a message outside the log with a file link, even play a sound? ;-). Important: Also mention the Review Items file, if it exists!!
+
+☐ Feature: On clicking Stats Box->Review Items Counter, open Review Items list as Pop Out View
+
+☐ Refactoring: API client connection config -
 - is it strictly OpenAI specific, or can we make it exchangeable via Settings?
 - Disclose and persist LLM_MODEL setting
 
-☐ Disclose and persist as advanced setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list
+☐ Feature: Disclose and persist as advanced setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list
 
-☐ Disclose and persist as advanced setting: TRANSLATABLE_CONTAINERS => same as above
+☐ Feature: Disclose and persist as advanced setting: TRANSLATABLE_CONTAINERS => same as above
 
-☐ Disclose and persist as advanced setting: PROTECTED_SYNTAX_PATTERNS => same as above, plus: These are RegExp patterns that should probably be validated
+☐ Feature: Disclose and persist as advanced setting: PROTECTED_SYNTAX_PATTERNS => same as above, plus: These are RegExp patterns that should probably be validated
 
-☐ Disclose and persist as advanced setting: TRANSLATION_INSTRUCTIONS and TERMINOLOGY_INSTRUCTIONS as user settings
+☐ Feature: Disclose and persist as advanced setting: TRANSLATION_INSTRUCTIONS and TERMINOLOGY_INSTRUCTIONS as user settings
 
-☐ Improve readability of LogWindow content (make it collapsible, consistently use colors, less stressful bg/fd colors)
+☐ Feature: Feature: Allow storing of setting presets
 
-☐ Animate current PROCESSING batch?
+☐ Feature: UI Localization
 
-☐ UI Localization
+☐ UX: Improve readability of LogWindow content (make it collapsible, consistently use colors, less stressful bg/fd colors)
 
-☐ General review and refactoring of ct4f.run_translation() => split it up into better testable units?
+☐ UX: Animate current PROCESSING batch?
 
-☐ Split up ct4f_core_functions into more reasonable sub-libraries
+☐ Refactoring: General review and rework of ct4f.run_translation() => split it up into better testable units?
+
+☐ Refactoring: Split up ct4f_core_functions into more reasonable sub-libraries
 
 ### Just as a reminder: Frequently retest pyinstaller build:
+with console window (for debugging):
+
     pyinstaller --onefile --windowed --add-data "assets:assets" --icon assets/icon.ico ct4f_app.py
-    
-    pyinstaller --onefile --windowed --add-data "assets:assets" --icon assets/icon.ico ct4f_app.py
+
+w/o console window:
+
+    pyinstaller --onefile --add-data "assets:assets" --icon assets/icon.ico ct4f_app.py

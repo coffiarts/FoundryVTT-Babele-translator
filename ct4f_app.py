@@ -303,10 +303,41 @@ class App(ctk.CTk):
         )
 
         # =========================================
-        # Batch status bars (hidden until the batches are known)
+        # Batch status bars and Stats Info Box
+        # (hidden until the batches are known)
         # =========================================
         self.bars_frame = ctk.CTkFrame(self.monitoring_frame, fg_color="transparent")
 
+        # Stats Info Box: one grid row per stat (name | value), values are set in show_bars
+        self.stats_frame = ctk.CTkFrame(self.bars_frame, fg_color="transparent")
+        self.stats_frame.pack(fill="x", pady=(0, 10))
+
+        self.chars_name_label = ctk.CTkLabel(self.stats_frame, text="Chars:", anchor="w")
+        self.chars_name_label.grid(row=0, column=0, sticky="w", padx=(0, 10))
+        self.chars_value_label = ctk.CTkLabel(self.stats_frame, text="", anchor="w")
+        self.chars_value_label.grid(row=0, column=1, sticky="w")
+
+        self.batches_name_label = ctk.CTkLabel(self.stats_frame, text="Batches:", anchor="w")
+        self.batches_name_label.grid(row=1, column=0, sticky="w", padx=(0, 10))
+        self.batches_value_label = ctk.CTkLabel(self.stats_frame, text="", anchor="w")
+        self.batches_value_label.grid(row=1, column=1, sticky="w")
+
+        # Only shown when there are Review Items (see show_bars)
+        self.review_name_label = ctk.CTkLabel(
+            self.stats_frame, text="Review Items:", anchor="w",
+            text_color=config.MAGENTA, font=ctk.CTkFont(weight="bold")
+        )
+        self.review_name_label.grid(row=2, column=0, sticky="w", padx=(0, 10))
+        self.review_value_label = ctk.CTkLabel(
+            self.stats_frame, text="", anchor="w",
+            text_color=config.MAGENTA, font=ctk.CTkFont(weight="bold")
+        )
+        self.review_value_label.grid(row=2, column=1, sticky="w")
+        self.review_name_label.grid_remove()
+        self.review_value_label.grid_remove()
+
+
+        # Terminology Progress Bar
         self.terminology_bar = ui_widgets.BatchStatusBar(
             self.bars_frame,
             "Terminology",
@@ -314,6 +345,7 @@ class App(ctk.CTk):
         )
         self.terminology_bar.pack(fill="x", pady=(0, 10))
 
+        # Terminology Progress Bar
         self.translation_bar = ui_widgets.BatchStatusBar(
             self.bars_frame,
             "Translation",
@@ -500,6 +532,19 @@ class App(ctk.CTk):
     # ===========================================
     def show_bars(self, analysis):
         batches = analysis["batches"]
+
+        # Stats Info Box
+        self.chars_value_label.configure(text=f"{sum(batch['char_count'] for batch in batches):,}")
+        self.batches_value_label.configure(text=str(len(batches)))
+
+        review_item_count = analysis["review_item_count"]
+        if review_item_count > 0:
+            self.review_value_label.configure(text=str(review_item_count))
+            self.review_name_label.grid()
+            self.review_value_label.grid()
+        else:
+            self.review_name_label.grid_remove()
+            self.review_value_label.grid_remove()
 
         self.terminology_bar.set_batches([
             {

@@ -1306,7 +1306,7 @@ def verify_placeholder_integrity(
             placeholder
         )
 
-        if count != 1:
+        if count == 1:
 
             position = (
                 original_text_with_placeholders.find(
