@@ -135,7 +135,7 @@ class ErrorDialog(ctk.CTkToplevel):
         # =========================================
         # Error Message Window
         # =========================================
-        self.err_window = ctk.CTkTextbox(self, width=300, height=300, fg_color="black", text_color="white")
+        self.err_window = ctk.CTkTextbox(self, width=300, height=300, fg_color="black", text_color="white", font=config.LOG_FONT)
         self.err_window.tag_config(config.TAG_ERROR, foreground="red")
         self.err_window.pack(padx=20, pady=20, fill="both", expand=False)
         self.err_window.insert("end", message, config.TAG_ERROR)
@@ -222,7 +222,7 @@ class LogViewerDialog(ctk.CTkToplevel):
         self.grab_set()
 
         # Log content (read-only, scrollable)
-        self.log_view = ctk.CTkTextbox(self, fg_color="black", text_color="white")
+        self.log_view = ctk.CTkTextbox(self, fg_color="black", text_color="white", font=config.LOG_FONT)
         self.log_view.pack(padx=20, pady=20, fill="both", expand=True)
         self.log_view.insert("end", log_text)
         self.log_view.see("end")

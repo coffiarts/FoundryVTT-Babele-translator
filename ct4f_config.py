@@ -340,6 +340,9 @@ TAG_WARNING = "warning"
 TAG_INFO = "info"
 TAG_QUESTION = "question"
 
+# Explicit font for log and error output (non-serif, whereas the theme default is a serif font handled by theme and UI)
+LOG_FONT = ("Arial", 13)
+
 # UI Colors (hex values for CustomTkinter widgets, not to be mixed up with the CONSOLE_ colors)
 GREY = "#8a8a8a"
 YELLOW = "#e0b400"

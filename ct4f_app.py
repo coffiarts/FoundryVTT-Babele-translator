@@ -14,20 +14,31 @@ from tkinter import filedialog
 import customtkinter as ctk
 
 
-FONT_NAME = ("Arial", 14, "bold")   # field names
-FONT_VALUE = ("Arial", 14)          # displayed values
+ctk.set_appearance_mode("light")
+ctk.set_default_color_theme(fn.resource_path("assets/ct4f-theme.json"))
+
+for font_file in ("Almendra-Regular.ttf", "Almendra-Bold.ttf", "EBGaramond-Regular.ttf"):
+    ctk.FontManager.load_font(fn.resource_path(f"assets/fonts/{font_file}"))
+
+BANNER_HEIGHT = 90
+BANNER_COLOR = "#d9c9a3"   # parchment
+BANNER_TEXT_COLOR = "#3b2f1e"
 
 MENU_WIDTH_WIDE = 300      # Source Language / Game System (and the full-width controls below them)
 MENU_WIDTH_NARROW = 170    # Target Language / Genre
 MENU_GAP_WIDTH = 40        # gap between the two dropdowns of a pair
 VALUE_LABEL_WIDTH = 90     # the "n chars" label next to the slider
 
-BIG_BUTTON_FONT = ("Arial", 18, "bold")
+FONT_NAME = ("Almendra", 16, "bold")   # field names and buttons
+FONT_VALUE = ("EB Garamond", 17)       # displayed values
+
+BIG_BUTTON_FONT = FONT_NAME
 BIG_BUTTON_WIDTH = 220
 BIG_BUTTON_HEIGHT = 56
 BIG_BUTTON_CORNER_RADIUS = 12
 BIG_BUTTON_BORDER_WIDTH = 3
-BIG_BUTTON_BORDER_COLOR = ("gray40", "gray75")   # (light mode, dark mode)
+BIG_BUTTON_BORDER_COLOR = "#3b2f1e"   # same ink brown as the text
+
 
 
 class App(ctk.CTk):
@@ -47,10 +58,14 @@ class App(ctk.CTk):
         # =========================================
         # Layout skeleton
         # =========================================
-        self.banner_frame = ctk.CTkFrame(self, height=60)
+        self.banner_frame = ctk.CTkFrame(self, height=BANNER_HEIGHT, fg_color=BANNER_COLOR, corner_radius=0)
         self.banner_frame.pack(side="top", fill="x")
         self.banner_frame.pack_propagate(False)
-        ctk.CTkLabel(self.banner_frame, text="Banner (logo/image placeholder)").pack(side="left", padx=20)
+        ctk.CTkLabel(
+            self.banner_frame,
+            text="Banner (logo/image placeholder)",
+            text_color=BANNER_TEXT_COLOR
+        ).pack(side="left", padx=20)
 
         # Status Bar. Populated on demand by show_status()
         self.status_bar = ctk.CTkFrame(self, height=40)
@@ -162,6 +177,7 @@ class App(ctk.CTk):
 
         self.radio_input_type_babele = ctk.CTkRadioButton(
             self.input_type_frame,
+            font=FONT_VALUE,
             text=config.INPUT_TYPE_BABELE,
             variable=self.input_type_var,
             value=config.INPUT_TYPE_BABELE
@@ -170,6 +186,7 @@ class App(ctk.CTk):
 
         self.radio_input_type_localization = ctk.CTkRadioButton(
             self.input_type_frame,
+            font=FONT_VALUE,
             text=config.INPUT_TYPE_LOCALIZATION,
             variable=self.input_type_var,
             value=config.INPUT_TYPE_LOCALIZATION
@@ -298,6 +315,7 @@ class App(ctk.CTk):
         self.mock_mode_var = ctk.BooleanVar(value=config.MOCK_MODE)
         self.mock_switch = ctk.CTkSwitch(
             self.configuration_frame,
+            font=FONT_VALUE,
             text="Simulate only",
             variable=self.mock_mode_var,
             command=self.on_mock_mode_changed,
@@ -406,13 +424,11 @@ class App(ctk.CTk):
         )
         self.log_popout_button.pack(padx=20, pady=(10, 0), anchor="e")
 
-        self.log_window = ctk.CTkTextbox(self.monitoring_frame, width=600, height=300, fg_color="black", text_color="white")
-
 
         # =========================================
         # Log Output Window
         # =========================================
-        self.log_window = ctk.CTkTextbox(self.monitoring_frame, width=600, height=300, fg_color="black", text_color="white")
+        self.log_window = ctk.CTkTextbox(self.monitoring_frame, width=600, height=300, fg_color="black", text_color="white", font=config.LOG_FONT)
         self.log_window.tag_config(config.TAG_ERROR, foreground="red")
         self.log_window.tag_config(config.TAG_SUCCESS, foreground="green")
         self.log_window.tag_config(config.TAG_WARNING, foreground="yellow")

@@ -1330,7 +1330,7 @@ def verify_placeholder_integrity(
             placeholder
         )
 
-        if count != 1: # To temporarily provoke exceptions for testing, replace != by ==
+        if count == 1: # TODO To temporarily provoke exceptions for testing, replace != by ==
 
             position = (
                 original_text_with_placeholders.find(
