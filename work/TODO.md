@@ -61,7 +61,9 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ ~~Feature: Play a sound on successful completion~~
 
-☐ Feature: Elaborate grid layout
+☑ ~~UX: Elaborate grid layout~~
+
+☐ UX: Add background images
 
 ☐ Feature: Render batch size (and potentially live-updated status?) as popup for each batch icon (live-update)
 

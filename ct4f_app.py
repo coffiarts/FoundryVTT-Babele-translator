@@ -14,6 +14,14 @@ from tkinter import filedialog
 import customtkinter as ctk
 
 
+FONT_NAME = ("Arial", 14, "bold")   # field names
+FONT_VALUE = ("Arial", 14)          # displayed values
+
+MENU_WIDTH_WIDE = 300      # Source Language / Game System (and the full-width controls below them)
+MENU_WIDTH_NARROW = 170    # Target Language / Genre
+MENU_GAP_WIDTH = 40        # gap between the two dropdowns of a pair
+VALUE_LABEL_WIDTH = 90     # the "n chars" label next to the slider
+
 
 class App(ctk.CTk):
 
@@ -60,6 +68,8 @@ class App(ctk.CTk):
 
         self.configuration_frame = ctk.CTkFrame(self.body_frame)
         self.configuration_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+        self.configuration_frame.grid_columnconfigure(0, weight=0)
+        self.configuration_frame.grid_columnconfigure(1, weight=1)
 
         self.monitoring_frame = ctk.CTkFrame(self.body_frame)
         self.monitoring_frame.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
@@ -78,21 +88,23 @@ class App(ctk.CTk):
         # =========================================
         self.selected_file = None
 
+        ctk.CTkLabel(self.configuration_frame, text="Input File", anchor="w", font=FONT_NAME) \
+            .grid(row=0, column=0, sticky="w", padx=(20, 10), pady=(20, 5))
+
         self.file_button = ctk.CTkButton(
             self.configuration_frame,
             text="Select Input File",
             command=self.select_file
         )
-
-        self.file_button.pack(padx=20, pady=(20, 5))
+        self.file_button.grid(row=0, column=1, sticky="w", padx=(0, 20), pady=(20, 5))
 
         self.file_label = ctk.CTkLabel(
             self.configuration_frame,
             text="No file selected",
-            font=("Arial", 18, "bold")
+            anchor="w",
+            font=FONT_VALUE
         )
-
-        self.file_label.pack(padx=20, pady=(0, 20))
+        self.file_label.grid(row=1, column=1, sticky="w", padx=(0, 20), pady=(0, 10))
 
         # =========================================
         # Output folder picker (optional)
@@ -100,12 +112,15 @@ class App(ctk.CTk):
         self.selected_output_dir = None
         self.output_dir_default_text = "Default: user data folder"
 
+        ctk.CTkLabel(self.configuration_frame, text="Output Folder", anchor="w", font=FONT_NAME) \
+            .grid(row=2, column=0, sticky="w", padx=(20, 10), pady=(0, 5))
+
         self.output_dir_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
-        self.output_dir_frame.pack(padx=20, pady=(0, 5))
+        self.output_dir_frame.grid(row=2, column=1, sticky="w", padx=(0, 20), pady=(0, 5))
 
         self.output_dir_button = ctk.CTkButton(
             self.output_dir_frame,
-            text="Select Output Folder (optional)",
+            text="Select Output Folder",
             command=self.select_output_dir
         )
         self.output_dir_button.pack(side="left", padx=(0, 10))
@@ -121,28 +136,22 @@ class App(ctk.CTk):
         self.output_dir_label = ctk.CTkLabel(
             self.configuration_frame,
             text=self.output_dir_default_text,
-            font=("Arial", 14)
+            anchor="w",
+            font=FONT_VALUE
         )
-        self.output_dir_label.pack(padx=20, pady=(0, 20))
+        self.output_dir_label.grid(row=3, column=1, sticky="w", padx=(0, 20), pady=(0, 10))
 
         # =========================================
         # Input type selector
         # =========================================
-        self.input_type_frame = ctk.CTkFrame(self)
+        ctk.CTkLabel(self.configuration_frame, text="Input Type", anchor="w", font=FONT_NAME) \
+            .grid(row=4, column=0, sticky="w", padx=(20, 10), pady=5)
 
-        self.input_type_frame.pack(
-            padx=20,
-            pady=5
-        )
+        self.input_type_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
+        self.input_type_frame.grid(row=4, column=1, sticky="w", padx=(0, 20), pady=5)
 
-        self.input_type_var = ctk.StringVar(
-            value=config.INPUT_TYPE_BABELE
-        )
-
-        self.input_type_var.trace_add(
-            "write",
-            self.on_input_type_changed
-        )
+        self.input_type_var = ctk.StringVar(value=config.INPUT_TYPE_BABELE)
+        self.input_type_var.trace_add("write", self.on_input_type_changed)
 
         self.radio_input_type_babele = ctk.CTkRadioButton(
             self.input_type_frame,
@@ -150,10 +159,7 @@ class App(ctk.CTk):
             variable=self.input_type_var,
             value=config.INPUT_TYPE_BABELE
         )
-
-        self.radio_input_type_babele.pack(
-            side="left", padx=(0, 20)
-        )
+        self.radio_input_type_babele.pack(side="left", padx=(0, 20))
 
         self.radio_input_type_localization = ctk.CTkRadioButton(
             self.input_type_frame,
@@ -161,10 +167,7 @@ class App(ctk.CTk):
             variable=self.input_type_var,
             value=config.INPUT_TYPE_LOCALIZATION
         )
-
-        self.radio_input_type_localization.pack(
-            side="left"
-        )
+        self.radio_input_type_localization.pack(side="left")
 
         # =========================================
         # Language selection
@@ -176,106 +179,111 @@ class App(ctk.CTk):
             option: lang for option, lang in zip(self.language_options, config.SUPPORTED_LANGUAGES)
         }
 
-        ctk.CTkLabel(
-            self.configuration_frame,
-            text="Source Language → Target Language",
-            font=("Arial", 14, "bold")
-        ).pack(padx=20, pady=(15, 0))
+        ctk.CTkLabel(self.configuration_frame, text="Language", anchor="w", font=FONT_NAME) \
+            .grid(row=5, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.language_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
-        self.language_frame.pack(padx=20, pady=(15, 5))
+        self.language_frame.grid(row=5, column=1, sticky="w", padx=(0, 20), pady=5)
 
         self.source_language_var = ctk.StringVar(
             value=f"{config.SOURCE_LANGUAGE['code']}: {config.SOURCE_LANGUAGE['name']}"
         )
         self.source_language_menu = ctk.CTkOptionMenu(
             self.language_frame,
+            width=MENU_WIDTH_WIDE,
+            dynamic_resizing=False,
             values=self.language_options,
             variable=self.source_language_var
         )
-        self.source_language_menu.pack(side="left")
+        self.source_language_menu.grid(row=0, column=0)
 
-        ctk.CTkLabel(self.language_frame, text="  →  ", font=("Arial", 16, "bold")).pack(side="left")
+        ctk.CTkLabel(self.language_frame, text="→", width=MENU_GAP_WIDTH, font=FONT_NAME).grid(row=0, column=1)
 
         self.target_language_var = ctk.StringVar(
             value=f"{config.TARGET_LANGUAGE['code']}: {config.TARGET_LANGUAGE['name']}"
         )
         self.target_language_menu = ctk.CTkOptionMenu(
             self.language_frame,
+            width=MENU_WIDTH_NARROW,
+            dynamic_resizing=False,
             values=self.language_options,
             variable=self.target_language_var
         )
-        self.target_language_menu.pack(side="left")
+        self.target_language_menu.grid(row=0, column=2)
 
         # =========================================
         # Translation Flavour (Game System / Genre)
         # =========================================
-        ctk.CTkLabel(
-            self.configuration_frame,
-            text="Translation Flavour (Game System / Genre)",
-            font=("Arial", 14, "bold")
-        ).pack(padx=20, pady=(10, 0))
+        ctk.CTkLabel(self.configuration_frame, text="Flavour", anchor="w", font=FONT_NAME) \
+            .grid(row=6, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.flavour_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
-        self.flavour_frame.pack(padx=20, pady=(10, 5))
+        self.flavour_frame.grid(row=6, column=1, sticky="w", padx=(0, 20), pady=5)
 
         self.game_system_var = ctk.StringVar(value=config.GAME_SYSTEM_CONTEXT)
         self.game_system_menu = ctk.CTkOptionMenu(
             self.flavour_frame,
+            width=MENU_WIDTH_WIDE,
+            dynamic_resizing=False,
             values=config.SUPPORTED_GAME_SYSTEMS,
             variable=self.game_system_var
         )
-        self.game_system_menu.pack(side="left")
+        self.game_system_menu.grid(row=0, column=0)
+
+        ctk.CTkLabel(self.flavour_frame, text="", width=MENU_GAP_WIDTH).grid(row=0, column=1)
 
         self.genre_var = ctk.StringVar(value=config.GENRE_CONTEXT)
         self.genre_menu = ctk.CTkOptionMenu(
             self.flavour_frame,
+            width=MENU_WIDTH_NARROW,
+            dynamic_resizing=False,
             values=config.SUPPORTED_GENRES,
             variable=self.genre_var
         )
-        self.genre_menu.pack(side="left", padx=(10, 0))
+        self.genre_menu.grid(row=0, column=2)
 
         # =========================================
         # Module name suggestion (editable)
         # =========================================
-        self.module_name_label = ctk.CTkLabel(
-            self.configuration_frame,
-            text="Module name (overwrite as needed)",
-            font=("Arial", 18, "bold")
-        )
-
-        self.module_name_label.pack(padx=20, pady=(20, 0))
+        ctk.CTkLabel(self.configuration_frame, text="Module Name", anchor="w", font=FONT_NAME) \
+            .grid(row=7, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.module_name_entry = ctk.CTkEntry(
             self.configuration_frame,
-            width=300,
-            font=("Arial", 14, "bold")
+            width=MENU_WIDTH_WIDE,
+            font=FONT_VALUE
         )
-
-        self.module_name_entry.pack(padx=20, pady=5, fill="x")
-
+        self.module_name_entry.grid(row=7, column=1, sticky="w", padx=(0, 20), pady=5)
         self.module_name_entry.insert(0, "(Please pick a file first)")
 
         # =========================================
         # Max Batch Size
         # =========================================
-        self.max_batch_size_label = ctk.CTkLabel(
-            self.configuration_frame,
-            text=f"Max Batch Size: {config.MAX_BATCH_SIZE:,} chars",
-            font=("Arial", 14, "bold")
-        )
-        self.max_batch_size_label.pack(padx=20, pady=(15, 0))
+        ctk.CTkLabel(self.configuration_frame, text="Max Batch Size", anchor="w", font=FONT_NAME) \
+            .grid(row=8, column=0, sticky="w", padx=(20, 10), pady=5)
+
+        self.max_batch_size_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
+        self.max_batch_size_frame.grid(row=8, column=1, sticky="w", padx=(0, 20), pady=5)
 
         self.max_batch_size_slider = ctk.CTkSlider(
-            self.configuration_frame,
+            self.max_batch_size_frame,
+            width=MENU_WIDTH_WIDE - VALUE_LABEL_WIDTH - 10,
             from_=500,
             to=100000,
             number_of_steps=199,
             command=self.on_max_batch_size_changed
         )
         self.max_batch_size_slider.set(config.MAX_BATCH_SIZE)
-        self.max_batch_size_slider.pack(padx=20, pady=(0, 10), fill="x")
+        self.max_batch_size_slider.pack(side="left")
 
+        self.max_batch_size_label = ctk.CTkLabel(
+            self.max_batch_size_frame,
+            width=VALUE_LABEL_WIDTH,
+            anchor="w",
+            text=f"{config.MAX_BATCH_SIZE:,} chars",
+            font=FONT_VALUE
+        )
+        self.max_batch_size_label.pack(side="left", padx=(10, 0))
 
         # =========================================
         # Mock Mode Switch
@@ -289,7 +297,7 @@ class App(ctk.CTk):
             progress_color="red",
             fg_color="gray"
         )
-        self.mock_switch.pack(padx=20, pady=20)
+        self.mock_switch.grid(row=9, column=1, sticky="w", padx=(0, 20), pady=(5, 20))
 
         # =========================================
         # Prepare / Start / Reset / Cancel Buttons
@@ -858,7 +866,7 @@ class App(ctk.CTk):
     # Updates the live readout while the slider is being dragged
     # ===========================================
     def on_max_batch_size_changed(self, value):
-        self.max_batch_size_label.configure(text=f"Max Batch Size: {int(round(value)):,} chars")
+        self.max_batch_size_label.configure(text=f"{int(round(value)):,} chars")
 
 
     # ===========================================
