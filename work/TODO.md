@@ -63,9 +63,7 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ ~~UX: Elaborate grid layout~~
 
-☑ ~~ ~~
-
-☐ UX: Add background images
+☑ ~~UX: Add background images~~
 
 ☐ Feature: Render batch size (and potentially live-updated status?) as popup for each batch icon (live-update)
 
@@ -96,6 +94,8 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 ☐ Refactoring: General review and rework of ct4f.run_translation() => split it up into better testable units?
 
 ☐ Refactoring: Split up ct4f_core_functions into more reasonable sub-libraries
+
+☐ Make sure that font SIL licenses are properly included and mentioned
 
 ### Just as a reminder: Frequently retest pyinstaller build:
 with console (for debugging):

@@ -12,6 +12,7 @@ import threading
 from pathlib import Path
 from tkinter import filedialog
 import customtkinter as ctk
+from PIL import Image
 
 
 ctk.set_appearance_mode("light")
@@ -23,6 +24,8 @@ for font_file in ("Almendra-Regular.ttf", "Almendra-Bold.ttf", "EBGaramond-Regul
 BANNER_HEIGHT = 90
 BANNER_COLOR = "#d9c9a3"   # parchment
 BANNER_TEXT_COLOR = "#3b2f1e"
+BANNER_IMAGE_WIDTH_RATIO = 0.95   # share of the banner width covered by the image
+SW_IMAGE_HEIGHT_RATIO = 0.43   # share of the frame height covered by the image
 
 MENU_WIDTH_WIDE = 300      # Source Language / Game System (and the full-width controls below them)
 MENU_WIDTH_NARROW = 170    # Target Language / Genre
@@ -61,11 +64,16 @@ class App(ctk.CTk):
         self.banner_frame = ctk.CTkFrame(self, height=BANNER_HEIGHT, fg_color=BANNER_COLOR, corner_radius=0)
         self.banner_frame.pack(side="top", fill="x")
         self.banner_frame.pack_propagate(False)
-        ctk.CTkLabel(
-            self.banner_frame,
-            text="Banner (logo/image placeholder)",
-            text_color=BANNER_TEXT_COLOR
-        ).pack(side="left", padx=20)
+        self.banner_source_image = Image.open(fn.resource_path("assets/img/banner.png"))
+
+        self.banner_image = None
+        self.banner_image_width = 0
+
+        self.banner_image_label = ctk.CTkLabel(self.banner_frame, text="")
+        self.banner_image_label.place(x=0, y=0)
+
+        self.banner_frame.bind("<Configure>", self.on_banner_resized)
+        ctk.CTkLabel(self.banner_frame, text="", image=self.banner_image).place(x=0, y=0)
 
         # Status Bar. Populated on demand by show_status()
         self.status_bar = ctk.CTkFrame(self, height=40)
@@ -92,6 +100,16 @@ class App(ctk.CTk):
         self.configuration_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
         self.configuration_frame.grid_columnconfigure(0, weight=0)
         self.configuration_frame.grid_columnconfigure(1, weight=1)
+
+        # Decorative image in the free bottom-left zone. It is place()d (not gridded), so it doesn't
+        # affect the layout, and it's created first, so all widgets are drawn on top of it
+        self.sw_source_image = Image.open(fn.resource_path("assets/img/sw-image.png"))
+        self.sw_image = None
+        self.sw_image_size = None
+
+        self.sw_image_label = ctk.CTkLabel(self.configuration_frame, text="")
+        self.sw_image_label.place(relx=0, rely=1, anchor="sw")
+        self.configuration_frame.bind("<Configure>", self.on_configuration_resized)
 
         self.monitoring_frame = ctk.CTkFrame(self.body_frame)
         self.monitoring_frame.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
@@ -916,6 +934,39 @@ class App(ctk.CTk):
         config.MOCK_MODE = bool(self.mock_mode_var.get())
         # self.LOGGER(f"MOCK_MODE = {config.MOCK_MODE}")
 
+
+    # ===========================================
+    # Function: On Banner Resized
+    # Rescales the banner image to its share of the banner width
+    # ===========================================
+    def on_banner_resized(self, event):
+        width = int(event.width * BANNER_IMAGE_WIDTH_RATIO)
+
+        if width == self.banner_image_width:
+            return
+
+        self.banner_image_width = width
+        self.banner_image = ctk.CTkImage(
+            light_image=self.banner_source_image,
+            size=(width, BANNER_HEIGHT)
+        )
+        self.banner_image_label.configure(image=self.banner_image)
+
+
+    # ===========================================
+    # Function: On Configuration Resized
+    # Rescales the bottom-left image to its share of the frame height (keeping its aspect ratio)
+    # ===========================================
+    def on_configuration_resized(self, event):
+        height = int(event.height * SW_IMAGE_HEIGHT_RATIO)
+        width = int(height * self.sw_source_image.width / self.sw_source_image.height)
+
+        if (width, height) == self.sw_image_size:
+            return
+
+        self.sw_image_size = (width, height)
+        self.sw_image = ctk.CTkImage(light_image=self.sw_source_image, size=self.sw_image_size)
+        self.sw_image_label.configure(image=self.sw_image)
 
     # ===========================================
     # Function: Refresh Module Name Suggestion
