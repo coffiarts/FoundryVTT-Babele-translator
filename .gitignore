@@ -233,6 +233,9 @@ __marimo__/
 /progress/
 /errors/
 
+#asset work materials
+/assets/img/*-orig.*
+
 #temporary local junk
 /work/
 sync.ffs_db

@@ -119,9 +119,9 @@ class App(ctk.CTk):
         # Settings button
         # =========================================
         self.settings_button = ctk.CTkButton(
-            self.banner_frame, text="⚙", width=32, command=self.open_settings
+            self.banner_frame, text="⚙", width=60, height=60, command=self.open_settings, font=FONT_VALUE
         )
-        self.settings_button.pack(side="right", padx=10, pady=10)
+        self.settings_button.pack(side="right", padx=10, pady=5)
 
         # =========================================
         # Input File picker
