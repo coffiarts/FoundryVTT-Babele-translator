@@ -22,6 +22,13 @@ MENU_WIDTH_NARROW = 170    # Target Language / Genre
 MENU_GAP_WIDTH = 40        # gap between the two dropdowns of a pair
 VALUE_LABEL_WIDTH = 90     # the "n chars" label next to the slider
 
+BIG_BUTTON_FONT = ("Arial", 18, "bold")
+BIG_BUTTON_WIDTH = 220
+BIG_BUTTON_HEIGHT = 56
+BIG_BUTTON_CORNER_RADIUS = 12
+BIG_BUTTON_BORDER_WIDTH = 3
+BIG_BUTTON_BORDER_COLOR = ("gray40", "gray75")   # (light mode, dark mode)
+
 
 class App(ctk.CTk):
 
@@ -308,16 +315,32 @@ class App(ctk.CTk):
         self.main_button = ctk.CTkButton(
             self.start_frame,
             text="Prepare",
-            command=self.prepare
+            command=self.prepare,
+            width=BIG_BUTTON_WIDTH,
+            height=BIG_BUTTON_HEIGHT,
+            font=BIG_BUTTON_FONT,
+            corner_radius=BIG_BUTTON_CORNER_RADIUS,
+            border_width=BIG_BUTTON_BORDER_WIDTH,
+            border_color=BIG_BUTTON_BORDER_COLOR
         )
         self.main_button.pack(side="left")
+
+        self.main_button_default_color = self.main_button.cget("fg_color")
+        self.main_button_default_hover_color = self.main_button.cget("hover_color")
+        self.main_button_default_text_color = self.main_button.cget("text_color")
 
         # Only visible after a successful preparation (see show_reset_button)
         self.reset_button = ctk.CTkButton(
             self.start_frame,
             text="Reset",
             fg_color="gray",
-            command=self.reset_preparation
+            command=self.reset_preparation,
+            width=BIG_BUTTON_WIDTH,
+            height=BIG_BUTTON_HEIGHT,
+            font=BIG_BUTTON_FONT,
+            corner_radius=BIG_BUTTON_CORNER_RADIUS,
+            border_width=BIG_BUTTON_BORDER_WIDTH,
+            border_color=BIG_BUTTON_BORDER_COLOR
         )
 
         # =========================================
@@ -526,7 +549,7 @@ class App(ctk.CTk):
     # ===========================================
     def enter_prepared_state(self, result):
         self.prepared_result = result
-        self.main_button.configure(text="Start", command=self.run_translation, state="normal")
+        self.set_main_button_role("Start ▶▶", self.run_translation, color=config.GREEN)
         self.show_reset_button()
         self.show_bars(result["analysis"])
         self.update_clear_buttons(result["analysis"])
@@ -540,7 +563,7 @@ class App(ctk.CTk):
     def reset_preparation(self):
         self.prepared_result = None
         self.hide_reset_button()
-        self.main_button.configure(text="Prepare", command=self.prepare)
+        self.set_main_button_role("Prepare", self.prepare)
         self.enable_configuration_controls()
         self.hide_bars()
         self.show_status("Waiting for configuration...")
@@ -720,7 +743,7 @@ class App(ctk.CTk):
         self.disable_configuration_controls()
 
         # The main button turns into the Cancel button while running
-        self.main_button.configure(text="Cancel", command=self.cancel, state="normal")
+        self.set_main_button_role("Cancel", self.cancel, color=config.YELLOW, text_color="#333333")
         self.show_status("Running...")
 
         threading.Thread(
@@ -945,7 +968,7 @@ class App(ctk.CTk):
     # ===========================================
     def cancel(self):
         self.cancel_event.set()
-        self.main_button.configure(text="Please wait for batch to complete ...", state="disabled")
+        self.set_main_button_role("Please wait for batch to complete ...", self.cancel, color=config.RED, state="disabled")
 
         # A pending confirm dialog has to be released as well, because the worker thread
         # blocks while waiting for the answer
@@ -956,6 +979,22 @@ class App(ctk.CTk):
         if self.current_request is not None and "response_queue" in self.current_request:
             self.current_request["response_queue"].put(config.CANCEL)
             self.current_request = None
+
+
+    # ===========================================
+    # Function: Set Main Button Role
+    # Sets text, command, state and colors of the main button in one go
+    # (color/text_color None => back to the default colors)
+    # ===========================================
+    def set_main_button_role(self, text, command, color=None, text_color=None, state="normal"):
+        self.main_button.configure(
+            text=text,
+            command=command,
+            state=state,
+            fg_color=color or self.main_button_default_color,
+            hover_color=color or self.main_button_default_hover_color,
+            text_color=text_color or self.main_button_default_text_color
+        )
 
 
     # ===========================================
