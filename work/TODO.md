@@ -69,7 +69,11 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ UX: Visually emphasize Stats Info Box by a frame
 
+☑ Refactoring: Cleanup scattered definitions and usage of color codes
+
 ☐ UX: Make pop out log auto-update like the inline log view
+
+☐ UX: Make disabled state of config widgets better recognizeable
 
 ☐ Refactoring: API client connection config -
 - is it strictly OpenAI specific, or can we make it exchangeable via Settings?
@@ -91,7 +95,7 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☐ UX: Add meaningful popup help texts to essential buttons and input fields
 
-☐ UX: Improve readability of LogWindow content (make it collapsible, consistently use colors, less stressful bg/fd colors)
+☐ UX: Cleanup/fix of Log view colors: Replace console colors by log colors (taking care not to break console coloring, if still needed)
 
 ☐ UX: Animate current PROCESSING batch?
 

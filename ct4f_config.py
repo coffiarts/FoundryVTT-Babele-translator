@@ -333,22 +333,21 @@ CONSOLE_BOLD = "\033[1m"
 CONSOLE_UNDERLINE = "\033[4m"
 CONSOLE_RESET  = "\033[0m" # Used to end any coloring or formatting
 
-# UI Colors & Formatting
-TAG_ERROR = "error"
-TAG_SUCCESS = "success"
-TAG_WARNING = "warning"
-TAG_INFO = "info"
-TAG_QUESTION = "question"
-
-# Explicit font for log and error output (non-serif, whereas the theme default is a serif font handled by theme and UI)
-LOG_FONT = ("Arial", 13)
-
 # UI Colors (hex values for CustomTkinter widgets, not to be mixed up with the CONSOLE_ colors)
 GREY = "#8a8a8a"
 YELLOW = "#e0b400"
 GREEN = "#3fa34d"
 RED = "#d64545"
 MAGENTA = "#b04fc0"
+BLUE = "#4a90d9"
+WHITE = "#ffffff"
+BLACK = "#000000"
+
+# Parchment theme colors (assets/ct4f-theme.json repeats these values, because JSON cannot refer to Python names)
+PARCHMENT = "#d9c9a3"          # frame and banner background
+PARCHMENT_LIGHT = "#e6d9b8"    # emphasized boxes on parchment
+INK = "#3b2f1e"                # text and outlines
+INK_LIGHT = "#8a7550"          # borders and secondary elements
 
 # Batch status => UI color
 STATUS_COLORS = {
@@ -357,6 +356,27 @@ STATUS_COLORS = {
     COMPLETED: GREEN,
     FAILED: RED,
     REVIEW_REQUIRED: MAGENTA
+}
+
+# Log output (inline log, pop-out log and error views)
+# The font is explicit (non-serif), whereas the theme default is a serif font handled by theme and UI
+LOG_FONT = ("Arial", 13)
+LOG_BACKGROUND_COLOR = BLACK
+LOG_TEXT_COLOR = WHITE
+
+TAG_ERROR = "error"
+TAG_SUCCESS = "success"
+TAG_WARNING = "warning"
+TAG_INFO = "info"
+TAG_QUESTION = "question"
+
+# Log tag => text color
+LOG_TAG_COLORS = {
+    TAG_ERROR: RED,
+    TAG_SUCCESS: GREEN,
+    TAG_WARNING: YELLOW,
+    TAG_INFO: BLUE,
+    TAG_QUESTION: MAGENTA
 }
 
 # Error Types

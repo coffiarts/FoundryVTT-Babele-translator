@@ -109,7 +109,7 @@ class SettingsDialog(ctk.CTkToplevel):
             side="right", padx=(5, 0)
         )
         ctk.CTkButton(
-            btn_frame, text="Cancel", fg_color="gray", command=self.destroy
+            btn_frame, text="Cancel", fg_color=config.GREY, command=self.destroy
         ).pack(side="right")
 
     def _toggle_show(self):
@@ -135,8 +135,11 @@ class ErrorDialog(ctk.CTkToplevel):
         # =========================================
         # Error Message Window
         # =========================================
-        self.err_window = ctk.CTkTextbox(self, width=300, height=300, fg_color="black", text_color="white", font=config.LOG_FONT)
-        self.err_window.tag_config(config.TAG_ERROR, foreground="red")
+        self.err_window = ctk.CTkTextbox(
+            self, width=300, height=300,
+            fg_color=config.LOG_BACKGROUND_COLOR, text_color=config.LOG_TEXT_COLOR, font=config.LOG_FONT
+        )
+        self.err_window.tag_config(config.TAG_ERROR, foreground=config.LOG_TAG_COLORS[config.TAG_ERROR])
         self.err_window.pack(padx=20, pady=20, fill="both", expand=False)
         self.err_window.insert("end", message, config.TAG_ERROR)
 
@@ -144,7 +147,7 @@ class ErrorDialog(ctk.CTkToplevel):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(10, 15), fill="x")
         ctk.CTkButton(
-            btn_frame, text="Close", fg_color="gray", command=self.destroy
+            btn_frame, text="Close", fg_color=config.GREY, command=self.destroy
         ).pack(side="right")
 
 
@@ -195,13 +198,13 @@ class ConfirmDialog(ctk.CTkToplevel):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(10, 15), fill="x")
         ctk.CTkButton(btn_frame, text="Yes", command=lambda: self._answer(on_yes)).pack(side="left", padx=(0, 5))
-        ctk.CTkButton(btn_frame, text="No", fg_color="gray", command=lambda: self._answer(on_no)).pack(side="left")
+        ctk.CTkButton(btn_frame, text="No", fg_color=config.GREY, command=lambda: self._answer(on_no)).pack(side="left")
 
         if get_log_text:
             ctk.CTkButton(
                 btn_frame,
                 text="Show Log",
-                fg_color="gray",
+                fg_color=config.GREY,
                 command=lambda: LogViewerDialog(self, get_log_text())
             ).pack(side="left", padx=(20, 0))
 
@@ -222,7 +225,9 @@ class LogViewerDialog(ctk.CTkToplevel):
         self.grab_set()
 
         # Log content (read-only, scrollable)
-        self.log_view = ctk.CTkTextbox(self, fg_color="black", text_color="white", font=config.LOG_FONT)
+        self.log_view = ctk.CTkTextbox(
+            self, fg_color=config.LOG_BACKGROUND_COLOR, text_color=config.LOG_TEXT_COLOR, font=config.LOG_FONT
+        )
         self.log_view.pack(padx=20, pady=20, fill="both", expand=True)
         self.log_view.insert("end", log_text)
         self.log_view.see("end")
@@ -231,7 +236,7 @@ class LogViewerDialog(ctk.CTkToplevel):
         # Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(0, 15), fill="x")
-        ctk.CTkButton(btn_frame, text="Close", fg_color="gray", command=self.destroy).pack(side="right")
+        ctk.CTkButton(btn_frame, text="Close", fg_color=config.GREY, command=self.destroy).pack(side="right")
 
 
 class ReviewItemsDialog(ctk.CTkToplevel):
@@ -245,11 +250,14 @@ class ReviewItemsDialog(ctk.CTkToplevel):
         self.grab_set()
 
         # Review items content (read-only, scrollable)
-        self.view = ctk.CTkTextbox(self, fg_color="black", text_color="white", font=config.LOG_FONT, wrap="word")
+        self.view = ctk.CTkTextbox(
+            self, fg_color=config.LOG_BACKGROUND_COLOR, text_color=config.LOG_TEXT_COLOR,
+            font=config.LOG_FONT, wrap="word"
+        )
         self.view.pack(padx=20, pady=20, fill="both", expand=True)
         self.view.tag_config("header", foreground=config.MAGENTA)
         self.view.tag_config("label", foreground="gray70")
-        self.view.tag_config("placeholder", foreground="black", background=config.YELLOW)
+        self.view.tag_config("placeholder", foreground=config.BLACK, background=config.YELLOW)
 
         for position, item in enumerate(review_items, start=1):
             self._render_item(position, item)
@@ -259,7 +267,7 @@ class ReviewItemsDialog(ctk.CTkToplevel):
         # Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(0, 15), fill="x")
-        ctk.CTkButton(btn_frame, text="Close", fg_color="gray", command=self.destroy).pack(side="right")
+        ctk.CTkButton(btn_frame, text="Close", fg_color=config.GREY, command=self.destroy).pack(side="right")
 
 
     def _render_item(self, position, item):

@@ -22,14 +22,9 @@ for font_file in ("Almendra-Regular.ttf", "Almendra-Bold.ttf", "EBGaramond-Regul
     ctk.FontManager.load_font(fn.resource_path(f"assets/fonts/{font_file}"))
 
 BANNER_HEIGHT = 90
-BANNER_COLOR = "#d9c9a3"   # parchment
-BANNER_TEXT_COLOR = "#3b2f1e"
 BANNER_IMAGE_WIDTH_RATIO = 0.95   # share of the banner width covered by the image
 
 SW_IMAGE_HEIGHT_RATIO = 0.43   # share of the frame height covered by the image
-
-STATS_BOX_COLOR = "#e6d9b8"          # a bit lighter than the frame parchment
-STATS_BOX_BORDER_COLOR = "#8a7550"
 
 MENU_WIDTH_WIDE = 300      # Source Language / Game System (and the full-width controls below them)
 MENU_WIDTH_NARROW = 170    # Target Language / Genre
@@ -44,7 +39,7 @@ BIG_BUTTON_WIDTH = 220
 BIG_BUTTON_HEIGHT = 56
 BIG_BUTTON_CORNER_RADIUS = 12
 BIG_BUTTON_BORDER_WIDTH = 3
-BIG_BUTTON_BORDER_COLOR = "#3b2f1e"   # same ink brown as the text
+BIG_BUTTON_BORDER_COLOR = config.INK   # same ink brown as the text
 
 
 
@@ -65,7 +60,7 @@ class App(ctk.CTk):
         # =========================================
         # Layout skeleton
         # =========================================
-        self.banner_frame = ctk.CTkFrame(self, height=BANNER_HEIGHT, fg_color=BANNER_COLOR, corner_radius=0)
+        self.banner_frame = ctk.CTkFrame(self, height=BANNER_HEIGHT, fg_color=config.PARCHMENT, corner_radius=0)
         self.banner_frame.pack(side="top", fill="x")
         self.banner_frame.pack_propagate(False)
         self.banner_source_image = Image.open(fn.resource_path("assets/img/banner.png"))
@@ -341,8 +336,8 @@ class App(ctk.CTk):
             text="Simulate only",
             variable=self.mock_mode_var,
             command=self.on_mock_mode_changed,
-            progress_color="red",
-            fg_color="gray"
+            progress_color=config.RED,
+            fg_color=config.GREY
         )
         self.mock_switch.grid(row=9, column=1, sticky="w", padx=(0, 20), pady=(5, 20))
 
@@ -373,7 +368,7 @@ class App(ctk.CTk):
         self.reset_button = ctk.CTkButton(
             self.start_frame,
             text="Reset",
-            fg_color="gray",
+            fg_color=config.INK_LIGHT,
             command=self.reset_preparation,
             width=BIG_BUTTON_WIDTH,
             height=BIG_BUTTON_HEIGHT,
@@ -392,9 +387,9 @@ class App(ctk.CTk):
         # Stats Info Box: a framed "card" with one grid row per stat (name | value), values are set in show_bars
         self.stats_frame = ctk.CTkFrame(
             self.bars_frame,
-            fg_color=STATS_BOX_COLOR,
+            fg_color=config.PARCHMENT_LIGHT,
             border_width=2,
-            border_color=STATS_BOX_BORDER_COLOR,
+            border_color=config.INK_LIGHT,
             corner_radius=8
         )
         self.stats_frame.pack(fill="x", pady=(0, 10))
@@ -468,12 +463,12 @@ class App(ctk.CTk):
         # =========================================
         # Log Output Window
         # =========================================
-        self.log_window = ctk.CTkTextbox(self.monitoring_frame, width=600, height=300, fg_color="black", text_color="white", font=config.LOG_FONT)
-        self.log_window.tag_config(config.TAG_ERROR, foreground="red")
-        self.log_window.tag_config(config.TAG_SUCCESS, foreground="green")
-        self.log_window.tag_config(config.TAG_WARNING, foreground="yellow")
-        self.log_window.tag_config(config.TAG_INFO, foreground="blue")
-        self.log_window.tag_config(config.TAG_QUESTION, foreground="magenta")
+        self.log_window = ctk.CTkTextbox(
+            self.monitoring_frame, width=600, height=300,
+            fg_color=config.LOG_BACKGROUND_COLOR, text_color=config.LOG_TEXT_COLOR, font=config.LOG_FONT
+        )
+        for tag, color in config.LOG_TAG_COLORS.items():
+            self.log_window.tag_config(tag, foreground=color)
         self.log_window.pack(padx=20, pady=20, fill="both", expand=True)
 
 
@@ -801,7 +796,7 @@ class App(ctk.CTk):
         self.disable_configuration_controls()
 
         # The main button turns into the Cancel button while running
-        self.set_main_button_role("Cancel", self.cancel, color=config.YELLOW, text_color="#333333")
+        self.set_main_button_role("Cancel", self.cancel, color=config.YELLOW, text_color=config.INK)
         self.show_status("Running...")
 
         threading.Thread(
