@@ -2,72 +2,74 @@
 ☑ = Done
 ☒ = Discarded
 
-☑ ~~Bugfix: Intercept error when trying to translate a non-localization file in localization mode
+☑ Bugfix: Intercept error when trying to translate a non-localization file in localization mode
     D:\projects\IntelliJ\FoundryVTT-Babele-translator\ct4f_translator.py", line 202
     D:\projects\IntelliJ\FoundryVTT-Babele-translator\ct4f_core_functions.py", line 650
-    TypeError: expected string or bytes-like object, got 'list'~~
+    TypeError: expected string or bytes-like object, got 'list'
 
-☑ ~~Bugfix: Vice versa: To also intercept when trying to translate a non-Babele file in Babele mode, add a generic check that aborts with msg when the input file yields zero translatables~~
+☑ Bugfix: Vice versa: To also intercept when trying to translate a non-Babele file in Babele mode, add a generic check that aborts with msg when the input file yields zero translatables
 
-☑ ~~Render status bars for terminology and translation (NEW_RUN and RESUME_MODE)~~
+☑ Render status bars for terminology and translation (NEW_RUN and RESUME_MODE)
 
-☑ ~~Auto-update status bars during processing~~
+☑ Auto-update status bars during processing
 
-☑ ~~Refine concept for "Cancel" functionality and work_exception_handler:~~
+☑ Refine concept for "Cancel" functionality and work_exception_handler:
 
-- ~~when to show/hide "Cancel"~~
-- ~~how/what to interrupt by "Cancel"~~
-- ~~where to return to after "Cancel" or unexpected exceptions~~
+- when to show/hide "Cancel"
+- how/what to interrupt by "Cancel"
+- where to return to after "Cancel" or unexpected exceptions
 
-☑ ~~Handle the following specific exception scenarios explicitly (without hard-block/ErrorDialog):~~
+☑ Handle the following specific exception scenarios explicitly (without hard-block/ErrorDialog):
 
-- ~~CANCELLED => return to "prepared" state?~~
+- CANCELLED => return to "prepared" state?
 
-- ~~INVALID INPUT FILE (no lang file) => confirm with hint, return to "configuration" phase?~~
+- INVALID INPUT FILE (no lang file) => confirm with hint, return to "configuration" phase?
 
-- ~~TRANSLATABLE TEXT EXCEEDS MAX_BATCH_SIZE => confirm with hint, return to preparation phase~~
+- TRANSLATABLE TEXT EXCEEDS MAX_BATCH_SIZE => confirm with hint, return to preparation phase
 
-- ~~CONFIGURATION MISMATCH => confirm with hint, allow to cleanup progress-info (like auto-triggering both "clear" buttons), then return to "prepared" phase~~
+- CONFIGURATION MISMATCH => confirm with hint, allow to cleanup progress-info (like auto-triggering both "clear" buttons), then return to "prepared" phase
 
-☑ ~~Improve readability of ErrorDialog contents (get rid of "technical noise", less stressful bg/fd colors)~~
+☑ Improve readability of ErrorDialog contents (get rid of "technical noise", less stressful bg/fd colors)
 
-☑ ~~Visually improve confirmation prompts (currently clumsily placed inline, with ugly format, and not going away after being answered)~~
+☑ Visually improve confirmation prompts (currently clumsily placed inline, with ugly format, and not going away after being answered)
 
-☑ ~~Special case: Refine "Placeholder Integrity Error" handling~~
-- ~~How to show the (potentially large) error output in an easy-to-read way~~
-- ~~How to handle closing of prompt window: "Yes", "No"?~~
+☑ Special case: Refine "Placeholder Integrity Error" handling
+- How to show the (potentially large) error output in an easy-to-read way
+- How to handle closing of prompt window: "Yes", "No"?
 
-☑ ~~Bugfix: Localization mode produces strict output filename <language>.json, dropping
-any postfix from input file (like in en-US.json). Instead, it should keep the postfix, by only replacing the source language part of the name (e.g. "en") by the target language part (e.g. "de"): en-US.json => de-US.json~~
+☑ Bugfix: Localization mode produces strict output filename <language>.json, dropping
+any postfix from input file (like in en-US.json). Instead, it should keep the postfix, by only replacing the source language part of the name (e.g. "en") by the target language part (e.g. "de"): en-US.json => de-US.json
 
-☑ ~~Mock Mode should not really change batch statuses, to prevent that user is forced to reset them afterwards and lose real progress~~
+☑ Mock Mode should not really change batch statuses, to prevent that user is forced to reset them afterwards and lose real progress
 
-☑ ~~Disclose and persist as setting: MAX_BATCH_SIZE~~
+☑ Disclose and persist as setting: MAX_BATCH_SIZE
 
-☑ ~~Disclose and persist as setting: SOURCE_LANGUAGE / TARGET_LANGUAGE~~
+☑ Disclose and persist as setting: SOURCE_LANGUAGE / TARGET_LANGUAGE
 
-☑ ~~Disclose and persist as setting: GAME_SYSTEM_CONTEXT~~
-- ~~integrate a "system-agnostic" option!~~
+☑ Disclose and persist as setting: GAME_SYSTEM_CONTEXT
+- integrate a "system-agnostic" option!
 
-☑ ~~Now is the time for a general pimp of layout and style => maybe use a CustomTkinter-Theme~~
+☑ Now is the time for a general pimp of layout and style => maybe use a CustomTkinter-Theme
 
-☑ ~~on prepared: Render "Project Stats"~~
+☑ on prepared: Render "Project Stats"
 
-☑ ~~☐ Change Stats Box to multiline, so that Review Items line can be formatted in MAGENTA color☑~~
+☑ Change Stats Box to multiline, so that Review Items line can be formatted in MAGENTA color
 
-☑ ~~Feature: When translation is completed successfully, the output (translated file plus review items file, if any) should be notified and made available conveniently through the status bar (bottom frame). At least the paths should be printed, but maybe (if technically possible) even a clickable link to the output dir?~~
+☑ Feature: When translation is completed successfully, the output (translated file plus review items file, if any) should be notified and made available conveniently through the status bar (bottom frame). At least the paths should be printed, but maybe (if technically possible) even a clickable link to the output dir?
 
-☑ ~~Feature: Evolve "Results Bar" into a "Status Bar" (maybe even rename it): Allow to populate it with meaningful intermediate status messages (idea: encapsulate this in a more generic function than show_results, like "show_status", and then make show_results use that function as well)~~ 
+☑ Feature: Evolve "Results Bar" into a "Status Bar" (maybe even rename it): Allow to populate it with meaningful intermediate status messages (idea: encapsulate this in a more generic function than show_results, like "show_status", and then make show_results use that function as well) 
 
-☑ ~~Feature: Play a sound on successful completion~~
+☑ Feature: Play a sound on successful completion
 
-☑ ~~UX: Elaborate grid layout~~
+☑ UX: Elaborate grid layout
 
-☑ ~~UX: Add background images~~
+☑ UX: Add background images
 
-☐ Feature: Render batch size (and potentially live-updated status?) as popup for each batch icon (live-update)
+☑ UX: On clicking Stats Box->Review Items Counter, open Review Items list as Pop Out View
 
-☐ Feature: On clicking Stats Box->Review Items Counter, open Review Items list as Pop Out View
+☐ UX: Visually emphasize Stats Info Box by a frame
+
+☐ UX: Make pop out log auto-update like the inline log view
 
 ☐ Refactoring: API client connection config -
 - is it strictly OpenAI specific, or can we make it exchangeable via Settings?
@@ -80,6 +82,8 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 ☐ Feature: Disclose and persist as advanced setting: PROTECTED_SYNTAX_PATTERNS => same as above, plus: These are RegExp patterns that should probably be validated
 
 ☐ Feature: Disclose and persist as advanced setting: TRANSLATION_INSTRUCTIONS and TERMINOLOGY_INSTRUCTIONS as user settings
+
+☐ UX: Reset to defaults
 
 ☐ Feature: Feature: Allow storing of setting presets
 

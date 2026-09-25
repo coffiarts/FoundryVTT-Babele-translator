@@ -232,3 +232,59 @@ class LogViewerDialog(ctk.CTkToplevel):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(0, 15), fill="x")
         ctk.CTkButton(btn_frame, text="Close", fg_color="gray", command=self.destroy).pack(side="right")
+
+
+class ReviewItemsDialog(ctk.CTkToplevel):
+
+    def __init__(self, parent, review_items: list):
+        super().__init__(parent)
+        self.title(f"Review Items ({len(review_items)})")
+        self.geometry("900x700")
+        self.resizable(True, True)
+        self.transient(parent)
+        self.grab_set()
+
+        # Review items content (read-only, scrollable)
+        self.view = ctk.CTkTextbox(self, fg_color="black", text_color="white", font=config.LOG_FONT, wrap="word")
+        self.view.pack(padx=20, pady=20, fill="both", expand=True)
+        self.view.tag_config("header", foreground=config.MAGENTA)
+        self.view.tag_config("label", foreground="gray70")
+        self.view.tag_config("placeholder", foreground="black", background=config.YELLOW)
+
+        for position, item in enumerate(review_items, start=1):
+            self._render_item(position, item)
+
+        self.view.configure(state="disabled")
+
+        # Buttons
+        btn_frame = ctk.CTkFrame(self, fg_color="transparent")
+        btn_frame.pack(padx=20, pady=(0, 15), fill="x")
+        ctk.CTkButton(btn_frame, text="Close", fg_color="gray", command=self.destroy).pack(side="right")
+
+
+    def _render_item(self, position, item):
+        details = item["details"]
+        placeholder = details["placeholder"]
+
+        self.view.insert(
+            "end",
+            f"#{position}  {placeholder}  =  {details['original_value']}   "
+            f"(found {details['count']}x in the translation)\n",
+            "header"
+        )
+
+        self.view.insert("end", "Original:\n", "label")
+        self._insert_with_highlight(details["original_context"], placeholder)
+
+        self.view.insert("end", "\n\nTranslation:\n", "label")
+        self._insert_with_highlight(details["translated_context"], placeholder)
+
+        self.view.insert("end", "\n\n" + "-" * 80 + "\n\n")
+
+    def _insert_with_highlight(self, text, placeholder):
+        parts = text.split(placeholder)
+
+        for index, part in enumerate(parts):
+            self.view.insert("end", part)
+            if index < len(parts) - 1:
+                self.view.insert("end", placeholder, "placeholder")

@@ -413,6 +413,15 @@ class App(ctk.CTk):
         self.review_name_label.grid_remove()
         self.review_value_label.grid_remove()
 
+        self.review_show_button = ctk.CTkButton(
+            self.stats_frame,
+            text="Show",
+            width=60,
+            height=24,
+            command=self.show_review_items
+        )
+        self.review_show_button.grid(row=2, column=2, sticky="w", padx=(10, 0))
+        self.review_show_button.grid_remove()
 
         # Terminology Progress Bar
         self.terminology_bar = ui_widgets.BatchStatusBar(
@@ -619,9 +628,11 @@ class App(ctk.CTk):
             self.review_value_label.configure(text=str(review_item_count))
             self.review_name_label.grid()
             self.review_value_label.grid()
+            self.review_show_button.grid()
         else:
             self.review_name_label.grid_remove()
             self.review_value_label.grid_remove()
+            self.review_show_button.grid_remove()
 
         self.terminology_bar.set_batches([
             {
@@ -907,6 +918,15 @@ class App(ctk.CTk):
             on_no=lambda: answer(False),
             get_log_text=lambda: self.log_window.get("1.0", "end")
         )
+
+
+    # ===========================================
+    # Function: Show Review Items
+    # Opens the pop-out view with the Review Items collected so far
+    # ===========================================
+    def show_review_items(self):
+        review_items = fn.load_json_input(config.PROGRESS_REVIEW_ITEMS_FILE)
+        ui_dialogs.ReviewItemsDialog(self, review_items)
 
 
     # ===========================================
