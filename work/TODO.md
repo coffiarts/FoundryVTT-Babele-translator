@@ -73,25 +73,27 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ UX: Make the pop-out log auto-update like the inline log view, so that it can be kept open in parallel
 
-☑ UX: Make disabled state of config widgets better recognizeable
+☑ UX: Make disabled state of config widgets better recognizable
+
+☑ UX: Rename "Reset" (Preparation) button to "Reconfigure" to make it more intuitive what it really does
 
 ☐ Refactoring: API client connection config -
 - is it strictly OpenAI specific, or can we make it exchangeable via Settings?
 - Disclose and persist LLM_MODEL setting
 
-☐ Feature: Disclose and persist as advanced setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list
-
-☐ Feature: Disclose and persist as advanced setting: TRANSLATABLE_CONTAINERS => same as above
-
-☐ Feature: Disclose and persist as advanced setting: PROTECTED_SYNTAX_PATTERNS => same as above, plus: These are RegExp patterns that should probably be validated
-
-☐ Feature: Disclose and persist as advanced setting: TRANSLATION_INSTRUCTIONS and TERMINOLOGY_INSTRUCTIONS as user settings
-
-☐ UX: Reset to defaults
-
-☐ Feature: Feature: Allow storing of setting presets
-
 ☐ Feature: UI Localization
+
+☐ Feature: Disclose and persist as "advanced" setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list
+
+☐ Feature: Disclose and persist as "advanced" setting: TRANSLATABLE_CONTAINERS => same as above
+
+☐ Feature: Disclose and persist as "advanced" setting: PROTECTED_SYNTAX_PATTERNS => same as above, plus: These are RegExp patterns that should probably be validated
+
+☐ Feature: Disclose and persist as "advanced" setting: TRANSLATION_INSTRUCTIONS and TERMINOLOGY_INSTRUCTIONS as user settings
+
+☐ UX: "Reset to defaults" function
+
+☐ Feature: Allow storing of setting presets
 
 ☐ UX: Add meaningful popup help texts to essential buttons and input fields
 

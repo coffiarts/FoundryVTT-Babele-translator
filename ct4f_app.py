@@ -352,7 +352,7 @@ class App(ctk.CTk):
         self.mock_switch.grid(row=9, column=1, sticky="w", padx=(0, 20), pady=(5, 20))
 
         # =========================================
-        # Prepare / Start / Reset / Cancel Buttons
+        # Prepare / Start / Reconfigure / Cancel Buttons
         # =========================================
         self.start_frame = ctk.CTkFrame(self.monitoring_frame, fg_color="transparent")
         self.start_frame.pack(padx=20, pady=20)
@@ -374,12 +374,12 @@ class App(ctk.CTk):
         self.main_button_default_hover_color = self.main_button.cget("hover_color")
         self.main_button_default_text_color = self.main_button.cget("text_color")
 
-        # Only visible after a successful preparation (see show_reset_button)
-        self.reset_button = ctk.CTkButton(
+        # Only visible after a successful preparation (see show_reconfigure_button)
+        self.reconfigure_button = ctk.CTkButton(
             self.start_frame,
-            text="Reset",
+            text="◀ Reconfigure",
             fg_color=config.INK_LIGHT,
-            command=self.reset_preparation,
+            command=self.reconfigure,
             width=BIG_BUTTON_WIDTH,
             height=BIG_BUTTON_HEIGHT,
             font=BIG_BUTTON_FONT,
@@ -604,12 +604,12 @@ class App(ctk.CTk):
     # ===========================================
     # Function: Enter Prepared State
     # The selections are now final: the "Prepare" button turns into "Start",
-    # and "Reset" allows to go back
+    # and "Reconfigure" allows to go back
     # ===========================================
     def enter_prepared_state(self, result):
         self.prepared_result = result
         self.set_main_button_role("Start ▶▶", self.run_translation, color=config.GREEN)
-        self.show_reset_button()
+        self.show_reconfigure_button()
         self.show_bars(result["analysis"])
         self.update_clear_buttons(result["analysis"])
         self.show_status("Ready to start.")
@@ -619,9 +619,9 @@ class App(ctk.CTk):
     # Function: Reset Preparation
     # Goes back from the prepared state to the initial "choose" state
     # ===========================================
-    def reset_preparation(self):
+    def reconfigure(self):
         self.prepared_result = None
-        self.hide_reset_button()
+        self.hide_reconfigure_button()
         self.set_main_button_role("Prepare", self.prepare)
         self.enable_configuration_controls()
         self.hide_bars()
@@ -773,16 +773,6 @@ class App(ctk.CTk):
 
 
     # ===========================================
-    # Function: Reset UI
-    # Restores the initial state before pressing
-    # the "Prepare" Button
-    # (without dropping existing input)
-    # ===========================================
-    def reset_ui(self):
-        self.reset_preparation()
-
-
-    # ===========================================
     # Function: Run Translation
     # Starts the main worker thread (translation) asynchronously
     # ===========================================
@@ -794,7 +784,7 @@ class App(ctk.CTk):
             return False
 
         self.cancel_event.clear()
-        self.hide_reset_button()
+        self.hide_reconfigure_button()
         self.set_clear_buttons_enabled(False)
 
         if config.INPUT_FILE is None:
@@ -843,7 +833,7 @@ class App(ctk.CTk):
 
         # Nothing has been prepared, so back to the start
         self.show_outcome_message(outcome)
-        self.reset_ui()
+        self.reconfigure()
         self.show_outcome_status(outcome)
 
 
@@ -1173,17 +1163,17 @@ class App(ctk.CTk):
 
 
     # ===========================================
-    # Function: Show Reset Button
+    # Function: Show Reconfigure Button
     # ===========================================
-    def show_reset_button(self):
-        self.reset_button.pack(side="left", padx=(10, 0))
+    def show_reconfigure_button(self):
+        self.reconfigure_button.pack(side="left", padx=(0, 10), before=self.main_button)
 
 
     # ===========================================
-    # Function: Hide Reset Button
+    # Function: Hide Reconfigure Button
     # ===========================================
-    def hide_reset_button(self):
-        self.reset_button.pack_forget()
+    def hide_reconfigure_button(self):
+        self.reconfigure_button.pack_forget()
 
 
     # ===========================================
