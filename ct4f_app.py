@@ -41,6 +41,16 @@ BIG_BUTTON_CORNER_RADIUS = 12
 BIG_BUTTON_BORDER_WIDTH = 3
 BIG_BUTTON_BORDER_COLOR = config.INK   # same ink brown as the text
 
+# CTk doesn't recolor disabled widgets by itself: widget type => colors to apply while locked
+LOCKED_COLORS = {
+    ctk.CTkButton: {"fg_color": config.INK_LOCKED},
+    ctk.CTkOptionMenu: {"fg_color": config.INK_LOCKED, "button_color": config.INK_LOCKED},
+    ctk.CTkRadioButton: {"fg_color": config.INK_LOCKED, "border_color": config.INK_LOCKED},
+    ctk.CTkEntry: {"border_color": config.INK_LOCKED, "text_color": config.INK_LOCKED},
+    ctk.CTkSlider: {"progress_color": config.INK_LOCKED, "button_color": config.INK_LOCKED},
+    ctk.CTkSwitch: {"progress_color": config.INK_LOCKED, "button_color": config.INK_LOCKED}
+}
+
 
 
 class App(ctk.CTk):
@@ -472,6 +482,7 @@ class App(ctk.CTk):
         # =========================================
         # Enable only the UI elements that are relevant first
         # =========================================
+        self._unlocked_colors = {}
         self.disable_configuration_controls()
         self.file_button.configure(state="normal")
         self.output_dir_button.configure(state="normal")
@@ -1054,6 +1065,8 @@ class App(ctk.CTk):
         self.game_system_menu.configure(state="disabled")
         self.genre_menu.configure(state="disabled")
         self.max_batch_size_slider.configure(state="disabled")
+        self.set_configuration_panel_locked(True)
+        self.set_controls_locked(True)
 
 
     # ===========================================
@@ -1075,6 +1088,51 @@ class App(ctk.CTk):
         self.game_system_menu.configure(state="normal")
         self.genre_menu.configure(state="normal")
         self.max_batch_size_slider.configure(state="normal")
+        self.configuration_frame.configure(fg_color=config.PARCHMENT)
+        self.set_configuration_panel_locked(False)
+        self.set_controls_locked(False)
+
+
+    # ===========================================
+    # Function: Set Configuration Panel Locked
+    # Disabled CTk widgets barely look different, so the panel is tinted and its labels are dimmed
+    # ===========================================
+    def set_configuration_panel_locked(self, locked):
+        self.configuration_frame.configure(
+            fg_color=config.PARCHMENT_LOCKED if locked else config.PARCHMENT
+        )
+
+        for child in self.configuration_frame.winfo_children():
+            if isinstance(child, ctk.CTkLabel) and child is not self.sw_image_label:
+                child.configure(text_color=config.INK_LOCKED if locked else config.INK)
+
+
+    # ===========================================
+    # Function: Set Controls Locked
+    # Recolors (locked) or restores (unlocked) the configuration controls.
+    # The main button is left out, because it is colored by its role
+    # ===========================================
+    def set_controls_locked(self, locked):
+        controls = [
+            self.file_button, self.output_dir_button, self.output_dir_reset_button,
+            self.radio_input_type_babele, self.radio_input_type_localization,
+            self.module_name_entry, self.mock_switch,
+            self.source_language_menu, self.target_language_menu,
+            self.game_system_menu, self.genre_menu,
+            self.max_batch_size_slider
+        ]
+
+        for control in controls:
+            locked_colors = LOCKED_COLORS[type(control)]
+
+            if locked:
+                # Locking twice must not overwrite the remembered original colors
+                if control not in self._unlocked_colors:
+                    self._unlocked_colors[control] = {key: control.cget(key) for key in locked_colors}
+                    control.configure(**locked_colors)
+
+            elif control in self._unlocked_colors:
+                control.configure(**self._unlocked_colors.pop(control))
 
 
     # ===========================================

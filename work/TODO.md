@@ -73,7 +73,7 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ UX: Make the pop-out log auto-update like the inline log view, so that it can be kept open in parallel
 
-☐ UX: Make disabled state of config widgets better recognizeable
+☑ UX: Make disabled state of config widgets better recognizeable
 
 ☐ Refactoring: API client connection config -
 - is it strictly OpenAI specific, or can we make it exchangeable via Settings?

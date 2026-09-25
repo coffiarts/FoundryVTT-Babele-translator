@@ -346,6 +346,8 @@ BLACK = "#000000"
 # Parchment theme colors (assets/ct4f-theme.json repeats these values, because JSON cannot refer to Python names)
 PARCHMENT = "#d9c9a3"          # frame and banner background
 PARCHMENT_LIGHT = "#e6d9b8"    # emphasized boxes on parchment
+PARCHMENT_LOCKED = "#bdb5a0"   # muted parchment for panels whose controls are disabled
+INK_LOCKED = "#857d6a"         # muted text color for the labels of such panels
 INK = "#3b2f1e"                # text and outlines
 INK_LIGHT = "#8a7550"          # borders and secondary elements
 

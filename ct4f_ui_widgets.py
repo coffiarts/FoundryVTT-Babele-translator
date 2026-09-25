@@ -30,6 +30,7 @@ class BatchStatusBar(ctk.CTkFrame):
 
         self.clear_button = ctk.CTkButton(self.header, text="Clear", width=70, command=on_clear)
         self.clear_button.pack(side="right")
+        self._clear_default_color = self.clear_button.cget("fg_color")
 
         # Icon area: the squares are re-gridded whenever the available width changes
         self.icon_area = ctk.CTkFrame(self, fg_color="transparent")
@@ -96,7 +97,10 @@ class BatchStatusBar(ctk.CTkFrame):
     # Locks/unlocks the Clear button (e.g. while a process is running)
     # ===========================================
     def set_clear_enabled(self, enabled):
-        self.clear_button.configure(state="normal" if enabled else "disabled")
+        self.clear_button.configure(
+            state="normal" if enabled else "disabled",
+            fg_color=self._clear_default_color if enabled else config.INK_LOCKED
+        )
 
 
 # ===========================================
