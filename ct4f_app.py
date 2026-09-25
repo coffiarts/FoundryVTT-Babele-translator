@@ -455,7 +455,7 @@ class App(ctk.CTk):
             self.monitoring_frame,
             text="Pop Out Log",
             width=100,
-            command=lambda: ui_dialogs.LogViewerDialog(self.monitoring_frame, self.log_window.get("1.0", "end"))
+            command=lambda: self.log_viewer.show()
         )
         self.log_popout_button.pack(padx=20, pady=(10, 0), anchor="e")
 
@@ -463,13 +463,10 @@ class App(ctk.CTk):
         # =========================================
         # Log Output Window
         # =========================================
-        self.log_window = ctk.CTkTextbox(
-            self.monitoring_frame, width=600, height=300,
-            fg_color=config.LOG_BACKGROUND_COLOR, text_color=config.LOG_TEXT_COLOR, font=config.LOG_FONT
-        )
-        for tag, color in config.LOG_TAG_COLORS.items():
-            self.log_window.tag_config(tag, foreground=color)
+        self.log_window = ui_widgets.LogTextbox(self.monitoring_frame, width=600, height=300)
         self.log_window.pack(padx=20, pady=20, fill="both", expand=True)
+        self.log_viewer = ui_dialogs.LogViewerDialog(self)
+        self.log_viewer_was_visible = False
 
 
         # =========================================
@@ -907,10 +904,12 @@ class App(ctk.CTk):
     def show_confirm_dialog(self, request):
 
         self.current_request = request
+        self.suspend_log_viewer()
 
         def answer(is_yes):
             self.current_request = None
             self.current_confirm_dialog = None
+            self.restore_log_viewer()
 
             if "response_queue" in request:
                 request["response_queue"].put(config.YES if is_yes else config.NO)
@@ -924,7 +923,8 @@ class App(ctk.CTk):
             question=request["question"],
             on_yes=lambda: answer(True),
             on_no=lambda: answer(False),
-            get_log_text=lambda: self.log_window.get("1.0", "end")
+            on_show_log=lambda: self.log_viewer.show(modal=True)
+
         )
 
 
@@ -935,6 +935,27 @@ class App(ctk.CTk):
     def show_review_items(self):
         review_items = fn.load_json_input(config.PROGRESS_REVIEW_ITEMS_FILE)
         ui_dialogs.ReviewItemsDialog(self, review_items)
+
+
+    # ===========================================
+    # Function: Suspend Log Viewer
+    # A pending confirmation is modal, so a visible (non-modal) log viewer would be unresponsive.
+    # It is hidden while the confirmation is pending and brought back by restore_log_viewer()
+    # ===========================================
+    def suspend_log_viewer(self):
+        self.log_viewer_was_visible = bool(self.log_viewer.winfo_viewable())
+
+        if self.log_viewer_was_visible:
+            self.log_viewer.hide()
+
+
+    # ===========================================
+    # Function: Restore Log Viewer
+    # ===========================================
+    def restore_log_viewer(self):
+        if self.log_viewer_was_visible:
+            self.log_viewer_was_visible = False
+            self.log_viewer.show()
 
 
     # ===========================================
@@ -1070,6 +1091,7 @@ class App(ctk.CTk):
         if self.current_confirm_dialog is not None:
             self.current_confirm_dialog.destroy()
             self.current_confirm_dialog = None
+            self.restore_log_viewer()
 
         if self.current_request is not None and "response_queue" in self.current_request:
             self.current_request["response_queue"].put(config.CANCEL)
@@ -1172,11 +1194,11 @@ class App(ctk.CTk):
 
     # ===========================================
     # Function: Log Message
-    # Writes the message passed to the configured logger
+    # Writes the message passed to the inline log viewer
     # ===========================================
     def log_message(self, message, tag=""):
-        self.log_window.insert("end", message + "\n", tag)
-        self.log_window.see("end")
+        self.log_window.append(message, tag)
+        self.log_viewer.append(message, tag)
 
 
     # ===========================================

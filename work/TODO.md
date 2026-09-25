@@ -71,7 +71,7 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ Refactoring: Cleanup scattered definitions and usage of color codes
 
-☐ UX: Make pop out log auto-update like the inline log view
+☑ UX: Make the pop-out log auto-update like the inline log view, so that it can be kept open in parallel
 
 ☐ UX: Make disabled state of config widgets better recognizeable
 

@@ -97,3 +97,31 @@ class BatchStatusBar(ctk.CTkFrame):
     # ===========================================
     def set_clear_enabled(self, enabled):
         self.clear_button.configure(state="normal" if enabled else "disabled")
+
+
+# ===========================================
+# Class: Log Text Box
+# Text box for log output.
+# Tags are colored according to config.LOG_TAG_COLORS.
+# ===========================================
+class LogTextbox(ctk.CTkTextbox):
+
+    def __init__(self, parent, **kwargs):
+        super().__init__(
+            parent,
+            fg_color=config.LOG_BACKGROUND_COLOR,
+            text_color=config.LOG_TEXT_COLOR,
+            font=config.LOG_FONT,
+            **kwargs
+        )
+
+        for tag, color in config.LOG_TAG_COLORS.items():
+            self.tag_config(tag, foreground=color)
+
+    def append(self, message, tag=""):
+        # Works for read-only (disabled) boxes as well
+        state = self.cget("state")
+        self.configure(state="normal")
+        self.insert("end", message + "\n", tag)
+        self.see("end")
+        self.configure(state=state)

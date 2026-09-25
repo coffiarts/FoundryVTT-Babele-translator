@@ -2,6 +2,8 @@ import ct4f_config as config
 import ct4f_translator_dialogs as dialogs
 import customtkinter as ctk
 import ct4f_security as security
+import ct4f_ui_widgets as ui_widgets
+from tkinter import TclError
 
 
 LOGGER = print
@@ -177,7 +179,7 @@ class HintDialog(ctk.CTkToplevel):
 
 class ConfirmDialog(ctk.CTkToplevel):
 
-    def __init__(self, parent, question: str, on_yes, on_no, get_log_text=None):
+    def __init__(self, parent, question: str, on_yes, on_no, on_show_log=None):
         super().__init__(parent)
         self.title("Please confirm")
         self.minsize(400, 150)
@@ -200,12 +202,12 @@ class ConfirmDialog(ctk.CTkToplevel):
         ctk.CTkButton(btn_frame, text="Yes", command=lambda: self._answer(on_yes)).pack(side="left", padx=(0, 5))
         ctk.CTkButton(btn_frame, text="No", fg_color=config.GREY, command=lambda: self._answer(on_no)).pack(side="left")
 
-        if get_log_text:
+        if on_show_log:
             ctk.CTkButton(
                 btn_frame,
                 text="Show Log",
                 fg_color=config.GREY,
-                command=lambda: LogViewerDialog(self, get_log_text())
+                command=on_show_log
             ).pack(side="left", padx=(20, 0))
 
     def _answer(self, callback):
@@ -214,29 +216,68 @@ class ConfirmDialog(ctk.CTkToplevel):
             callback()
 
 
+# ===========================================
+# Class: Log Viewer Dialog
+# Permanent pop-out log: created hidden at startup,
+# receives every log line, shown on demand.
+# ===========================================
 class LogViewerDialog(ctk.CTkToplevel):
 
-    def __init__(self, parent, log_text: str):
+    def __init__(self, parent):
         super().__init__(parent)
         self.title("Log")
         self.geometry("800x600")
         self.resizable(True, True)
         self.transient(parent)
-        self.grab_set()
+        self.protocol("WM_DELETE_WINDOW", self.hide)
 
         # Log content (read-only, scrollable)
-        self.log_view = ctk.CTkTextbox(
-            self, fg_color=config.LOG_BACKGROUND_COLOR, text_color=config.LOG_TEXT_COLOR, font=config.LOG_FONT
-        )
+        self.log_view = ui_widgets.LogTextbox(self)
         self.log_view.pack(padx=20, pady=20, fill="both", expand=True)
-        self.log_view.insert("end", log_text)
-        self.log_view.see("end")
         self.log_view.configure(state="disabled")
 
         # Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(0, 15), fill="x")
-        ctk.CTkButton(btn_frame, text="Close", fg_color=config.GREY, command=self.destroy).pack(side="right")
+        ctk.CTkButton(btn_frame, text="Close", fg_color=config.GREY, command=self.hide).pack(side="right")
+
+        self._was_maximized = False
+        self._normal_geometry = None
+
+        self.withdraw()
+
+    def append(self, message, tag=""):
+        self.log_view.append(message, tag)
+
+    def show(self, modal=False):
+        if self._normal_geometry:
+            self.geometry(self._normal_geometry)
+
+        self.deiconify()
+
+        if self._was_maximized:
+            try:
+                self.state("zoomed")
+            except TclError:
+                pass  # this window manager doesn't know the "zoomed" state
+
+        self.lift()
+        self.focus_force()
+
+        if modal:
+            self.grab_set()
+
+    def hide(self):
+        state = self.state()
+
+        if state == "normal":
+            self._normal_geometry = self.geometry()
+
+        if state != "withdrawn":
+            self._was_maximized = (state == "zoomed")
+
+        self.grab_release()
+        self.withdraw()
 
 
 class ReviewItemsDialog(ctk.CTkToplevel):
