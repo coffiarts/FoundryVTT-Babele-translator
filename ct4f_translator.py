@@ -479,21 +479,21 @@ def _run(logger: Callable[str], cancel_event):
                     api_timer_start = time.perf_counter()
                     current_time = datetime.now().strftime("%H:%M:%S")
                     fn.LOGGER(fn.batch_log_msg(f"Start API timer (time: {current_time})"))
-                    response = None
+                    raw_answer = None
 
                     try:
 
-                        response = client.responses.create(
-                            model=config.LLM_MODEL,
-                            instructions=config.get_terminology_instructions(),
-                            input=json.dumps(
+                        raw_answer = fn.ask_llm(
+                            client,
+                            config.get_terminology_instructions(),
+                            json.dumps(
                                 batch_payload,
                                 ensure_ascii=False
                             ),
-                            text=config.TERMINOLOGY_OUTPUT_STRUCTURE
+                            output_structure=config.TERMINOLOGY_OUTPUT_STRUCTURE
                         )
 
-                        terminology_response = json.loads(response.output_text)
+                        terminology_response = fn.normalize_terminology_response(json.loads(raw_answer))
                         # fn.LOGGER(f"DEBUG - terminology response: {to_prettified_json(terminology_response)}")
                         master_terminology_raw["terms"].extend(terminology_response["terms"])
 
@@ -509,7 +509,7 @@ def _run(logger: Callable[str], cancel_event):
                                 f"{str(e)}"
                             ),
                             response_metadata=None,
-                            raw_response=response.output_text,
+                            raw_response=raw_answer,
                             batch_payload=batch_payload,
                             master_terminology=master_terminology_raw
                         )
@@ -729,10 +729,10 @@ def _run(logger: Callable[str], cancel_event):
                     current_time = datetime.now().strftime("%H:%M:%S")
                     fn.LOGGER(fn.batch_log_msg(f"Start API timer (time: {current_time})"), config.TAG_INFO)
 
-                    response = client.responses.create(
-                        model=config.LLM_MODEL,
-                        instructions=instructions,
-                        input=json.dumps(
+                    raw_answer = fn.ask_llm(
+                        client,
+                        instructions,
+                        json.dumps(
                             batch_payload,
                             ensure_ascii=False
                         )
@@ -740,7 +740,7 @@ def _run(logger: Callable[str], cancel_event):
 
                     try:
 
-                        new_translations = json.loads(response.output_text)
+                        new_translations = json.loads(raw_answer)
 
                         fn.LOGGER(fn.batch_log_msg("Completeness check...", batch_id=batch["id"], batch_cnt=len(batches)))
 
@@ -846,7 +846,7 @@ def _run(logger: Callable[str], cancel_event):
                                 f"{str(e)}"
                             ),
                             response_metadata=None,
-                            raw_response=response.output_text,
+                            raw_response=raw_answer,
                             batch_payload=batch_payload,
                             translations_with_placeholders=translations_with_placeholders
                         )

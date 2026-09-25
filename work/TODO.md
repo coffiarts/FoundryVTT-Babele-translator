@@ -77,9 +77,11 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ UX: Rename "Reset" (Preparation) button to "Reconfigure" to make it more intuitive what it really does
 
-☐ Refactoring: API client connection config -
+☑  Feature: API client connection config -
 - is it strictly OpenAI specific, or can we make it exchangeable via Settings?
 - Disclose and persist LLM_MODEL setting
+
+☐ Feature: Extend workflow by adding an option "Review terminology before translation", which stops after terminology is complete, providing the result in the same way as for the final translation (with a link to the terminology folder in the status bar). 
 
 ☐ Feature: UI Localization
 

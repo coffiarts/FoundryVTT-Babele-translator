@@ -4,6 +4,39 @@ import customtkinter as ctk
 ICON_SIZE = 22  # px, size of one batch square
 ICON_GAP = 4    # px, gap between squares
 
+# CTk doesn't recolor disabled widgets by itself: widget type => colors to apply while locked
+LOCKED_COLORS = {
+    ctk.CTkButton: {"fg_color": config.INK_LOCKED},
+    ctk.CTkOptionMenu: {"fg_color": config.INK_LOCKED, "button_color": config.INK_LOCKED},
+    ctk.CTkRadioButton: {"fg_color": config.INK_LOCKED, "border_color": config.INK_LOCKED},
+    ctk.CTkCheckBox: {"fg_color": config.INK_LOCKED, "border_color": config.INK_LOCKED},
+    ctk.CTkEntry: {"border_color": config.INK_LOCKED, "text_color": config.INK_LOCKED},
+    ctk.CTkSlider: {"progress_color": config.INK_LOCKED, "button_color": config.INK_LOCKED},
+    ctk.CTkSwitch: {"progress_color": config.INK_LOCKED, "button_color": config.INK_LOCKED}
+}
+
+
+# ===========================================
+# Class: Locked Look
+# Gives disabled widgets a clearly "locked" appearance and restores their original
+# colors afterwards. One instance remembers the original colors of the widgets it handled
+# ===========================================
+class LockedLook:
+
+    def __init__(self):
+        self._original_colors = {}
+
+    def apply(self, widget, locked):
+        locked_colors = LOCKED_COLORS[type(widget)]
+
+        if locked:
+            # Locking twice must not overwrite the remembered original colors
+            if widget not in self._original_colors:
+                self._original_colors[widget] = {key: widget.cget(key) for key in locked_colors}
+                widget.configure(**locked_colors)
+
+        elif widget in self._original_colors:
+            widget.configure(**self._original_colors.pop(widget))
 
 # ===========================================
 # Class: Batch Status Bar

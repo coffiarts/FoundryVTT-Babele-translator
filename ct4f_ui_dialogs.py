@@ -4,7 +4,7 @@ import customtkinter as ctk
 import ct4f_security as security
 import ct4f_ui_widgets as ui_widgets
 from tkinter import TclError
-
+import ct4f_settings as settings
 
 LOGGER = print
 
@@ -76,14 +76,38 @@ class SettingsDialog(ctk.CTkToplevel):
     def __init__(self, parent, on_save_callback=None):
         super().__init__(parent)
         self.title("Settings")
-        self.geometry("550x210")
+        self.geometry("550x470")
         self.resizable(False, False)
         self.transient(parent)
         self.grab_set()
 
         self.on_save_callback = on_save_callback
 
-        # Input field
+        self.locked_look = ui_widgets.LockedLook()
+
+        # LLM model
+        ctk.CTkLabel(self, text="LLM Model:", font=("Arial", 14, "bold")).pack(
+            padx=20, pady=(15, 5), anchor="w"
+        )
+        self.model_entry = ctk.CTkEntry(self, width=500)
+        self.model_entry.pack(padx=20, pady=5)
+        self.model_entry.insert(0, config.LLM_MODEL)
+
+        # API base URL (empty = OpenAI)
+        ctk.CTkLabel(self, text=f"API Key (not needed for local servers):", font=("Arial", 14, "bold")).pack(
+            padx=20, pady=(15, 5), anchor="w"
+        )
+        self.base_url_entry = ctk.CTkEntry(self, width=500)
+        self.base_url_entry.pack(padx=20, pady=0)
+        self.base_url_entry.insert(0, config.API_BASE_URL)
+        ctk.CTkLabel(
+            self,
+            text=f"Default: {config.OPENAI_BASE_URL}",
+            text_color=config.INK,
+            font=("Arial", 12),
+        ).pack(padx=30, pady=(0, 0), anchor="w")
+
+        # API key
         ctk.CTkLabel(self, text="API Key:", font=("Arial", 14, "bold")).pack(
             padx=20, pady=(15, 5), anchor="w"
         )
@@ -97,12 +121,30 @@ class SettingsDialog(ctk.CTkToplevel):
 
         # Toggle visibility
         self.show_var = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(
+        self.show_key_checkbox = ctk.CTkCheckBox(
             self,
             text="Show key",
             variable=self.show_var,
             command=self._toggle_show,
-        ).pack(padx=20, pady=5, anchor="w")
+        )
+        self.show_key_checkbox.pack(padx=20, pady=5, anchor="w")
+
+        # Only relevant for servers other than OpenAI, which always needs a key
+        self.no_key_var = ctk.BooleanVar(value=not config.API_KEY_REQUIRED)
+        ctk.CTkCheckBox(
+            self,
+            text="This server needs no API key",
+            variable=self.no_key_var,
+            command=self._update_key_controls,
+        ).pack(padx=20, pady=(15, 0), anchor="w")
+        ctk.CTkLabel(
+            self,
+            text="Local servers only. OpenAI always requires a key.",
+            text_color=config.INK,
+            font=("Arial", 12),
+        ).pack(padx=48, pady=(0, 5), anchor="w")
+
+        self._update_key_controls()
 
         # Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -117,8 +159,31 @@ class SettingsDialog(ctk.CTkToplevel):
     def _toggle_show(self):
         self.entry.configure(show="" if self.show_var.get() else "•")
 
+    def _update_key_controls(self):
+        locked = self.no_key_var.get()
+        state = "disabled" if locked else "normal"
+
+        self.entry.configure(state=state)
+        self.show_key_checkbox.configure(state=state)
+
+        self.locked_look.apply(self.entry, locked)
+        self.locked_look.apply(self.show_key_checkbox, locked)
+
     def _save(self):
+        # An empty model field keeps the current model
+        config.LLM_MODEL = self.model_entry.get().strip() or config.LLM_MODEL
+        config.API_BASE_URL = self.base_url_entry.get().strip() or config.OPENAI_BASE_URL
+
+        config.API_KEY_REQUIRED = not self.no_key_var.get()
+
+        settings.update_settings({
+            "llm_model": config.LLM_MODEL,
+            "api_base_url": config.API_BASE_URL,
+            "api_key_required": config.API_KEY_REQUIRED
+        })
+
         security.set_api_key(self.entry.get().strip())
+
         if self.on_save_callback:
             self.on_save_callback()
         self.destroy()

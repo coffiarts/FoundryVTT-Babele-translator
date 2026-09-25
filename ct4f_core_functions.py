@@ -669,15 +669,69 @@ def find_patterns(text, patterns, leading_trailing_chars = 100):
 
 
 # ------------------------------------------------------------
+# Function: Uses OpenAI
+# True if the configured API server is OpenAI itself (and not some other compatible server)
+# ------------------------------------------------------------
+def uses_openai():
+    return config.API_BASE_URL.rstrip("/") == config.OPENAI_BASE_URL
+
+
+# ------------------------------------------------------------
+# Function: Is API Key Required
+# OpenAI always needs a key; other servers only if the user hasn't declared otherwise
+# ------------------------------------------------------------
+def is_api_key_required():
+    return uses_openai() or config.API_KEY_REQUIRED
+
+
+# ------------------------------------------------------------
 # Function: Initialize API client
 # ------------------------------------------------------------
 def init_api_client():
     api_key = get_api_key()
-    if not api_key:
-        raise ValueError("Missing API Key. Please register it in the app settings.")
 
-    client = OpenAI(api_key=api_key)
+    if not api_key:
+        if is_api_key_required():
+            raise ValueError("Missing API Key. Please register it in the app settings.")
+
+        # Local servers usually don't check the key, but the SDK insists on a non-empty one
+        api_key = "not-needed"
+
+    client = OpenAI(api_key=api_key, base_url=config.API_BASE_URL)
     return client
+
+# ------------------------------------------------------------
+# Function: Ask LLM
+# Sends one request to the configured LLM API and returns the raw answer text.
+# <output_structure> is the (optional) JSON schema wrapper from config, in the Responses API layout
+# ------------------------------------------------------------
+def ask_llm(client, instructions, payload_text, output_structure=None):
+
+    request = {
+        "model": config.LLM_MODEL,
+        "messages": [
+            {"role": "system", "content": instructions},
+            {"role": "user", "content": payload_text}
+        ]
+    }
+
+    # The schema is only sent to OpenAI itself: other servers may reject or ignore it,
+    # so for them the JSON shape has to come from the instructions alone
+    if output_structure is not None and uses_openai():
+        schema_format = output_structure["format"]
+        request["response_format"] = {
+            "type": "json_schema",
+            "json_schema": {
+                "name": schema_format["name"],
+                "strict": schema_format["strict"],
+                "schema": schema_format["schema"]
+            }
+        }
+
+    response = client.chat.completions.create(**request)
+
+    return response.choices[0].message.content
+
 
 # ------------------------------------------------------------
 # Function: Apply translations (all at once)
@@ -1330,7 +1384,7 @@ def verify_placeholder_integrity(
             placeholder
         )
 
-        if count == 1: # TODO: To temporarily provoke exceptions for testing, replace != by ==
+        if count != 1: # To temporarily provoke exceptions for testing, replace != by ==
 
             position = (
                 original_text_with_placeholders.find(
@@ -1415,6 +1469,45 @@ def restore_foundry_syntax(
         )
 
     return text_with_placeholders
+
+
+# ------------------------------------------------------------
+# Function: Normalize Terminology Response
+# Checks the structure of a terminology answer and fills in missing optional fields,
+# so that answers of less strict LLMs can be used as well.
+# Raises an ExpectedException (explaining the problem) if the answer is unusable
+# ------------------------------------------------------------
+def normalize_terminology_response(response):
+
+    if not isinstance(response, dict) or not isinstance(response.get("terms"), list):
+        raise exceptions.ExpectedException(
+            "The LLM answer doesn't have the expected structure "
+            "(a JSON object with a list named \"terms\").\n"
+            "The selected model may not be suited for this task. "
+            "Resume the process to try again, or choose another model."
+        )
+
+    optional_defaults = {"gender": "", "number": "", "properName": False, "note": ""}
+    normalized_terms = []
+
+    for term in response["terms"]:
+
+        if (not isinstance(term, dict)
+                or not isinstance(term.get("original"), str)
+                or not isinstance(term.get("proposedTranslation"), str)):
+            raise exceptions.ExpectedException(
+                "The LLM answer contains a term without a valid \"original\" and \"proposedTranslation\".\n"
+                "The selected model may not be suited for this task. "
+                "Resume the process to try again, or choose another model."
+            )
+
+        normalized_terms.append({
+            "original": term["original"],
+            "proposedTranslation": term["proposedTranslation"],
+            **{key: term.get(key, default) for key, default in optional_defaults.items()}
+        })
+
+    return {"terms": normalized_terms}
 
 
 # ------------------------------------------------------------

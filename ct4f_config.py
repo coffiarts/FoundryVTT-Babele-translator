@@ -121,6 +121,14 @@ PLACEHOLDER_PATTERN = r'<<<PLACEHOLDER_\d{6}>>>' # MUST contain \d{<number>} to 
 # LLM_MODEL = "gpt-5.4-mini"
 LLM_MODEL = "gpt-5.6-luna"
 
+# Base URL of the API server. Any OpenAI-compatible server can be used
+# (e.g. a local Ollama: "http://localhost:11434/v1")
+OPENAI_BASE_URL = "https://api.openai.com/v1"
+API_BASE_URL = OPENAI_BASE_URL
+
+# False for servers that don't check API keys (e.g. a local Ollama). OpenAI itself always needs one
+API_KEY_REQUIRED = True
+
 def get_translation_instructions():
     return f"""
 Translate every text to {TARGET_LANGUAGE["name"]}.

@@ -25,3 +25,14 @@ def load_settings() -> dict:
 def save_settings(settings: dict) -> None:
 
     fn.save_json_output(settings, config.SETTINGS_FILE)
+
+
+# ------------------------------------------------------------
+# Function: Update Settings
+# Merges <changes> into the persisted settings, keeping all other entries
+# ------------------------------------------------------------
+def update_settings(changes: dict) -> None:
+
+    settings = load_settings()
+    settings.update(changes)
+    save_settings(settings)

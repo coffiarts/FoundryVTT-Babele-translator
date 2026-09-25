@@ -41,17 +41,6 @@ BIG_BUTTON_CORNER_RADIUS = 12
 BIG_BUTTON_BORDER_WIDTH = 3
 BIG_BUTTON_BORDER_COLOR = config.INK   # same ink brown as the text
 
-# CTk doesn't recolor disabled widgets by itself: widget type => colors to apply while locked
-LOCKED_COLORS = {
-    ctk.CTkButton: {"fg_color": config.INK_LOCKED},
-    ctk.CTkOptionMenu: {"fg_color": config.INK_LOCKED, "button_color": config.INK_LOCKED},
-    ctk.CTkRadioButton: {"fg_color": config.INK_LOCKED, "border_color": config.INK_LOCKED},
-    ctk.CTkEntry: {"border_color": config.INK_LOCKED, "text_color": config.INK_LOCKED},
-    ctk.CTkSlider: {"progress_color": config.INK_LOCKED, "button_color": config.INK_LOCKED},
-    ctk.CTkSwitch: {"progress_color": config.INK_LOCKED, "button_color": config.INK_LOCKED}
-}
-
-
 
 class App(ctk.CTk):
 
@@ -482,7 +471,7 @@ class App(ctk.CTk):
         # =========================================
         # Enable only the UI elements that are relevant first
         # =========================================
-        self._unlocked_colors = {}
+        self.locked_look = ui_widgets.LockedLook()
         self.disable_configuration_controls()
         self.file_button.configure(state="normal")
         self.output_dir_button.configure(state="normal")
@@ -779,7 +768,7 @@ class App(ctk.CTk):
     def run_translation(self) -> bool:
 
         # Pre-flight check: Do we have an API key on board?
-        if not config.MOCK_MODE and not security.has_api_key():
+        if not config.MOCK_MODE and fn.is_api_key_required() and not security.has_api_key():
             self.open_settings(callback=self.run_translation)
             return False
 
@@ -1113,16 +1102,7 @@ class App(ctk.CTk):
         ]
 
         for control in controls:
-            locked_colors = LOCKED_COLORS[type(control)]
-
-            if locked:
-                # Locking twice must not overwrite the remembered original colors
-                if control not in self._unlocked_colors:
-                    self._unlocked_colors[control] = {key: control.cget(key) for key in locked_colors}
-                    control.configure(**locked_colors)
-
-            elif control in self._unlocked_colors:
-                control.configure(**self._unlocked_colors.pop(control))
+            self.locked_look.apply(control, locked)
 
 
     # ===========================================
@@ -1282,7 +1262,7 @@ class App(ctk.CTk):
     # Saves the current selections to the settings file (called when a translation starts)
     # ===========================================
     def persist_settings(self):
-        settings.save_settings({
+        settings.update_settings({
             "base_output_dir": str(config.BASE_OUTPUT_DIR) if config.BASE_OUTPUT_DIR else None,
             "input_file": str(config.INPUT_FILE),
             "input_type": config.INPUT_TYPE,
@@ -1315,6 +1295,11 @@ class App(ctk.CTk):
             ui_dialogs.ErrorDialog(self, message=msg)
 
             return
+
+        # LLM connection: independent of everything else (empty/missing => defaults from config)
+        config.API_BASE_URL = saved.get("api_base_url") or config.OPENAI_BASE_URL
+        config.API_KEY_REQUIRED = saved.get("api_key_required", True)
+        config.LLM_MODEL = saved.get("llm_model") or config.LLM_MODEL
 
         # Output folder: independent of the input file
         output_dir = saved.get("base_output_dir")
