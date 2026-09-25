@@ -67,7 +67,7 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ UX: On clicking Stats Box->Review Items Counter, open Review Items list as Pop Out View
 
-☐ UX: Visually emphasize Stats Info Box by a frame
+☑ UX: Visually emphasize Stats Info Box by a frame
 
 ☐ UX: Make pop out log auto-update like the inline log view
 

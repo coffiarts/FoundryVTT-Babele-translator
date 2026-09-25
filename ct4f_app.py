@@ -25,7 +25,11 @@ BANNER_HEIGHT = 90
 BANNER_COLOR = "#d9c9a3"   # parchment
 BANNER_TEXT_COLOR = "#3b2f1e"
 BANNER_IMAGE_WIDTH_RATIO = 0.95   # share of the banner width covered by the image
+
 SW_IMAGE_HEIGHT_RATIO = 0.43   # share of the frame height covered by the image
+
+STATS_BOX_COLOR = "#e6d9b8"          # a bit lighter than the frame parchment
+STATS_BOX_BORDER_COLOR = "#8a7550"
 
 MENU_WIDTH_WIDE = 300      # Source Language / Game System (and the full-width controls below them)
 MENU_WIDTH_NARROW = 170    # Target Language / Genre
@@ -385,36 +389,45 @@ class App(ctk.CTk):
         # =========================================
         self.bars_frame = ctk.CTkFrame(self.monitoring_frame, fg_color="transparent")
 
-        # Stats Info Box: one grid row per stat (name | value), values are set in show_bars
-        self.stats_frame = ctk.CTkFrame(self.bars_frame, fg_color="transparent")
+        # Stats Info Box: a framed "card" with one grid row per stat (name | value), values are set in show_bars
+        self.stats_frame = ctk.CTkFrame(
+            self.bars_frame,
+            fg_color=STATS_BOX_COLOR,
+            border_width=2,
+            border_color=STATS_BOX_BORDER_COLOR,
+            corner_radius=8
+        )
         self.stats_frame.pack(fill="x", pady=(0, 10))
 
-        self.chars_name_label = ctk.CTkLabel(self.stats_frame, text="Chars:", anchor="w")
+        self.stats_grid = ctk.CTkFrame(self.stats_frame, fg_color="transparent")
+        self.stats_grid.pack(anchor="w", padx=15, pady=10)
+
+        self.chars_name_label = ctk.CTkLabel(self.stats_grid, text="Chars:", anchor="w", font=FONT_NAME)
         self.chars_name_label.grid(row=0, column=0, sticky="w", padx=(0, 10))
-        self.chars_value_label = ctk.CTkLabel(self.stats_frame, text="", anchor="w")
+        self.chars_value_label = ctk.CTkLabel(self.stats_grid, text="", anchor="w", font=FONT_VALUE)
         self.chars_value_label.grid(row=0, column=1, sticky="w")
 
-        self.batches_name_label = ctk.CTkLabel(self.stats_frame, text="Batches:", anchor="w")
+        self.batches_name_label = ctk.CTkLabel(self.stats_grid, text="Batches:", anchor="w", font=FONT_NAME)
         self.batches_name_label.grid(row=1, column=0, sticky="w", padx=(0, 10))
-        self.batches_value_label = ctk.CTkLabel(self.stats_frame, text="", anchor="w")
+        self.batches_value_label = ctk.CTkLabel(self.stats_grid, text="", anchor="w", font=FONT_VALUE)
         self.batches_value_label.grid(row=1, column=1, sticky="w")
 
         # Only shown when there are Review Items (see show_bars)
         self.review_name_label = ctk.CTkLabel(
-            self.stats_frame, text="Review Items:", anchor="w",
-            text_color=config.MAGENTA, font=ctk.CTkFont(weight="bold")
+            self.stats_grid, text="Review Items:", anchor="w",
+            text_color=config.MAGENTA, font=FONT_NAME
         )
         self.review_name_label.grid(row=2, column=0, sticky="w", padx=(0, 10))
         self.review_value_label = ctk.CTkLabel(
-            self.stats_frame, text="", anchor="w",
-            text_color=config.MAGENTA, font=ctk.CTkFont(weight="bold")
+            self.stats_grid, text="", anchor="w",
+            text_color=config.MAGENTA, font=FONT_NAME
         )
         self.review_value_label.grid(row=2, column=1, sticky="w")
         self.review_name_label.grid_remove()
         self.review_value_label.grid_remove()
 
         self.review_show_button = ctk.CTkButton(
-            self.stats_frame,
+            self.stats_grid,
             text="Show",
             width=60,
             height=24,
