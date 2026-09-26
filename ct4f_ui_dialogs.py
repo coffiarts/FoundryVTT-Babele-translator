@@ -76,7 +76,7 @@ class SettingsDialog(ctk.CTkToplevel):
     def __init__(self, parent, on_save_callback=None):
         super().__init__(parent)
         self.title("Settings")
-        self.geometry("550x470")
+        self.geometry("550x520")
         self.resizable(False, False)
         self.transient(parent)
         self.grab_set()
@@ -86,7 +86,7 @@ class SettingsDialog(ctk.CTkToplevel):
         self.locked_look = ui_widgets.LockedLook()
 
         # LLM model
-        ctk.CTkLabel(self, text="LLM Model:", font=("Arial", 14, "bold")).pack(
+        ctk.CTkLabel(self, text="LLM Model:", font=(config.FONT_FAMILY_LOG, 14, "bold")).pack(
             padx=20, pady=(15, 5), anchor="w"
         )
         self.model_entry = ctk.CTkEntry(self, width=500)
@@ -94,7 +94,7 @@ class SettingsDialog(ctk.CTkToplevel):
         self.model_entry.insert(0, config.LLM_MODEL)
 
         # API base URL (empty = OpenAI)
-        ctk.CTkLabel(self, text=f"API Key (not needed for local servers):", font=("Arial", 14, "bold")).pack(
+        ctk.CTkLabel(self, text=f"API Key (not needed for local servers):", font=(config.FONT_FAMILY_LOG, 14, "bold")).pack(
             padx=20, pady=(15, 5), anchor="w"
         )
         self.base_url_entry = ctk.CTkEntry(self, width=500)
@@ -104,11 +104,11 @@ class SettingsDialog(ctk.CTkToplevel):
             self,
             text=f"Default: {config.OPENAI_BASE_URL}",
             text_color=config.INK,
-            font=("Arial", 12),
+            font=(config.FONT_FAMILY_LOG, 12),
         ).pack(padx=30, pady=(0, 0), anchor="w")
 
         # API key
-        ctk.CTkLabel(self, text="API Key:", font=("Arial", 14, "bold")).pack(
+        ctk.CTkLabel(self, text="API Key:", font=(config.FONT_FAMILY_LOG, 14, "bold")).pack(
             padx=20, pady=(15, 5), anchor="w"
         )
         self.entry = ctk.CTkEntry(self, width=500, show="•")
@@ -141,10 +141,18 @@ class SettingsDialog(ctk.CTkToplevel):
             self,
             text="Local servers only. OpenAI always requires a key.",
             text_color=config.INK,
-            font=("Arial", 12),
+            font=(config.FONT_FAMILY_LOG, 12),
         ).pack(padx=48, pady=(0, 5), anchor="w")
 
         self._update_key_controls()
+
+        # Hide tooltips option
+        self.hide_tooltips_var = ctk.BooleanVar(value=config.HIDE_TOOLTIPS)
+        ctk.CTkCheckBox(
+            self,
+            text="Hide tooltips",
+            variable=self.hide_tooltips_var,
+        ).pack(padx=20, pady=(20, 5), anchor="w")
 
         # Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -175,11 +183,13 @@ class SettingsDialog(ctk.CTkToplevel):
         config.API_BASE_URL = self.base_url_entry.get().strip() or config.OPENAI_BASE_URL
 
         config.API_KEY_REQUIRED = not self.no_key_var.get()
+        config.HIDE_TOOLTIPS = self.hide_tooltips_var.get()
 
         settings.update_settings({
             "llm_model": config.LLM_MODEL,
             "api_base_url": config.API_BASE_URL,
-            "api_key_required": config.API_KEY_REQUIRED
+            "api_key_required": config.API_KEY_REQUIRED,
+            "hide_tooltips": config.HIDE_TOOLTIPS
         })
 
         security.set_api_key(self.entry.get().strip())
@@ -233,7 +243,7 @@ class HintDialog(ctk.CTkToplevel):
             text=message,
             wraplength=400,
             justify="left",
-            font=("Arial", 14)
+            font=(config.FONT_FAMILY_LOG, 14)
         ).pack(padx=20, pady=(20, 10), fill="both", expand=True)
 
         # Buttons
@@ -258,7 +268,7 @@ class ConfirmDialog(ctk.CTkToplevel):
             text=question,
             wraplength=400,
             justify="left",
-            font=("Arial", 14)
+            font=(config.FONT_FAMILY_LOG, 14)
         ).pack(padx=20, pady=(20, 10), fill="both", expand=True)
 
         # Buttons

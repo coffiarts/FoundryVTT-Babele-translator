@@ -1,5 +1,8 @@
+from collections.abc import Callable
+
 import ct4f_config as config
 import customtkinter as ctk
+import tkinter as tk
 
 ICON_SIZE = 22  # px, size of one batch square
 ICON_GAP = 4    # px, gap between squares
@@ -162,3 +165,81 @@ class LogTextbox(ctk.CTkTextbox):
         self.insert("end", message + "\n", tag)
         self.see("end")
         self.configure(state=state)
+
+
+# ===========================================
+# Class: Tooltip
+# Hover info for a widget: a small borderless popup that appears after a short delay.
+# <text> is a string, or a function returning one (for texts that change, e.g. truncated paths)
+# ===========================================
+class Tooltip:
+
+    DELAY_MS = 500
+    MAX_WIDTH = 360  # px, longer texts are wrapped
+
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text: Callable|str = text
+        self._after_id = None
+        self._popup = None
+        self._pointer = (0, 0)
+
+        widget.bind("<Enter>", self._schedule, add="+")
+        widget.bind("<Motion>", self._remember_pointer, add="+")
+        widget.bind("<Leave>", self._hide, add="+")
+        widget.bind("<ButtonPress>", self._hide, add="+")
+
+    def _remember_pointer(self, event):
+        self._pointer = (event.x_root, event.y_root)
+
+    def _schedule(self, event):
+        self._hide()
+        self._remember_pointer(event)
+        self._after_id = self.widget.after(self.DELAY_MS, self._show)
+
+    def _show(self):
+        self._after_id = None
+        text = self.text() if callable(self.text) else self.text
+
+        if config.HIDE_TOOLTIPS or not text:
+            return
+
+        self._popup = tk.Toplevel(self.widget)
+        self._popup.wm_overrideredirect(True)
+        self._popup.wm_attributes("-topmost", True)
+
+        tk.Label(
+            self._popup,
+            text=text,
+            justify="left",
+            wraplength=self.MAX_WIDTH,
+            background=config.PARCHMENT_LIGHT,
+            foreground=config.INK,
+            relief="solid",
+            borderwidth=1,
+            font=config.TOOLTIP_FONT,
+            padx=8,
+            pady=4
+        ).pack()
+
+        # Keep the popup on screen: flip to the left of / above the pointer if there is no room
+        self._popup.update_idletasks()
+        width, height = self._popup.winfo_reqwidth(), self._popup.winfo_reqheight()
+        x, y = self._pointer[0] + 12, self._pointer[1] + 18
+
+        if x + width > self.widget.winfo_screenwidth():
+            x = max(0, self._pointer[0] - width - 12)
+
+        if y + height > self.widget.winfo_screenheight():
+            y = max(0, self._pointer[1] - height - 12)
+
+        self._popup.wm_geometry(f"+{x}+{y}")
+
+    def _hide(self, event=None):
+        if self._after_id is not None:
+            self.widget.after_cancel(self._after_id)
+            self._after_id = None
+
+        if self._popup is not None:
+            self._popup.destroy()
+            self._popup = None

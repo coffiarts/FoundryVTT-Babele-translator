@@ -83,9 +83,9 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ Feature: Extend workflow by adding an option "Review terminology before translation", which stops after terminology is complete, providing the result in the same way as for the final translation (with a link to the terminology folder in the status bar). 
 
-☐ UX: Add meaningful onhover tooltips to essential UI elements (buttons, widgets, potentially truncated filepaths ...)
+☑ UX: Add tooltips to essential UI elements (buttons, widgets, potentially truncated filepaths ...), including a new settings option to hide them.
 
-☐ Feature: UI Localization
+☐ UK: UI Localization
 
 ☐ Feature: Disclose and persist as "advanced" setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list
 

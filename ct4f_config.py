@@ -131,6 +131,10 @@ API_BASE_URL = OPENAI_BASE_URL
 # False for servers that don't check API keys (e.g. a local Ollama). OpenAI itself always needs one
 API_KEY_REQUIRED = True
 
+# If True, no hover info texts (tooltips) are shown
+HIDE_TOOLTIPS = False
+
+
 def get_translation_instructions():
     return f"""
 Translate every text to {TARGET_LANGUAGE["name"]}.
@@ -371,9 +375,20 @@ STATUS_COLORS = {
     REVIEW_REQUIRED: MAGENTA
 }
 
+# Fonts. The family names must match the font files in assets/fonts (loaded at startup, see FONT_FILES).
+# The theme file assets/ct4f-theme.json repeats the text font family, because JSON cannot refer to Python names
+FONT_FAMILY_HEADING = "Almendra"
+FONT_FAMILY_TEXT = "EB Garamond"
+FONT_FAMILY_LOG = "Arial"
+FONT_FILES = ("Almendra-Regular.ttf", "Almendra-Bold.ttf", "EBGaramond-Regular.ttf")
+
+FONT_NAME = (FONT_FAMILY_HEADING, 16, "bold")   # field names and buttons
+FONT_VALUE = (FONT_FAMILY_TEXT, 17)             # displayed values
+TOOLTIP_FONT = (FONT_FAMILY_TEXT, 13)           # hover info texts
+
 # Log output (inline log, pop-out log and error views)
 # The font is explicit (non-serif), whereas the theme default is a serif font handled by theme and UI
-LOG_FONT = ("Arial", 13)
+LOG_FONT = (FONT_FAMILY_LOG, 13)
 LOG_BACKGROUND_COLOR = BLACK
 LOG_TEXT_COLOR = WHITE
 
