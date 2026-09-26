@@ -119,3 +119,19 @@ def confirm_batch_nonfatal_errors(batch_id, batch_cnt, error_count) -> bool:
     return answer
 
 
+# ------------------------------------------------------------
+# Function: Confirm Overwrite Terminology
+# Asked when a new run finds a terminology file that is not part of any progress
+# ------------------------------------------------------------
+def confirm_overwrite_terminology(file_path) -> bool:
+
+    question = \
+        f"\n=== EXISTING TERMINOLOGY FILE WILL BE OVERWRITTEN ===\n" \
+        f"There is already a terminology file for this input:\n{file_path}\n" \
+        "It will be replaced by a freshly built terminology.\n" \
+        "Any changes you might have made to it manually will be lost!\n" \
+        "If you consider it final, save it in another location before proceeding.\n" \
+        f"[{config.YES}] Yes, overwrite it.\n" \
+        f"[{config.NO}] No, abort (so you can move the file first)."
+
+    return confirm_yes_no(question)

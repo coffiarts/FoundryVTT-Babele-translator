@@ -12,3 +12,8 @@ class DeclinedException(Exception):
 # by its message instead of a technical error dialog
 class ExpectedException(Exception):
     pass
+
+
+# The run was paused on purpose (e.g. after terminology, so that the user can review it)
+class PausedException(Exception):
+    pass

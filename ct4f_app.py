@@ -80,12 +80,11 @@ class App(ctk.CTk):
         self.status_label = ctk.CTkLabel(self.status_bar, text="Ready", anchor="w")
         self.status_label.pack(side="left", padx=20)
 
-        # The "Open Output" belongs to the status bar, but it will only be shown with the final status by show_results()
-        self.open_output_button = ctk.CTkButton(
+        # The "Open Folder" belongs to the status bar, but it will only be shown when there's a result file to show (terminology or translation)
+        self.open_folder_button = ctk.CTkButton(
             self.status_bar,
             text="Open Output Folder",
-            width=140,
-            command=lambda: fn.open_folder(config.OUTPUT_DIR)
+            width=200
         )
 
         self.body_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -326,6 +325,18 @@ class App(ctk.CTk):
         self.max_batch_size_label.pack(side="left", padx=(10, 0))
 
         # =========================================
+        # Pause after terminology (one-shot)
+        # =========================================
+        self.pause_after_terminology_var = ctk.BooleanVar(value=config.PAUSE_AFTER_TERMINOLOGY)
+        self.pause_after_terminology_checkbox = ctk.CTkCheckBox(
+            self.configuration_frame,
+            font=FONT_VALUE,
+            text="Review terminology before translating (recommended for each new input file)",
+            variable=self.pause_after_terminology_var
+        )
+        self.pause_after_terminology_checkbox.grid(row=9, column=1, sticky="w", padx=(0, 20), pady=5)
+
+        # =========================================
         # Mock Mode Switch
         # =========================================
         self.mock_mode_var = ctk.BooleanVar(value=config.MOCK_MODE)
@@ -338,7 +349,7 @@ class App(ctk.CTk):
             progress_color=config.RED,
             fg_color=config.GREY
         )
-        self.mock_switch.grid(row=9, column=1, sticky="w", padx=(0, 20), pady=(5, 20))
+        self.mock_switch.grid(row=10, column=1, sticky="w", padx=(0, 20), pady=(5, 20))
 
         # =========================================
         # Prepare / Start / Reconfigure / Cancel Buttons
@@ -502,10 +513,12 @@ class App(ctk.CTk):
             initialdir=str(self.selected_file.parent) if self.selected_file else None
         )
 
-        if not filename:
-            return
-
+        previous_file = self.selected_file
         self.set_input_file(Path(filename))
+
+        # A newly picked (different) file is a first run, so the terminology review is on by default
+        if Path(filename) != previous_file:
+            self.pause_after_terminology_var.set(True)
 
 
     # ===========================================
@@ -573,6 +586,7 @@ class App(ctk.CTk):
         config.GAME_SYSTEM_CONTEXT = self.game_system_var.get()
         config.GENRE_CONTEXT = self.genre_var.get()
         config.MAX_BATCH_SIZE = int(round(self.max_batch_size_slider.get()))
+        config.PAUSE_AFTER_TERMINOLOGY = self.pause_after_terminology_var.get()
 
         fn.adapt_file_paths()
         self.persist_settings()
@@ -799,7 +813,7 @@ class App(ctk.CTk):
         return True
 
 
-        # ===========================================
+    # ===========================================
     # Function: Preparation Ended
     # Callback invoked by the worker thread, however the preparing phase ended.
     # Hands over to the UI thread
@@ -849,6 +863,9 @@ class App(ctk.CTk):
 
         if outcome["outcome"] == config.OUTCOME_SUCCESS:
             self.show_results() # needs to be called after return_to_prepared_state, so that results can't get overwritten by the "Ready to start." status message
+            fn.play_sound(fn.resource_path("assets/completed.wav"))
+        elif outcome["outcome"] == config.OUTCOME_PAUSED:
+            self.show_terminology_review()
             fn.play_sound(fn.resource_path("assets/completed.wav"))
         else:
             self.show_outcome_status(outcome)
@@ -1046,7 +1063,7 @@ class App(ctk.CTk):
         self.max_batch_size_slider.configure(state="disabled")
         self.set_configuration_panel_locked(True)
         self.set_controls_locked(True)
-
+        self.pause_after_terminology_checkbox.configure(state="disabled")
 
     # ===========================================
     # Function: Enable Configuration Controls
@@ -1070,6 +1087,7 @@ class App(ctk.CTk):
         self.configuration_frame.configure(fg_color=config.PARCHMENT)
         self.set_configuration_panel_locked(False)
         self.set_controls_locked(False)
+        self.pause_after_terminology_checkbox.configure(state="normal")
 
 
     # ===========================================
@@ -1095,7 +1113,7 @@ class App(ctk.CTk):
         controls = [
             self.file_button, self.output_dir_button, self.output_dir_reset_button,
             self.radio_input_type_babele, self.radio_input_type_localization,
-            self.module_name_entry, self.mock_switch,
+            self.module_name_entry, self.mock_switch, self.pause_after_terminology_checkbox,
             self.source_language_menu, self.target_language_menu,
             self.game_system_menu, self.genre_menu,
             self.max_batch_size_slider
@@ -1208,7 +1226,30 @@ class App(ctk.CTk):
     # ===========================================
     def show_status(self, message):
         self.status_label.configure(text=message)
-        self.open_output_button.pack_forget() # This is the default, to make sure that the button never stays visible longer than needed
+        self.open_folder_button.pack_forget() # This is the default, to make sure that the button never stays visible longer than needed
+
+
+    # ===========================================
+    # Function: Show Folder Link
+    # Shows the status bar button that opens <folder> in the file manager
+    # ===========================================
+    def show_folder_link(self, text, folder):
+        self.open_folder_button.configure(text=text, command=lambda: fn.open_folder(folder))
+        self.open_folder_button.pack(side="right", padx=20, before=self.status_label)
+
+
+    # ===========================================
+    # Function: Show Terminology Review
+    # The run was paused after terminology: tells the user how to continue.
+    # The option is a one-shot, so it is reset here, otherwise the next Start would pause again
+    # ===========================================
+    def show_terminology_review(self):
+        self.pause_after_terminology_var.set(False)
+        config.PAUSE_AFTER_TERMINOLOGY = False
+        settings.update_settings({"pause_after_terminology": False})
+
+        self.show_status(f"Terminology ready for review. Edit it as required, then click Start to continue: {config.TERMINOLOGY_FILE.name}")
+        self.show_folder_link("Open Terminology Folder", config.TERMINOLOGY_DIR)
 
 
     # ===========================================
@@ -1216,8 +1257,8 @@ class App(ctk.CTk):
     # Announces the output of a successful run in the status bar
     # ===========================================
     def show_results(self):
-        self.show_status(f"Translated file: {config.OUTPUT_FILE}")
-        self.open_output_button.pack(side="right", padx=20)
+        self.show_status(f"Translation completed: {config.OUTPUT_FILE.name}")
+        self.show_folder_link("Open Output Folder", config.OUTPUT_DIR)
 
 
     # ===========================================
@@ -1271,6 +1312,7 @@ class App(ctk.CTk):
             "target_language_code": config.TARGET_LANGUAGE["code"],
             "game_system_context": config.GAME_SYSTEM_CONTEXT,
             "genre_context": config.GENRE_CONTEXT,
+            "pause_after_terminology": config.PAUSE_AFTER_TERMINOLOGY,
             "max_batch_size": config.MAX_BATCH_SIZE
         })
 
@@ -1335,6 +1377,8 @@ class App(ctk.CTk):
         genre_context = saved.get("genre_context")
         if genre_context in config.SUPPORTED_GENRES:
             self.genre_var.set(genre_context)
+
+        self.pause_after_terminology_var.set(bool(saved.get("pause_after_terminology", True)))
 
         max_batch_size = saved.get("max_batch_size")
         if isinstance(max_batch_size, int):

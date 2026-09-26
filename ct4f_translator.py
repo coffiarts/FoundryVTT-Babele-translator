@@ -32,6 +32,9 @@ def report_outcome(work, on_ended):
     except exceptions.DeclinedException:
         outcome["outcome"] = config.OUTCOME_DECLINED
 
+    except exceptions.PausedException:
+        outcome["outcome"] = config.OUTCOME_PAUSED
+
     except exceptions.ExpectedException as e:
         outcome["outcome"] = config.OUTCOME_EXPECTED_ERROR
         outcome["message"] = str(e)
@@ -379,23 +382,22 @@ def _run(logger: Callable[str], cancel_event):
         if not config.MOCK_MODE:
             client = fn.init_api_client()
 
+        # A new run rebuilds the terminology from scratch, so an existing file would be overwritten
+        if run_mode == config.NEW_RUN and config.TERMINOLOGY_FILE.exists():
+            if not translator_dialogs.confirm_overwrite_terminology(config.TERMINOLOGY_FILE):
+                raise exceptions.DeclinedException()
+
         # ---------------------------------------------------
         # REUSE, CONTINUE OR BUILD MASTER TERMINOLOGY
         # ---------------------------------------------------
-        if run_mode != config.RESUME and config.TERMINOLOGY_FILE.exists():
+        # Terminology already completed by an earlier run: the file stays untouched (no rebuild, no re-save)
+        if (run_mode == config.RESUME
+                and config.TERMINOLOGY_FILE.exists()
+                and all(batch[config.TERMINOLOGY_STATUS] in (config.COMPLETED, config.REVIEW_REQUIRED)
+                        for batch in batches)):
 
             master_terminology = fn.load_json_input(
                 config.TERMINOLOGY_FILE
-            )
-
-            # As we're skipping terminology completely, tell process control (progress-info) that everything's completed here.
-            # Otherwise, there would be an abort due to "missing terminology" later
-            for batch in batches:
-                batch[config.TERMINOLOGY_STATUS] = config.COMPLETED
-
-            fn.save_batches(
-                batches,
-                progress_info
             )
 
             fn.LOGGER(fn.log_header(f"REUSING EXISTING TERMINOLOGY ({len(master_terminology["terms"])} entries)."), config.TAG_INFO)
@@ -563,6 +565,13 @@ def _run(logger: Callable[str], cancel_event):
                 config.TAG_SUCCESS
             )
             fn.show_status(f"Saved {len(master_terminology["terms"])} entries in Master Terminology: {config.TERMINOLOGY_FILE}")
+
+        # ---------------------------------------------------
+        # PAUSE FOR TERMINOLOGY REVIEW (IF REQUESTED)
+        # ---------------------------------------------------
+        if config.PAUSE_AFTER_TERMINOLOGY:
+            fn.LOGGER(fn.log_header("PAUSED AFTER TERMINOLOGY (for review)"), config.TAG_INFO)
+            raise exceptions.PausedException()
 
         # ---------------------------------------------------
         # BEGIN TRANSLATION ...

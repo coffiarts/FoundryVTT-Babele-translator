@@ -113,6 +113,8 @@ PLACEHOLDER_PATTERN = r'<<<PLACEHOLDER_\d{6}>>>' # MUST contain \d{<number>} to 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 
+PAUSE_AFTER_TERMINOLOGY = True # If True, the run stops once after terminology is complete, so that the user can review it (the option then resets itself and will be set to True again on selecting another input file)
+
 
 # ------------------------------------------------------------
 # LLM Parameters (change these only for translation fine-tuning)
@@ -311,6 +313,7 @@ INPUT_TYPE_LOCALIZATION = "Localization file (lang/*.json)"
 OUTCOME_SUCCESS = "SUCCESS"
 OUTCOME_CANCELLED = "CANCELLED"
 OUTCOME_DECLINED = "DECLINED"
+OUTCOME_PAUSED = "PAUSED"
 OUTCOME_EXPECTED_ERROR = "EXPECTED_ERROR"
 OUTCOME_UNEXPECTED_ERROR = "UNEXPECTED_ERROR"
 

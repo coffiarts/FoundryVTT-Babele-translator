@@ -77,11 +77,13 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ UX: Rename "Reset" (Preparation) button to "Reconfigure" to make it more intuitive what it really does
 
-☑  Feature: API client connection config -
+☑ Feature: API client connection config -
 - is it strictly OpenAI specific, or can we make it exchangeable via Settings?
 - Disclose and persist LLM_MODEL setting
 
-☐ Feature: Extend workflow by adding an option "Review terminology before translation", which stops after terminology is complete, providing the result in the same way as for the final translation (with a link to the terminology folder in the status bar). 
+☑ Feature: Extend workflow by adding an option "Review terminology before translation", which stops after terminology is complete, providing the result in the same way as for the final translation (with a link to the terminology folder in the status bar). 
+
+☐ UX: Add meaningful onhover tooltips to essential UI elements (buttons, widgets, potentially truncated filepaths ...)
 
 ☐ Feature: UI Localization
 
@@ -97,8 +99,6 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☐ Feature: Allow storing of setting presets
 
-☐ UX: Add meaningful popup help texts to essential buttons and input fields
-
 ☐ UX: Cleanup/fix of Log view colors: Replace console colors by log colors (taking care not to break console coloring, if still needed)
 
 ☐ UX: Animate current PROCESSING batch?
@@ -107,7 +107,12 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☐ Refactoring: Split up ct4f_core_functions into more reasonable sub-libraries
 
-☐ Make sure that font SIL licenses are properly included and mentioned
+☐ Make sure that all licensing/notice obligations are covered properly
+- SIL fonts
+- packages 
+    pip-licenses --format=markdown
+    pip install pip-licenses
+- assets 
 
 ### Just as a reminder: Frequently retest pyinstaller build:
 with console (for debugging):

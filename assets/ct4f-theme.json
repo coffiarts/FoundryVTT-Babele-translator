@@ -83,12 +83,12 @@
   "CTkCheckBox": {
     "corner_radius": 6,
     "border_width": 3,
-    "fg_color": ["#3B8ED0", "#1F6AA5"],
-    "border_color": ["#3E454A", "#949A9F"],
-    "hover_color": ["#36719F", "#144870"],
-    "checkmark_color": ["#DCE4EE", "gray90"],
-    "text_color": ["gray10", "#DCE4EE"],
-    "text_color_disabled": ["gray60", "gray45"]
+    "fg_color": ["#7a4e2d", "#7a4e2d"],
+    "border_color": ["#5a4630", "#5a4630"],
+    "hover_color": ["#5f3b21", "#5f3b21"],
+    "checkmark_color": ["#f3ead2", "#f3ead2"],
+    "text_color": ["#3b2f1e", "#3b2f1e"],
+    "text_color_disabled": ["#a8977a", "#a8977a"]
   },
   "CTkProgressBar": {
     "corner_radius": 1000,

@@ -41,3 +41,6 @@ Square brackets are resting states, round brackets are phases.
 | running | Cancel (also while a prompt is pending) | log | prepared |
 | running | prompt answered "No" (integrity error) | log | prepared |
 | running | unexpected exception | error dialog | prepared |
+
+## "Stop after terminology" Workflow
+See [Run Scenarios.xlsx](Run%20Scenarios.xlsx)
