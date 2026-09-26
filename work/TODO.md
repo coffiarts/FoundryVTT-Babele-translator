@@ -85,7 +85,9 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ UX: Add tooltips to essential UI elements (buttons, widgets, potentially truncated filepaths ...), including a new settings option to hide them.
 
-☐ UK: UI Localization
+☑ UX: UI Localization
+
+☐ UX: Improve MBS slider
 
 ☐ Feature: Disclose and persist as "advanced" setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list
 
@@ -117,9 +119,9 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 ### Just as a reminder: Frequently retest pyinstaller build:
 with console (for debugging):
 
-    pyinstaller --onefile --add-data "assets:assets" --icon assets/icon.ico ct4f_app.py
+    pyinstaller --onefile --add-data "assets:assets" --add-data "lang:lang" --icon assets/icon.ico ct4f_app.py
 
 w/o console:
 
-    pyinstaller --onefile --windowed --add-data "assets:assets" --icon assets/icon.ico ct4f_app.py
+    pyinstaller --onefile --windowed --add-data "assets:assets" --add-data "lang:lang" --icon assets/icon.ico ct4f_app.py
 

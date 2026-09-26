@@ -1,4 +1,5 @@
 import ct4f_config as config
+import ct4f_i18n as i18n
 import ct4f_translator_dialogs as dialogs
 import customtkinter as ctk
 import ct4f_security as security
@@ -22,13 +23,13 @@ def set_logger(logger):
 # Function: Confirm Yes/No
 #
 # ===========================================
-def confirm_yes_no(question, on_yes, on_no):
+def confirm_yes_no(key, on_yes, on_no, **params):
 
-    LOGGER(f"confirm_yes_no: \"{question}\"")
+    LOGGER(f"confirm_yes_no: \"{i18n.t_en(key, **params)}\"")
 
     dialogs.put_request({
         "type": config.PROMPT_TYPE_YESNO,
-        "question": question,
+        "question": i18n.t(key, **params),
         "on_yes": on_yes,
         "on_no": on_no
     })
@@ -75,8 +76,8 @@ class SettingsDialog(ctk.CTkToplevel):
 
     def __init__(self, parent, on_save_callback=None):
         super().__init__(parent)
-        self.title("Settings")
-        self.geometry("550x520")
+        self.title(i18n.t("settings.title"))
+        self.geometry("550x610")
         self.resizable(False, False)
         self.transient(parent)
         self.grab_set()
@@ -85,8 +86,25 @@ class SettingsDialog(ctk.CTkToplevel):
 
         self.locked_look = ui_widgets.LockedLook()
 
+        # UI language: one entry per language file found in the lang folder
+        self.language_by_option = {
+            f"{code}: {name}": code for code, name in i18n.available_languages().items()
+        }
+        self.ui_language_var = ctk.StringVar(value=next(
+            (option for option, code in self.language_by_option.items() if code == config.UI_LANGUAGE),
+            next(iter(self.language_by_option))
+        ))
+
+        ctk.CTkLabel(self, text=i18n.t("settings.ui_language"), font=(config.FONT_FAMILY_LOG, 14, "bold")).pack(
+            padx=20, pady=(15, 5), anchor="w"
+        )
+        ctk.CTkOptionMenu(
+            self, width=300, dynamic_resizing=False,
+            values=list(self.language_by_option), variable=self.ui_language_var
+        ).pack(padx=20, pady=5, anchor="w")
+
         # LLM model
-        ctk.CTkLabel(self, text="LLM Model:", font=(config.FONT_FAMILY_LOG, 14, "bold")).pack(
+        ctk.CTkLabel(self, text=i18n.t("settings.llm_model"), font=(config.FONT_FAMILY_LOG, 14, "bold")).pack(
             padx=20, pady=(15, 5), anchor="w"
         )
         self.model_entry = ctk.CTkEntry(self, width=500)
@@ -94,7 +112,7 @@ class SettingsDialog(ctk.CTkToplevel):
         self.model_entry.insert(0, config.LLM_MODEL)
 
         # API base URL (empty = OpenAI)
-        ctk.CTkLabel(self, text=f"API Key (not needed for local servers):", font=(config.FONT_FAMILY_LOG, 14, "bold")).pack(
+        ctk.CTkLabel(self, text=i18n.t("settings.api_base_url"), font=(config.FONT_FAMILY_LOG, 14, "bold")).pack(
             padx=20, pady=(15, 5), anchor="w"
         )
         self.base_url_entry = ctk.CTkEntry(self, width=500)
@@ -102,13 +120,13 @@ class SettingsDialog(ctk.CTkToplevel):
         self.base_url_entry.insert(0, config.API_BASE_URL)
         ctk.CTkLabel(
             self,
-            text=f"Default: {config.OPENAI_BASE_URL}",
+            text=i18n.t("settings.default_url", url=config.OPENAI_BASE_URL),
             text_color=config.INK,
             font=(config.FONT_FAMILY_LOG, 12),
         ).pack(padx=30, pady=(0, 0), anchor="w")
 
         # API key
-        ctk.CTkLabel(self, text="API Key:", font=(config.FONT_FAMILY_LOG, 14, "bold")).pack(
+        ctk.CTkLabel(self, text=i18n.t("settings.api_key"), font=(config.FONT_FAMILY_LOG, 14, "bold")).pack(
             padx=20, pady=(15, 5), anchor="w"
         )
         self.entry = ctk.CTkEntry(self, width=500, show="•")
@@ -123,7 +141,7 @@ class SettingsDialog(ctk.CTkToplevel):
         self.show_var = ctk.BooleanVar(value=False)
         self.show_key_checkbox = ctk.CTkCheckBox(
             self,
-            text="Show key",
+            text=i18n.t("settings.show_key"),
             variable=self.show_var,
             command=self._toggle_show,
         )
@@ -133,13 +151,13 @@ class SettingsDialog(ctk.CTkToplevel):
         self.no_key_var = ctk.BooleanVar(value=not config.API_KEY_REQUIRED)
         ctk.CTkCheckBox(
             self,
-            text="This server needs no API key",
+            text=i18n.t("settings.no_key_needed"),
             variable=self.no_key_var,
             command=self._update_key_controls,
         ).pack(padx=20, pady=(15, 0), anchor="w")
         ctk.CTkLabel(
             self,
-            text="Local servers only. OpenAI always requires a key.",
+            text=i18n.t("settings.no_key_hint"),
             text_color=config.INK,
             font=(config.FONT_FAMILY_LOG, 12),
         ).pack(padx=48, pady=(0, 5), anchor="w")
@@ -150,18 +168,18 @@ class SettingsDialog(ctk.CTkToplevel):
         self.hide_tooltips_var = ctk.BooleanVar(value=config.HIDE_TOOLTIPS)
         ctk.CTkCheckBox(
             self,
-            text="Hide tooltips",
+            text=i18n.t("settings.hide_tooltips"),
             variable=self.hide_tooltips_var,
         ).pack(padx=20, pady=(20, 5), anchor="w")
 
         # Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(10, 15), fill="x")
-        ctk.CTkButton(btn_frame, text="Save", command=self._save).pack(
+        ctk.CTkButton(btn_frame, text=i18n.t("dialog.save"), command=self._save).pack(
             side="right", padx=(5, 0)
         )
         ctk.CTkButton(
-            btn_frame, text="Cancel", fg_color=config.GREY, command=self.destroy
+            btn_frame, text=i18n.t("dialog.cancel"), fg_color=config.GREY, command=self.destroy
         ).pack(side="right")
 
     def _toggle_show(self):
@@ -194,16 +212,28 @@ class SettingsDialog(ctk.CTkToplevel):
 
         security.set_api_key(self.entry.get().strip())
 
+        # A changed UI language only takes effect after a restart
+        new_language = self.language_by_option[self.ui_language_var.get()]
+        language_changed = new_language != config.UI_LANGUAGE
+
+        if language_changed:
+            settings.update_settings({"ui_language": new_language})
+
         if self.on_save_callback:
             self.on_save_callback()
+
+        parent = self.master
         self.destroy()
+
+        if language_changed:
+            HintDialog(parent, message=i18n.t("settings.restart_needed"))
 
 
 class ErrorDialog(ctk.CTkToplevel):
 
     def __init__(self, parent, message:str=""):
         super().__init__(parent)
-        self.title("Ooops... we have a problem!")
+        self.title(i18n.t("dialog.error_title"))
         self.geometry("500x500")
         self.resizable(True, True)
         self.transient(parent)
@@ -224,7 +254,7 @@ class ErrorDialog(ctk.CTkToplevel):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(10, 15), fill="x")
         ctk.CTkButton(
-            btn_frame, text="Close", fg_color=config.GREY, command=self.destroy
+            btn_frame, text=i18n.t("dialog.close"), fg_color=config.GREY, command=self.destroy
         ).pack(side="right")
 
 
@@ -232,7 +262,7 @@ class HintDialog(ctk.CTkToplevel):
 
     def __init__(self, parent, message: str = ""):
         super().__init__(parent)
-        self.title("Please note")
+        self.title(i18n.t("dialog.hint_title"))
         self.minsize(400, 150)
         self.transient(parent)
         self.grab_set()
@@ -249,14 +279,14 @@ class HintDialog(ctk.CTkToplevel):
         # Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(10, 15), fill="x")
-        ctk.CTkButton(btn_frame, text="OK", command=self.destroy).pack(side="right")
+        ctk.CTkButton(btn_frame, text=i18n.t("dialog.ok"), command=self.destroy).pack(side="right")
 
 
 class ConfirmDialog(ctk.CTkToplevel):
 
     def __init__(self, parent, question: str, on_yes, on_no, on_show_log=None):
         super().__init__(parent)
-        self.title("Please confirm")
+        self.title(i18n.t("dialog.confirm_title"))
         self.minsize(400, 150)
         self.transient(parent)
         self.grab_set()
@@ -274,13 +304,13 @@ class ConfirmDialog(ctk.CTkToplevel):
         # Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(10, 15), fill="x")
-        ctk.CTkButton(btn_frame, text="Yes", command=lambda: self._answer(on_yes)).pack(side="left", padx=(0, 5))
-        ctk.CTkButton(btn_frame, text="No", fg_color=config.GREY, command=lambda: self._answer(on_no)).pack(side="left")
+        ctk.CTkButton(btn_frame, text=i18n.t("dialog.yes"), command=lambda: self._answer(on_yes)).pack(side="left", padx=(0, 5))
+        ctk.CTkButton(btn_frame, text=i18n.t("dialog.no"), fg_color=config.GREY, command=lambda: self._answer(on_no)).pack(side="left")
 
         if on_show_log:
             ctk.CTkButton(
                 btn_frame,
-                text="Show Log",
+                text=i18n.t("dialog.show_log"),
                 fg_color=config.GREY,
                 command=on_show_log
             ).pack(side="left", padx=(20, 0))
@@ -300,7 +330,7 @@ class LogViewerDialog(ctk.CTkToplevel):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.title("Log")
+        self.title(i18n.t("dialog.log_title"))
         self.geometry("800x600")
         self.resizable(True, True)
         self.transient(parent)
@@ -314,7 +344,7 @@ class LogViewerDialog(ctk.CTkToplevel):
         # Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(0, 15), fill="x")
-        ctk.CTkButton(btn_frame, text="Close", fg_color=config.GREY, command=self.hide).pack(side="right")
+        ctk.CTkButton(btn_frame, text=i18n.t("dialog.close"), fg_color=config.GREY, command=self.hide).pack(side="right")
 
         self._was_maximized = False
         self._normal_geometry = None
@@ -359,7 +389,7 @@ class ReviewItemsDialog(ctk.CTkToplevel):
 
     def __init__(self, parent, review_items: list):
         super().__init__(parent)
-        self.title(f"Review Items ({len(review_items)})")
+        self.title(i18n.t("review.title", count=len(review_items)))
         self.geometry("900x700")
         self.resizable(True, True)
         self.transient(parent)
@@ -383,7 +413,7 @@ class ReviewItemsDialog(ctk.CTkToplevel):
         # Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(0, 15), fill="x")
-        ctk.CTkButton(btn_frame, text="Close", fg_color=config.GREY, command=self.destroy).pack(side="right")
+        ctk.CTkButton(btn_frame, text=i18n.t("dialog.close"), fg_color=config.GREY, command=self.destroy).pack(side="right")
 
 
     def _render_item(self, position, item):
@@ -392,15 +422,15 @@ class ReviewItemsDialog(ctk.CTkToplevel):
 
         self.view.insert(
             "end",
-            f"#{position}  {placeholder}  =  {details['original_value']}   "
-            f"(found {details['count']}x in the translation)\n",
+            i18n.t("review.item_header", position=position, placeholder=placeholder,
+                   value=details['original_value'], count=details['count']) + "\n",
             "header"
         )
 
-        self.view.insert("end", "Original:\n", "label")
+        self.view.insert("end", i18n.t("review.original") + "\n", "label")
         self._insert_with_highlight(details["original_context"], placeholder)
 
-        self.view.insert("end", "\n\nTranslation:\n", "label")
+        self.view.insert("end", "\n\n" + i18n.t("review.translation") + "\n", "label")
         self._insert_with_highlight(details["translated_context"], placeholder)
 
         self.view.insert("end", "\n\n" + "-" * 80 + "\n\n")

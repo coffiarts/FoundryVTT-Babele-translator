@@ -1,6 +1,8 @@
 import ct4f_config as config
 from ct4f_security import get_api_key
 import ct4f_exceptions as exceptions
+import ct4f_i18n as i18n
+import hashlib
 import json
 import os
 import sys
@@ -320,6 +322,8 @@ def build_batches(translatables_with_placeholders):
     current_batch = create_empty_batch()
 
     error = None
+    error_key = None
+    error_params = None
 
     for translatable in translatables_with_placeholders:
 
@@ -327,13 +331,9 @@ def build_batches(translatables_with_placeholders):
 
         # No Translatable must exceed the Batch size limit by itself, this requires an abort.
         if text_size > config.MAX_BATCH_SIZE:
-            error = (
-                f"TRANSLATABLE TEXT EXCEEDS MAX_BATCH_SIZE.\n" +
-                f"Translatable {translatable['id']} " +
-                f"contains {text_size} chars and exceeds " +
-                f"MAX_BATCH_SIZE={config.MAX_BATCH_SIZE}" +
-                f"\nProposed solution: Increase Max Batch Size and prepare again."
-            )
+            error_key = "error.text_exceeds_batch_size"
+            error_params = {"id": translatable["id"], "size": text_size, "max": config.MAX_BATCH_SIZE}
+            error = i18n.t_en(error_key, **error_params)
 
             current_batch[config.TERMINOLOGY_STATUS] = config.FAILED
             current_batch[config.ERROR] = error
@@ -355,6 +355,8 @@ def build_batches(translatables_with_placeholders):
 
         raise ValueError({
             "error": error,
+            "error_key": error_key,
+            "error_params": error_params,
             "batches": batches
         })
 
@@ -748,6 +750,21 @@ def apply_translations(
 
 
 # ------------------------------------------------------------
+# Function: Hash Input File
+# A fingerprint of the input file's content (None if there is no readable input file).
+# It is part of the resume-relevant config, so that changes to the input file
+# are noticed before an existing progress (built from the old content) is resumed
+# ------------------------------------------------------------
+def hash_input_file():
+
+    try:
+        return hashlib.sha256(Path(config.INPUT_FILE).read_bytes()).hexdigest()
+
+    except (OSError, TypeError):
+        return None
+
+
+# ------------------------------------------------------------
 # Function: Get Resume-relevant config (RRC)
 # Delivers the current snapshot of all config parameters that
 # need to remain stable between incremental process runs (aka "Resume" runs).
@@ -756,6 +773,7 @@ def apply_translations(
 def get_resume_relevant_config():
 
     return {
+        "INPUT_FILE_HASH": hash_input_file(),
         "GAME_SYSTEM_CONTEXT" : config.GAME_SYSTEM_CONTEXT,
         "GENRE_CONTEXT": config.GENRE_CONTEXT,
         "MAX_BATCH_SIZE": config.MAX_BATCH_SIZE,
@@ -779,10 +797,12 @@ def get_resume_config_differences(progress_info):
     current_config = get_resume_relevant_config()
     stored_config = progress_info["config"]
 
+    # A parameter that didn't exist yet when the progress was created (e.g. the input file hash,
+    # which was introduced later) can't have changed, so it is not reported
     return {
         name: {"stored": stored_config.get(name), "current": current_config.get(name)}
         for name in {**stored_config, **current_config}
-        if stored_config.get(name) != current_config.get(name)
+        if name in stored_config and stored_config.get(name) != current_config.get(name)
     }
 
 
@@ -882,11 +902,7 @@ def validate_status_sequence(
 def validate_lang_file_content(data, max_reported=5):
 
     if not isinstance(data, dict):
-        raise exceptions.ExpectedException(
-            "INVALID INPUT FILE\n"
-            "The file does not look like a Localization (lang) file: "
-            f"the top level must be an object, but is a {type(data).__name__}."
-        )
+        raise exceptions.ExpectedException("error.invalid_lang_file_top_level", type=type(data).__name__)
 
     invalid_entries = []
 
@@ -903,10 +919,9 @@ def validate_lang_file_content(data, max_reported=5):
 
     if invalid_entries:
         raise exceptions.ExpectedException(
-            "INVALID INPUT FILE\n"
-            "The file does not look like a Localization (lang) file: "
-            f"all values must be texts, but {len(invalid_entries)} entries are not.\n"
-            f"First offending entries:\n" + "\n".join(invalid_entries[:max_reported])
+            "error.invalid_lang_file_values",
+            count=len(invalid_entries),
+            entries="\n".join(invalid_entries[:max_reported])
         )
 
 
@@ -933,13 +948,10 @@ def validate_translatables_found(translatables):
 
     if len(translatables) == 0:
         raise exceptions.ExpectedException(
-            "NO TRANSLATABLE ELEMENTS FOUND\n"
-            "This file doesn't contain any identifiable translatable elements.\n"
-            "\n"
-            f"Are you sure that you've picked the right input type:\n"
-            f"\"{config.INPUT_TYPE_BABELE}\" vs. \"{config.INPUT_TYPE_LOCALIZATION})\"?\n"
-            "\n"
-            f"Currently selected: {config.INPUT_TYPE}"
+            "error.no_translatables",
+            babele=config.INPUT_TYPE_BABELE,
+            localization=config.INPUT_TYPE_LOCALIZATION,
+            selected=config.INPUT_TYPE
         )
 
 
@@ -1480,12 +1492,7 @@ def restore_foundry_syntax(
 def normalize_terminology_response(response):
 
     if not isinstance(response, dict) or not isinstance(response.get("terms"), list):
-        raise exceptions.ExpectedException(
-            "The LLM answer doesn't have the expected structure "
-            "(a JSON object with a list named \"terms\").\n"
-            "The selected model may not be suited for this task. "
-            "Resume the process to try again, or choose another model."
-        )
+        raise exceptions.ExpectedException("error.llm_structure")
 
     optional_defaults = {"gender": "", "number": "", "properName": False, "note": ""}
     normalized_terms = []
@@ -1495,11 +1502,7 @@ def normalize_terminology_response(response):
         if (not isinstance(term, dict)
                 or not isinstance(term.get("original"), str)
                 or not isinstance(term.get("proposedTranslation"), str)):
-            raise exceptions.ExpectedException(
-                "The LLM answer contains a term without a valid \"original\" and \"proposedTranslation\".\n"
-                "The selected model may not be suited for this task. "
-                "Resume the process to try again, or choose another model."
-            )
+            raise exceptions.ExpectedException("error.llm_term_invalid")
 
         normalized_terms.append({
             "original": term["original"],
@@ -1551,8 +1554,8 @@ def adapt_file_paths():
         review_items_file_name = f"{input_stem}-review-items.json"
     else:
         module_sub_path = Path(config.MODULE_NAME) / "lang"
-        progress_sub_path = module_sub_path
         output_stem = derive_localization_output_stem()
+        progress_sub_path = module_sub_path / output_stem   # <module>/lang/<target stem>
         output_file_name = f"{output_stem}.json"
         terminology_file_name = f"{output_stem}-terminology.json"
         review_items_file_name = f"{output_stem}-review-items.json"

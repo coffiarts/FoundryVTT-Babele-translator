@@ -1,5 +1,6 @@
 import ct4f_config as config
 import ct4f_exceptions as exceptions
+import ct4f_i18n as i18n
 import queue
 
 _request_queue = queue.Queue()
@@ -36,16 +37,29 @@ def put_request(request):
 
 # ------------------------------------------------------------
 # Function: Simple y/n prompt confirmation
+# <key> is a language file key. The log gets the English text, the dialog the localized one.
+# {yes}, {no} and {show_log} name the dialog's buttons in the respective language.
+# A parameter may also be a function: it is called with the translation function to use
+# (English for the log, localized for the dialog), for parameters that contain texts of their own
 # ------------------------------------------------------------
-def confirm_yes_no(question="") -> bool:
+def confirm_yes_no(key, **params) -> bool:
 
-    LOGGER(question)
+    def resolve(translate):
+        return {name: value(translate) if callable(value) else value for name, value in params.items()}
+
+    LOGGER(i18n.t_en(
+        key, yes=i18n.t_en("dialog.yes"), no=i18n.t_en("dialog.no"), show_log=i18n.t_en("dialog.show_log"),
+        **resolve(i18n.t_en)
+    ))
 
     response_queue = queue.Queue()
 
     _request_queue.put({
         "type": config.PROMPT_TYPE_YESNO,
-        "question": question,
+        "question": i18n.t(
+            key, yes=i18n.t("dialog.yes"), no=i18n.t("dialog.no"), show_log=i18n.t("dialog.show_log"),
+            **resolve(i18n.t)
+        ),
         "response_queue": response_queue
     })
 
@@ -66,15 +80,7 @@ def confirm_yes_no(question="") -> bool:
 # ------------------------------------------------------------
 def confirm_unusual_lang_file_name() -> bool:
 
-    question = \
-        f"\n=== UNUSUAL FILE NAME FOR A LOCALIZATION FILE ===\n" \
-        f"The selected file is named '{config.INPUT_FILE_NAME}', but Localization (lang) files " \
-        f"are usually named <language code>.json (like en.json, or pt-BR.json).\n" \
-        "Are you sure that this is a Localization file and not a Babele file?\n" \
-        f"[{config.YES}] Yes, continue anyway.\n" \
-        f"[{config.NO}] No, abort."
-
-    return confirm_yes_no(question)
+    return confirm_yes_no("prompt.unusual_lang_file_name", file=config.INPUT_FILE_NAME)
 
 
 # ------------------------------------------------------------
@@ -84,20 +90,14 @@ def confirm_unusual_lang_file_name() -> bool:
 # ------------------------------------------------------------
 def confirm_discard_progress(differences) -> bool:
 
-    changed = "\n".join(
-        f"- {name}: {change['stored']}  =>  {change['current']}"
-        for name, change in differences.items()
-    )
+    def changes(translate):
+        return "\n".join(
+            translate("prompt.input_file_changed") if name == "INPUT_FILE_HASH"
+            else f"- {name}: {change['stored']}  =>  {change['current']}"
+            for name, change in differences.items()
+        )
 
-    question = \
-        f"\n=== SETTINGS CHANGED SINCE THE LAST RUN ===\n" \
-        f"These settings differ from those of the existing progress for this input file:\n" \
-        f"{changed}\n" \
-        "They cannot be applied to a process that is already under way.\n" \
-        f"[{config.YES}] Discard the existing progress and start fresh with the current settings.\n" \
-        f"[{config.NO}] No, keep the progress (restore the previous settings yourself, then prepare again)."
-
-    return confirm_yes_no(question)
+    return confirm_yes_no("prompt.discard_progress", changes=changes)
 
 
 # ------------------------------------------------------------
@@ -105,13 +105,12 @@ def confirm_discard_progress(differences) -> bool:
 # ------------------------------------------------------------
 def confirm_batch_nonfatal_errors(batch_id, batch_cnt, error_count) -> bool:
 
-    question = \
-        f"Batch {batch_id + 1}/{batch_cnt} contains {error_count} placeholder translation error(s).\n" \
-        "Click 'Show Log' to investigate the details.\n\n" \
-        "Do you want to keep this batch anyway (exporting the errors as Review Items for later), " \
-        "or discard it so it gets retried on the next run?"
-
-    answer = confirm_yes_no(question)
+    answer = confirm_yes_no(
+        "prompt.batch_nonfatal_errors",
+        batch=batch_id + 1,
+        batches=batch_cnt,
+        count=error_count
+    )
 
     if answer == config.CANCEL:
         raise exceptions.CancelledException()
@@ -125,13 +124,4 @@ def confirm_batch_nonfatal_errors(batch_id, batch_cnt, error_count) -> bool:
 # ------------------------------------------------------------
 def confirm_overwrite_terminology(file_path) -> bool:
 
-    question = \
-        f"\n=== EXISTING TERMINOLOGY FILE WILL BE OVERWRITTEN ===\n" \
-        f"There is already a terminology file for this input:\n{file_path}\n" \
-        "It will be replaced by a freshly built terminology.\n" \
-        "Any changes you might have made to it manually will be lost!\n" \
-        "If you consider it final, save it in another location before proceeding.\n" \
-        f"[{config.YES}] Yes, overwrite it.\n" \
-        f"[{config.NO}] No, abort (so you can move the file first)."
-
-    return confirm_yes_no(question)
+    return confirm_yes_no("prompt.overwrite_terminology", file=file_path)

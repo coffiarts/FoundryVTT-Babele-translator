@@ -24,19 +24,25 @@ TARGET_LANGUAGE = {
 GAME_SYSTEM_AGNOSTIC = "Generic (system-agnostic)"
 GENRE_AGNOSTIC = "Generic"
 
-SUPPORTED_GAME_SYSTEMS = [
-    "Dungeons & Dragons (DnD5e)",
-    "The Dark Eye/Das Schwarze Auge (TDE5/DSA5)",
-    "Pathfinder (PF2e)",
-    GAME_SYSTEM_AGNOSTIC
-]
+# id => English name. The English name is the actual value: it goes into the AI prompts and is saved in
+# the settings and the progress info. The id only serves for the dropdown's display text, which is
+# looked up in the language files (keys "game_system.<id>" and "genre.<id>")
+GAME_SYSTEMS = {
+    "dnd5e": "Dungeons & Dragons (DnD5e)",
+    "tde5": "The Dark Eye/Das Schwarze Auge (TDE5/DSA5)",
+    "pf2e": "Pathfinder (PF2e)",
+    "generic": GAME_SYSTEM_AGNOSTIC
+}
 
-SUPPORTED_GENRES = [
-    "Classical Fantasy",
-    "Sci-Fi",
-    "Horror",
-    GENRE_AGNOSTIC
-]
+GENRES = {
+    "classical_fantasy": "Classical Fantasy",
+    "sci_fi": "Sci-Fi",
+    "horror": "Horror",
+    "generic": GENRE_AGNOSTIC
+}
+
+SUPPORTED_GAME_SYSTEMS = list(GAME_SYSTEMS.values())
+SUPPORTED_GENRES = list(GENRES.values())
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -134,6 +140,9 @@ API_KEY_REQUIRED = True
 # If True, no hover info texts (tooltips) are shown
 HIDE_TOOLTIPS = False
 
+# Language of the user interface: code of a language file in the lang folder (see ct4f_i18n.py)
+UI_LANGUAGE = "en"
+
 
 def get_translation_instructions():
     return f"""
@@ -165,6 +174,9 @@ Rules:
 - Do not omit entries.
 - Do not add entries.
 - Return only JSON.
+- Address the reader informally. Wherever {TARGET_LANGUAGE["name"]} distinguishes between formal and informal
+  address, always use the informal form (for example "du"/"ihr" in German, "tu" in French, "tú" in Spanish,
+  "tu" in Italian) and never the formal one (for example "Sie", "vous", "usted", "Lei").
 
 A placeholder always belongs to the label that follows it.
 

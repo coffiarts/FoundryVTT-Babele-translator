@@ -3,6 +3,7 @@ import ct4f_translator as translator
 import ct4f_translator_dialogs as translator_dialogs
 import ct4f_ui_dialogs as ui_dialogs
 import ct4f_core_functions as fn
+import ct4f_i18n as i18n
 import ct4f_security as security
 import ct4f_settings as settings
 import ct4f_ui_widgets as ui_widgets
@@ -39,10 +40,10 @@ BIG_BUTTON_BORDER_WIDTH = 3
 BIG_BUTTON_BORDER_COLOR = config.INK   # same ink brown as the text
 
 # Hover info of the main button, depending on its current role (see set_main_button_role)
-TOOLTIP_PREPARE = "Analyzes the input file and builds the batches. Nothing is sent to the AI yet."
-TOOLTIP_START = "Starts (or resumes) terminology and translation."
-TOOLTIP_CANCEL = "Completes the current batch, then stops. Progress is kept, so you can resume later."
-TOOLTIP_WAITING = "Waiting for the current batch to complete. Then the run stops."
+TOOLTIP_PREPARE = "tooltip.prepare"
+TOOLTIP_START = "tooltip.start"
+TOOLTIP_CANCEL = "tooltip.cancel"
+TOOLTIP_WAITING = "tooltip.waiting"
 
 
 class App(ctk.CTk):
@@ -79,13 +80,13 @@ class App(ctk.CTk):
         self.status_bar = ctk.CTkFrame(self, height=40)
         self.status_bar.pack(side="bottom", fill="x")
         self.status_bar.pack_propagate(False)
-        self.status_label = ctk.CTkLabel(self.status_bar, text="Ready", anchor="w")
+        self.status_label = ctk.CTkLabel(self.status_bar, text="", anchor="w")  # set right at startup by show_status()
         self.status_label.pack(side="left", padx=20)
 
         # The "Open Folder" belongs to the status bar, but it will only be shown when there's a result file to show (terminology or translation)
         self.open_folder_button = ctk.CTkButton(
             self.status_bar,
-            text="Open Output Folder",
+            text=i18n.t("button.open_output_folder"),
             width=200
         )
 
@@ -127,19 +128,19 @@ class App(ctk.CTk):
         # =========================================
         self.selected_file = None
 
-        ctk.CTkLabel(self.configuration_frame, text="Input File", anchor="w", font=config.FONT_NAME) \
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.input_file"), anchor="w", font=config.FONT_NAME) \
             .grid(row=0, column=0, sticky="w", padx=(20, 10), pady=(20, 5))
 
         self.file_button = ctk.CTkButton(
             self.configuration_frame,
-            text="Select Input File",
+            text=i18n.t("button.select_input_file"),
             command=self.select_file
         )
         self.file_button.grid(row=0, column=1, sticky="w", padx=(0, 20), pady=(20, 5))
 
         self.file_label = ctk.CTkLabel(
             self.configuration_frame,
-            text="No file selected",
+            text=i18n.t("label.no_file_selected"),
             anchor="w",
             font=config.FONT_VALUE
         )
@@ -149,9 +150,9 @@ class App(ctk.CTk):
         # Output folder picker (optional)
         # =========================================
         self.selected_output_dir = None
-        self.output_dir_default_text = "Default: user data folder"
+        self.output_dir_default_text = i18n.t("label.default_output_folder")
 
-        ctk.CTkLabel(self.configuration_frame, text="Output Folder", anchor="w", font=config.FONT_NAME) \
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.output_folder"), anchor="w", font=config.FONT_NAME) \
             .grid(row=2, column=0, sticky="w", padx=(20, 10), pady=(0, 5))
 
         self.output_dir_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
@@ -159,14 +160,14 @@ class App(ctk.CTk):
 
         self.output_dir_button = ctk.CTkButton(
             self.output_dir_frame,
-            text="Select Output Folder",
+            text=i18n.t("button.select_output_folder"),
             command=self.select_output_dir
         )
         self.output_dir_button.pack(side="left", padx=(0, 10))
 
         self.output_dir_reset_button = ctk.CTkButton(
             self.output_dir_frame,
-            text="Reset",
+            text=i18n.t("button.reset_output_folder"),
             width=70,
             command=self.reset_output_dir
         )
@@ -183,7 +184,7 @@ class App(ctk.CTk):
         # =========================================
         # Input type selector
         # =========================================
-        ctk.CTkLabel(self.configuration_frame, text="Input Type", anchor="w", font=config.FONT_NAME) \
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.input_type"), anchor="w", font=config.FONT_NAME) \
             .grid(row=4, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.input_type_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
@@ -195,7 +196,7 @@ class App(ctk.CTk):
         self.radio_input_type_babele = ctk.CTkRadioButton(
             self.input_type_frame,
             font=config.FONT_VALUE,
-            text=config.INPUT_TYPE_BABELE,
+            text=i18n.t("label.input_type_babele"),
             variable=self.input_type_var,
             value=config.INPUT_TYPE_BABELE
         )
@@ -204,7 +205,7 @@ class App(ctk.CTk):
         self.radio_input_type_localization = ctk.CTkRadioButton(
             self.input_type_frame,
             font=config.FONT_VALUE,
-            text=config.INPUT_TYPE_LOCALIZATION,
+            text=i18n.t("label.input_type_localization"),
             variable=self.input_type_var,
             value=config.INPUT_TYPE_LOCALIZATION
         )
@@ -213,21 +214,23 @@ class App(ctk.CTk):
         # =========================================
         # Language selection
         # =========================================
+        # The display name is localized (language file key "language.<code>"), the English name is the fallback
         self.language_options = [
-            f"{lang['code']}: {lang['name']}" for lang in config.SUPPORTED_LANGUAGES
+            f"{lang['code']}: {i18n.t_or('language.' + lang['code'], lang['name'])}" for lang in config.SUPPORTED_LANGUAGES
         ]
         self.language_by_option = {
             option: lang for option, lang in zip(self.language_options, config.SUPPORTED_LANGUAGES)
         }
+        language_option_by_code = {lang["code"]: option for option, lang in self.language_by_option.items()}
 
-        ctk.CTkLabel(self.configuration_frame, text="Language", anchor="w", font=config.FONT_NAME) \
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.language"), anchor="w", font=config.FONT_NAME) \
             .grid(row=5, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.language_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
         self.language_frame.grid(row=5, column=1, sticky="w", padx=(0, 20), pady=5)
 
         self.source_language_var = ctk.StringVar(
-            value=f"{config.SOURCE_LANGUAGE['code']}: {config.SOURCE_LANGUAGE['name']}"
+            value=language_option_by_code[config.SOURCE_LANGUAGE["code"]]
         )
         self.source_language_menu = ctk.CTkOptionMenu(
             self.language_frame,
@@ -241,7 +244,7 @@ class App(ctk.CTk):
         ctk.CTkLabel(self.language_frame, text="→", width=MENU_GAP_WIDTH, font=config.FONT_NAME).grid(row=0, column=1)
 
         self.target_language_var = ctk.StringVar(
-            value=f"{config.TARGET_LANGUAGE['code']}: {config.TARGET_LANGUAGE['name']}"
+            value=language_option_by_code[config.TARGET_LANGUAGE["code"]]
         )
         self.target_language_menu = ctk.CTkOptionMenu(
             self.language_frame,
@@ -255,30 +258,41 @@ class App(ctk.CTk):
         # =========================================
         # Translation Flavour (Game System / Genre)
         # =========================================
-        ctk.CTkLabel(self.configuration_frame, text="Flavour", anchor="w", font=config.FONT_NAME) \
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.flavour"), anchor="w", font=config.FONT_NAME) \
             .grid(row=6, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.flavour_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
         self.flavour_frame.grid(row=6, column=1, sticky="w", padx=(0, 20), pady=5)
 
-        self.game_system_var = ctk.StringVar(value=config.GAME_SYSTEM_CONTEXT)
+        # The dropdowns show localized texts, whereas the (English) values are used everywhere else
+        self.game_system_by_option = {
+            i18n.t_or(f"game_system.{key}", name): name for key, name in config.GAME_SYSTEMS.items()
+        }
+        self.game_system_option_by_value = {name: option for option, name in self.game_system_by_option.items()}
+
+        self.game_system_var = ctk.StringVar(value=self.game_system_option_by_value[config.GAME_SYSTEM_CONTEXT])
         self.game_system_menu = ctk.CTkOptionMenu(
             self.flavour_frame,
             width=MENU_WIDTH_WIDE,
             dynamic_resizing=False,
-            values=config.SUPPORTED_GAME_SYSTEMS,
+            values=list(self.game_system_by_option),
             variable=self.game_system_var
         )
         self.game_system_menu.grid(row=0, column=0)
 
         ctk.CTkLabel(self.flavour_frame, text="", width=MENU_GAP_WIDTH).grid(row=0, column=1)
 
-        self.genre_var = ctk.StringVar(value=config.GENRE_CONTEXT)
+        self.genre_by_option = {
+            i18n.t_or(f"genre.{key}", name): name for key, name in config.GENRES.items()
+        }
+        self.genre_option_by_value = {name: option for option, name in self.genre_by_option.items()}
+
+        self.genre_var = ctk.StringVar(value=self.genre_option_by_value[config.GENRE_CONTEXT])
         self.genre_menu = ctk.CTkOptionMenu(
             self.flavour_frame,
             width=MENU_WIDTH_NARROW,
             dynamic_resizing=False,
-            values=config.SUPPORTED_GENRES,
+            values=list(self.genre_by_option),
             variable=self.genre_var
         )
         self.genre_menu.grid(row=0, column=2)
@@ -286,7 +300,7 @@ class App(ctk.CTk):
         # =========================================
         # Module name suggestion (editable)
         # =========================================
-        ctk.CTkLabel(self.configuration_frame, text="Module Name", anchor="w", font=config.FONT_NAME) \
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.module_name"), anchor="w", font=config.FONT_NAME) \
             .grid(row=7, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.module_name_entry = ctk.CTkEntry(
@@ -295,12 +309,12 @@ class App(ctk.CTk):
             font=config.FONT_VALUE
         )
         self.module_name_entry.grid(row=7, column=1, sticky="w", padx=(0, 20), pady=5)
-        self.module_name_entry.insert(0, "(Please pick a file first)")
+        self.module_name_entry.insert(0, i18n.t("label.pick_file_first"))
 
         # =========================================
         # Max Batch Size
         # =========================================
-        ctk.CTkLabel(self.configuration_frame, text="Max Batch Size", anchor="w", font=config.FONT_NAME) \
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.max_batch_size"), anchor="w", font=config.FONT_NAME) \
             .grid(row=8, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.max_batch_size_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
@@ -321,7 +335,7 @@ class App(ctk.CTk):
             self.max_batch_size_frame,
             width=VALUE_LABEL_WIDTH,
             anchor="w",
-            text=f"{config.MAX_BATCH_SIZE:,} chars",
+            text=i18n.t("label.chars", count=f"{config.MAX_BATCH_SIZE:,}"),
             font=config.FONT_VALUE
         )
         self.max_batch_size_label.pack(side="left", padx=(10, 0))
@@ -333,7 +347,7 @@ class App(ctk.CTk):
         self.pause_after_terminology_checkbox = ctk.CTkCheckBox(
             self.configuration_frame,
             font=config.FONT_VALUE,
-            text="Review terminology before translating (once)",
+            text=i18n.t("option.review_terminology"),
             variable=self.pause_after_terminology_var
         )
         self.pause_after_terminology_checkbox.grid(row=9, column=1, sticky="w", padx=(0, 20), pady=5)
@@ -345,7 +359,7 @@ class App(ctk.CTk):
         self.mock_switch = ctk.CTkSwitch(
             self.configuration_frame,
             font=config.FONT_VALUE,
-            text="Simulate only",
+            text=i18n.t("option.simulate_only"),
             variable=self.mock_mode_var,
             command=self.on_mock_mode_changed,
             progress_color=config.RED,
@@ -361,7 +375,7 @@ class App(ctk.CTk):
 
         self.main_button = ctk.CTkButton(
             self.start_frame,
-            text="Prepare",
+            text=i18n.t("button.prepare"),
             command=self.prepare,
             width=BIG_BUTTON_WIDTH,
             height=BIG_BUTTON_HEIGHT,
@@ -380,7 +394,7 @@ class App(ctk.CTk):
         # Only visible after a successful preparation (see show_reconfigure_button)
         self.reconfigure_button = ctk.CTkButton(
             self.start_frame,
-            text="◀ Reconfigure",
+            text=i18n.t("button.reconfigure"),
             fg_color=config.INK_LIGHT,
             command=self.reconfigure,
             width=BIG_BUTTON_WIDTH,
@@ -410,19 +424,19 @@ class App(ctk.CTk):
         self.stats_grid = ctk.CTkFrame(self.stats_frame, fg_color="transparent")
         self.stats_grid.pack(anchor="w", padx=15, pady=10)
 
-        self.chars_name_label = ctk.CTkLabel(self.stats_grid, text="Chars:", anchor="w", font=config.FONT_NAME)
+        self.chars_name_label = ctk.CTkLabel(self.stats_grid, text=i18n.t("stats.chars"), anchor="w", font=config.FONT_NAME)
         self.chars_name_label.grid(row=0, column=0, sticky="w", padx=(0, 10))
         self.chars_value_label = ctk.CTkLabel(self.stats_grid, text="", anchor="w", font=config.FONT_VALUE)
         self.chars_value_label.grid(row=0, column=1, sticky="w")
 
-        self.batches_name_label = ctk.CTkLabel(self.stats_grid, text="Batches:", anchor="w", font=config.FONT_NAME)
+        self.batches_name_label = ctk.CTkLabel(self.stats_grid, text=i18n.t("stats.batches"), anchor="w", font=config.FONT_NAME)
         self.batches_name_label.grid(row=1, column=0, sticky="w", padx=(0, 10))
         self.batches_value_label = ctk.CTkLabel(self.stats_grid, text="", anchor="w", font=config.FONT_VALUE)
         self.batches_value_label.grid(row=1, column=1, sticky="w")
 
         # Only shown when there are Review Items (see show_bars)
         self.review_name_label = ctk.CTkLabel(
-            self.stats_grid, text="Review Items:", anchor="w",
+            self.stats_grid, text=i18n.t("stats.review_items"), anchor="w",
             text_color=config.MAGENTA, font=config.FONT_NAME
         )
         self.review_name_label.grid(row=2, column=0, sticky="w", padx=(0, 10))
@@ -436,7 +450,7 @@ class App(ctk.CTk):
 
         self.review_show_button = ctk.CTkButton(
             self.stats_grid,
-            text="Show",
+            text=i18n.t("button.show"),
             width=60,
             height=24,
             command=self.show_review_items
@@ -447,7 +461,7 @@ class App(ctk.CTk):
         # Terminology Progress Bar
         self.terminology_bar = ui_widgets.BatchStatusBar(
             self.bars_frame,
-            "Terminology",
+            i18n.t("stats.terminology"),
             on_clear=self.confirm_clear_terminology
         )
         self.terminology_bar.pack(fill="x", pady=(0, 10))
@@ -455,7 +469,7 @@ class App(ctk.CTk):
         # Terminology Progress Bar
         self.translation_bar = ui_widgets.BatchStatusBar(
             self.bars_frame,
-            "Translation",
+            i18n.t("stats.translation"),
             on_clear=self.confirm_clear_translation
         )
         self.translation_bar.pack(fill="x")
@@ -466,7 +480,7 @@ class App(ctk.CTk):
         # =========================================
         self.log_popout_button = ctk.CTkButton(
             self.monitoring_frame,
-            text="Pop Out Log",
+            text=i18n.t("button.pop_out_log"),
             width=100,
             command=lambda: self.log_viewer.show()
         )
@@ -506,7 +520,7 @@ class App(ctk.CTk):
         # =========================================
         # Now go for it!
         # =========================================
-        self.show_status("Waiting for configuration...")
+        self.show_status(i18n.t("status.waiting_for_configuration"))
         self.render_dialog_requests()
 
 
@@ -521,53 +535,45 @@ class App(ctk.CTk):
             ui_widgets.Tooltip(widget, text)
 
         # Banner
-        tip(self.settings_button, "Opens the application settings.")
+        tip(self.settings_button, i18n.t("tooltip.settings"))
 
         # Configuration
-        tip(self.file_button, "Pick the file to translate: a Babele JSON export or a Foundry localization file (lang/*.json).")
-        tip(self.file_label, lambda: str(self.selected_file) if self.selected_file else "No file selected yet.")
-        tip(self.output_dir_button, "Where the translated file and the review items are written. Default: your user data folder.")
-        tip(self.output_dir_reset_button, "Back to the default output folder.")
+        tip(self.file_button, i18n.t("tooltip.input_file"))
+        tip(self.file_label, lambda: str(self.selected_file) if self.selected_file else i18n.t("tooltip.no_file_selected"))
+        tip(self.output_dir_button, i18n.t("tooltip.output_folder"))
+        tip(self.output_dir_reset_button, i18n.t("tooltip.reset_output_folder"))
         tip(self.output_dir_label, lambda: str(self.selected_output_dir or config.USER_DATA_DIR / config.OUTPUT_FOLDER_NAME))
 
-        input_type_tip = "What kind of file you are translating. Changes how texts are extracted and the output is named."
+        input_type_tip = i18n.t("tooltip.input_type")
         tip(self.radio_input_type_babele, input_type_tip)
         tip(self.radio_input_type_localization, input_type_tip)
 
-        language_tip = "Source and target language of the translation."
+        language_tip = i18n.t("tooltip.language")
         tip(self.source_language_menu, language_tip)
         tip(self.target_language_menu, language_tip)
 
-        flavour_tip = "Game system and genre. They steer terminology and style of the AI translation."
+        flavour_tip = i18n.t("tooltip.flavour")
         tip(self.game_system_menu, flavour_tip)
         tip(self.genre_menu, flavour_tip)
 
-        tip(self.module_name_entry,
-            "Used to name the output folder and files. Derived from the input file and/or its path. Edit as needed. "
-            "Best practice: Name it exactly after the module-id of the source Foundry VTT mod.")
+        tip(self.module_name_entry, i18n.t("tooltip.module_name"))
 
-        batch_size_tip = (
-            "Maximum characters per single AI request. Larger batches need fewer requests, but can fail if they exceed limits. "
-            "Smaller batches are more failsafe (less retries), but may cause overhead and increase total processing time.")
+        batch_size_tip = i18n.t("tooltip.max_batch_size")
         tip(self.max_batch_size_slider, batch_size_tip)
         tip(self.max_batch_size_label, batch_size_tip)
 
-        tip(self.pause_after_terminology_checkbox,
-            "Stops after the terminology is complete, so you can review and edit it as needed. Then click Start to continue. "
-            "Option is recommended for each new input file, and auto-disables itself after each run.")
-        tip(self.mock_switch,
-            "Simulates all AI requests without costs. Nothing real is translated, and progress is kept separate from real runs.")
+        tip(self.pause_after_terminology_checkbox, i18n.t("tooltip.review_terminology"))
+        tip(self.mock_switch, i18n.t("tooltip.simulate_only"))
 
         # Main buttons
-        tip(self.main_button, lambda: self.main_button_tooltip)
-        tip(self.reconfigure_button, "Back to the settings. Existing progress is kept.")
+        tip(self.main_button, lambda: i18n.t(self.main_button_tooltip))
+        tip(self.reconfigure_button, i18n.t("tooltip.reconfigure"))
 
         # Monitoring
-        tip(self.terminology_bar.clear_button, "Discards the terminology of this input file. It will be rebuilt on next start.")
-        tip(self.translation_bar.clear_button, "Discards all translations of this input file. They will be redone on next start.")
-        tip(self.review_show_button,
-            "Opens the list of translation issues you accepted, with the context of each, so that you can fix them later by hand.")
-        tip(self.log_popout_button, "Opens the log in its own window, which keeps updating during the run.")
+        tip(self.terminology_bar.clear_button, i18n.t("tooltip.clear_terminology"))
+        tip(self.translation_bar.clear_button, i18n.t("tooltip.clear_translation"))
+        tip(self.review_show_button, i18n.t("tooltip.show_review_items"))
+        tip(self.log_popout_button, i18n.t("tooltip.pop_out_log"))
 
         # Status bar: the full text, in case it is truncated
         tip(self.status_label, lambda: self.status_label.cget("text"))
@@ -579,10 +585,13 @@ class App(ctk.CTk):
     # ===========================================
     def select_file(self):
         filename = filedialog.askopenfilename(
-            title="Select file to translate",
-            filetypes=[("JSON files", "*.json")],
+            title=i18n.t("dialog.select_file_title"),
+            filetypes=[(i18n.t("dialog.json_files"), "*.json")],
             initialdir=str(self.selected_file.parent) if self.selected_file else None
         )
+
+        if not filename:
+            return
 
         previous_file = self.selected_file
         self.set_input_file(Path(filename))
@@ -618,7 +627,7 @@ class App(ctk.CTk):
     # ===========================================
     def select_output_dir(self):
         dirname = filedialog.askdirectory(
-            title="Select output folder",
+            title=i18n.t("dialog.select_output_title"),
             initialdir=str(self.selected_output_dir) if self.selected_output_dir else None
         )
 
@@ -646,7 +655,7 @@ class App(ctk.CTk):
     def prepare(self):
 
         if self.source_language_var.get() == self.target_language_var.get():
-            ui_dialogs.HintDialog(self, message="Source and Target Language must be different.")
+            ui_dialogs.HintDialog(self, message=i18n.t("hint.languages_must_differ"))
             return
 
         config.INPUT_TYPE = self.input_type_var.get()
@@ -654,8 +663,8 @@ class App(ctk.CTk):
         config.BASE_OUTPUT_DIR = self.selected_output_dir  # None => fall back to USER_DATA_DIR
         config.SOURCE_LANGUAGE = self.language_by_option[self.source_language_var.get()]
         config.TARGET_LANGUAGE = self.language_by_option[self.target_language_var.get()]
-        config.GAME_SYSTEM_CONTEXT = self.game_system_var.get()
-        config.GENRE_CONTEXT = self.genre_var.get()
+        config.GAME_SYSTEM_CONTEXT = self.game_system_by_option[self.game_system_var.get()]
+        config.GENRE_CONTEXT = self.genre_by_option[self.genre_var.get()]
         config.MAX_BATCH_SIZE = int(round(self.max_batch_size_slider.get()))
         config.PAUSE_AFTER_TERMINOLOGY = self.pause_after_terminology_var.get()
 
@@ -663,7 +672,7 @@ class App(ctk.CTk):
         self.persist_settings()
 
         self.disable_configuration_controls()
-        self.show_status("Preparing...")
+        self.show_status(i18n.t("status.preparing"))
 
         threading.Thread(
             target=translator.prepare,
@@ -682,11 +691,11 @@ class App(ctk.CTk):
     # ===========================================
     def enter_prepared_state(self, result):
         self.prepared_result = result
-        self.set_main_button_role("Start ▶▶", self.run_translation, TOOLTIP_START, color=config.GREEN)
+        self.set_main_button_role(i18n.t("button.start"), self.run_translation, TOOLTIP_START, color=config.GREEN)
         self.show_reconfigure_button()
         self.show_bars(result["analysis"])
         self.update_clear_buttons(result["analysis"])
-        self.show_status("Ready to start.")
+        self.show_status(i18n.t("status.ready_to_start"))
 
 
     # ===========================================
@@ -696,10 +705,10 @@ class App(ctk.CTk):
     def reconfigure(self):
         self.prepared_result = None
         self.hide_reconfigure_button()
-        self.set_main_button_role("Prepare", self.prepare, TOOLTIP_PREPARE)
+        self.set_main_button_role(i18n.t("button.prepare"), self.prepare, TOOLTIP_PREPARE)
         self.enable_configuration_controls()
         self.hide_bars()
-        self.show_status("Waiting for configuration...")
+        self.show_status(i18n.t("status.waiting_for_configuration"))
 
 
     # ===========================================
@@ -799,7 +808,7 @@ class App(ctk.CTk):
     # Function: Confirm Clear
     # Asks for confirmation, then runs the given clear function and refreshes the bars
     # ===========================================
-    def confirm_clear(self, question, clear_function):
+    def confirm_clear(self, key, clear_function):
 
         def on_yes():
             clear_function()
@@ -808,7 +817,7 @@ class App(ctk.CTk):
             self.update_clear_buttons(analysis)
 
         ui_dialogs.confirm_yes_no(
-            question=question,
+            key,
             on_yes=on_yes,
             on_no=None
         )
@@ -819,14 +828,7 @@ class App(ctk.CTk):
     # ===========================================
     def confirm_clear_terminology(self):
         self.confirm_clear(
-            question=(
-                "Clear Terminology?\n\n"
-                "This discards the terminology already built for this input file. "
-                "It will be rebuilt from scratch with new remote AI calls.\n"
-                "Existing translations stay as they are, based on the old terminology. "
-                "To apply the new terminology to them as well, clear the translations too.\n\n"
-                "Do you want to proceed?"
-            ),
+            key="confirm.clear_terminology",
             clear_function=fn.clear_terminology
         )
 
@@ -836,12 +838,7 @@ class App(ctk.CTk):
     # ===========================================
     def confirm_clear_translation(self):
         self.confirm_clear(
-            question=(
-                "Clear Translations?\n\n"
-                "This discards all translations already made for this input file. "
-                "Everything will be translated from scratch with new remote AI calls.\n\n"
-                "Do you want to proceed?"
-            ),
+            key="confirm.clear_translation",
             clear_function=fn.clear_translation
         )
 
@@ -868,8 +865,8 @@ class App(ctk.CTk):
         self.disable_configuration_controls()
 
         # The main button turns into the Cancel button while running
-        self.set_main_button_role("Cancel", self.cancel, TOOLTIP_CANCEL, color=config.YELLOW, text_color=config.INK)
-        self.show_status("Running...")
+        self.set_main_button_role(i18n.t("button.cancel"), self.cancel, TOOLTIP_CANCEL, color=config.YELLOW, text_color=config.INK)
+        self.show_status(i18n.t("status.running"))
 
         threading.Thread(
             target=translator.run,
@@ -1050,7 +1047,7 @@ class App(ctk.CTk):
     # Updates the live readout while the slider is being dragged
     # ===========================================
     def on_max_batch_size_changed(self, value):
-        self.max_batch_size_label.configure(text=f"{int(round(value)):,} chars")
+        self.max_batch_size_label.configure(text=i18n.t("label.chars", count=f"{int(round(value)):,}"))
 
 
     # ===========================================
@@ -1201,7 +1198,7 @@ class App(ctk.CTk):
     # ===========================================
     def cancel(self):
         self.cancel_event.set()
-        self.set_main_button_role("Please wait for batch to complete ...", self.cancel, TOOLTIP_WAITING, color=config.RED, state="disabled")
+        self.set_main_button_role(i18n.t("button.please_wait"), self.cancel, TOOLTIP_WAITING, color=config.RED, state="disabled")
 
         # A pending confirm dialog has to be released as well, because the worker thread
         # blocks while waiting for the answer
@@ -1247,6 +1244,14 @@ class App(ctk.CTk):
 
 
     # ===========================================
+    # Function: Localized Error Message
+    # The message of an expected error in the UI language (the log gets the English one)
+    # ===========================================
+    def localized_error_message(self, outcome):
+        return i18n.t(outcome["message_key"], **outcome["message_params"])
+
+
+    # ===========================================
     # Function: Show Outcome Message
     # Tells the user what happened, depending on how a phase (preparing/running) ended
     # ===========================================
@@ -1262,13 +1267,13 @@ class App(ctk.CTk):
 
         elif kind == config.OUTCOME_EXPECTED_ERROR:
             self.LOGGER(outcome["message"], config.TAG_ERROR)
-            ui_dialogs.HintDialog(self, message=outcome["message"])
+            ui_dialogs.HintDialog(self, message=self.localized_error_message(outcome))
 
         elif kind == config.OUTCOME_UNEXPECTED_ERROR:
-            msg = f"An unexpected error occurred:\n{outcome['message']}"
-            self.LOGGER(msg, config.TAG_ERROR)
+            # The log stays English (for bug reports), the dialog is localized
+            self.LOGGER(f"An unexpected error occurred:\n{outcome['message']}", config.TAG_ERROR)
             print(outcome["details"])  # full traceback to the console
-            ui_dialogs.ErrorDialog(self, message=msg)
+            ui_dialogs.ErrorDialog(self, message=i18n.t("dialog.unexpected_error", message=outcome["message"]))
 
 
     # ===========================================
@@ -1280,16 +1285,16 @@ class App(ctk.CTk):
         kind = outcome["outcome"]
 
         if kind == config.OUTCOME_CANCELLED:
-            self.show_status("Cancelled by user")
+            self.show_status(i18n.t("status.cancelled"))
 
         elif kind == config.OUTCOME_DECLINED:
-            self.show_status("Aborted by user")
+            self.show_status(i18n.t("status.aborted"))
 
         elif kind == config.OUTCOME_EXPECTED_ERROR:
-            self.show_status(f"Error - see log for details: {outcome['message'].splitlines()[0]}")
+            self.show_status(i18n.t("status.error", message=self.localized_error_message(outcome).splitlines()[0]))
 
         elif kind == config.OUTCOME_UNEXPECTED_ERROR:
-            self.show_status("Unexpected error - see log for details")
+            self.show_status(i18n.t("status.unexpected_error"))
 
 
     # ===========================================
@@ -1320,8 +1325,8 @@ class App(ctk.CTk):
         config.PAUSE_AFTER_TERMINOLOGY = False
         settings.update_settings({"pause_after_terminology": False})
 
-        self.show_status(f"Terminology ready for review. Edit it as required, then click Start to continue: {config.TERMINOLOGY_FILE.name}")
-        self.show_folder_link("Open Terminology Folder", config.TERMINOLOGY_DIR)
+        self.show_status(i18n.t("status.terminology_review", file=config.TERMINOLOGY_FILE.name))
+        self.show_folder_link(i18n.t("button.open_terminology_folder"), config.TERMINOLOGY_DIR)
 
 
     # ===========================================
@@ -1329,8 +1334,8 @@ class App(ctk.CTk):
     # Announces the output of a successful run in the status bar
     # ===========================================
     def show_results(self):
-        self.show_status(f"Translation completed: {config.OUTPUT_FILE.name}")
-        self.show_folder_link("Open Output Folder", config.OUTPUT_DIR)
+        self.show_status(i18n.t("status.translation_completed", file=config.OUTPUT_FILE.name))
+        self.show_folder_link(i18n.t("button.open_output_folder"), config.OUTPUT_DIR)
 
 
     # ===========================================
@@ -1445,12 +1450,12 @@ class App(ctk.CTk):
             self.target_language_var.set(target_option)
 
         game_system_context = saved.get("game_system_context")
-        if game_system_context in config.SUPPORTED_GAME_SYSTEMS:
-            self.game_system_var.set(game_system_context)
+        if game_system_context in self.game_system_option_by_value:
+            self.game_system_var.set(self.game_system_option_by_value[game_system_context])
 
         genre_context = saved.get("genre_context")
-        if genre_context in config.SUPPORTED_GENRES:
-            self.genre_var.set(genre_context)
+        if genre_context in self.genre_option_by_value:
+            self.genre_var.set(self.genre_option_by_value[genre_context])
 
         self.pause_after_terminology_var.set(bool(saved.get("pause_after_terminology", True)))
 
@@ -1476,6 +1481,12 @@ class App(ctk.CTk):
             self.module_name_entry.insert(0, module_name)
 
 
+# The UI language has to be known before the window is built, and it is persisted in the settings file,
+# whose location is only known after the system dirs have been initialized
+fn.init_system_dirs()
+config.UI_LANGUAGE = settings.load_ui_language()
+i18n.load(fn.resource_path("lang"), config.UI_LANGUAGE)
+
 # Initialize the app
 app = App()
 
@@ -1484,6 +1495,7 @@ fn.set_logger(app.LOGGER)
 fn.set_batch_listener(app.batches_changed)
 fn.set_status_listener(app.status_changed)
 
+# (Repeated on purpose: the first call ran before the app's log window existed. It is idempotent)
 fn.init_system_dirs()
 app.restore_settings()
 

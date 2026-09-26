@@ -20,6 +20,8 @@ def report_outcome(work, on_ended):
         "outcome": config.OUTCOME_SUCCESS,
         "result": None,
         "message": None,
+        "message_key": None,
+        "message_params": None,
         "details": None
     }
 
@@ -38,6 +40,8 @@ def report_outcome(work, on_ended):
     except exceptions.ExpectedException as e:
         outcome["outcome"] = config.OUTCOME_EXPECTED_ERROR
         outcome["message"] = str(e)
+        outcome["message_key"] = e.key
+        outcome["message_params"] = e.params
 
     except Exception as e:
         outcome["outcome"] = config.OUTCOME_UNEXPECTED_ERROR
@@ -302,7 +306,7 @@ def _prepare(logger: Callable[str]):
             # A failed preparation must leave nothing behind, so that the next attempt starts fresh
             fn.cleanup_progress_files()
 
-            raise exceptions.ExpectedException(e.args[0]["error"])
+            raise exceptions.ExpectedException(e.args[0]["error_key"], **e.args[0]["error_params"])
 
         # -------
         # Tests:

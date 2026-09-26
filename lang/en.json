@@ -1,0 +1,158 @@
+{
+  "meta": {
+    "language_name": "English"
+  },
+  "status": {
+    "waiting_for_configuration": "Waiting for configuration...",
+    "preparing": "Preparing...",
+    "ready_to_start": "Ready to start.",
+    "running": "Running...",
+    "cancelled": "Cancelled by user",
+    "aborted": "Aborted by user",
+    "error": "Error - see log for details: {message}",
+    "unexpected_error": "Unexpected error - see log for details",
+    "terminology_review": "Terminology ready for review. Edit it as required, then click Start to continue: {file}",
+    "translation_completed": "Translation completed: {file}"
+  },
+  "label": {
+    "input_file": "Input File",
+    "no_file_selected": "No file selected",
+    "output_folder": "Output Folder",
+    "default_output_folder": "Default: user data folder",
+    "input_type": "Input Type",
+    "input_type_babele": "Babele JSON export",
+    "input_type_localization": "Localization file (lang/*.json)",
+    "language": "Language",
+    "flavour": "Flavour",
+    "module_name": "Module Name",
+    "pick_file_first": "(Please pick a file first)",
+    "max_batch_size": "Max Batch Size",
+    "chars": "{count} chars"
+  },
+  "option": {
+    "review_terminology": "Review terminology before translating (once)",
+    "simulate_only": "Simulate only"
+  },
+  "button": {
+    "select_input_file": "Select Input File",
+    "select_output_folder": "Select Output Folder",
+    "reset_output_folder": "Reset",
+    "prepare": "Prepare",
+    "start": "Start ▶▶",
+    "cancel": "Cancel",
+    "please_wait": "Please wait for batch to complete ...",
+    "reconfigure": "◀ Reconfigure",
+    "show": "Show",
+    "pop_out_log": "Pop Out Log",
+    "open_output_folder": "Open Output Folder",
+    "open_terminology_folder": "Open Terminology Folder"
+  },
+  "stats": {
+    "chars": "Chars:",
+    "batches": "Batches:",
+    "review_items": "Review Items:",
+    "terminology": "Terminology",
+    "translation": "Translation"
+  },
+  "dialog": {
+    "unexpected_error": "An unexpected error occurred:\n{message}",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No",
+    "show_log": "Show Log",
+    "log_title": "Log",
+    "hint_title": "Please note",
+    "confirm_title": "Please confirm",
+    "error_title": "Ooops... we have a problem!",
+    "select_file_title": "Select file to translate",
+    "json_files": "JSON files",
+    "select_output_title": "Select output folder"
+  },
+  "settings": {
+    "title": "Settings",
+    "llm_model": "LLM Model:",
+    "api_base_url": "API Base URL:",
+    "default_url": "Default: {url}",
+    "api_key": "API Key:",
+    "show_key": "Show key",
+    "no_key_needed": "This server needs no API key",
+    "no_key_hint": "Local servers only. OpenAI always requires a key.",
+    "hide_tooltips": "Hide tooltips",
+    "ui_language": "Language of the user interface:",
+    "restart_needed": "The language change takes effect after restarting the app."
+  },
+  "review": {
+    "title": "Review Items ({count})",
+    "item_header": "#{position}  {placeholder}  =  {value}   (found {count}x in the translation)",
+    "original": "Original:",
+    "translation": "Translation:"
+  },
+  "hint": {
+    "languages_must_differ": "Source and Target Language must be different."
+  },
+  "confirm": {
+    "clear_terminology": "Clear Terminology?\n\nThis discards the terminology already built for this input file. It will be rebuilt from scratch with new remote AI calls.\nExisting translations stay as they are, based on the old terminology. To apply the new terminology to them as well, clear the translations too.\n\nDo you want to proceed?",
+    "clear_translation": "Clear Translations?\n\nThis discards all translations already made for this input file. Everything will be translated from scratch with new remote AI calls.\n\nDo you want to proceed?"
+  },
+  "error": {
+    "invalid_lang_file_top_level": "INVALID INPUT FILE\nThe file does not look like a Localization (lang) file: the top level must be an object, but is a {type}.",
+    "invalid_lang_file_values": "INVALID INPUT FILE\nThe file does not look like a Localization (lang) file: all values must be texts, but {count} entries are not.\nFirst offending entries:\n{entries}",
+    "no_translatables": "NO TRANSLATABLE ELEMENTS FOUND\nThis file doesn't contain any identifiable translatable elements.\n\nAre you sure that you've picked the right input type:\n\"{babele}\" vs. \"{localization}\"?\n\nCurrently selected: {selected}",
+    "text_exceeds_batch_size": "TRANSLATABLE TEXT EXCEEDS MAX_BATCH_SIZE.\nTranslatable {id} contains {size} chars and exceeds MAX_BATCH_SIZE={max}\nProposed solution: Increase Max Batch Size and prepare again.",
+    "llm_structure": "The LLM answer doesn't have the expected structure (a JSON object with a list named \"terms\").\nThe selected model may not be suited for this task. Resume the process to try again, or choose another model.",
+    "llm_term_invalid": "The LLM answer contains a term without a valid \"original\" and \"proposedTranslation\".\nThe selected model may not be suited for this task. Resume the process to try again, or choose another model."
+  },
+  "prompt": {
+    "unusual_lang_file_name": "\n=== UNUSUAL FILE NAME FOR A LOCALIZATION FILE ===\nThe selected file is named '{file}', but Localization (lang) files are usually named <language code>.json (like en.json, or pt-BR.json).\nAre you sure that this is a Localization file and not a Babele file?\n[{yes}] Yes, continue anyway.\n[{no}] No, abort.",
+    "discard_progress": "\n=== SETTINGS CHANGED SINCE THE LAST RUN ===\nThese settings differ from those of the existing progress for this input file:\n{changes}\nThey cannot be applied to a process that is already under way.\n[{yes}] Discard the existing progress and start fresh with the current settings.\n[{no}] No, keep the progress (restore the previous settings yourself, then prepare again).",
+    "batch_nonfatal_errors": "Batch {batch}/{batches} contains {count} placeholder translation error(s).\nClick '{show_log}' to investigate the details.\n\nDo you want to keep this batch anyway (exporting the errors as Review Items for later), or discard it so it gets retried on the next run?",
+    "overwrite_terminology": "\n=== EXISTING TERMINOLOGY FILE WILL BE OVERWRITTEN ===\nThere is already a terminology file for this input:\n{file}\nIt will be replaced by a freshly built terminology.\nAny changes you might have made to it manually will be lost!\nIf you consider it final, save it in another location before proceeding.\n[{yes}] Yes, overwrite it.\n[{no}] No, abort (so you can move the file first).",
+    "input_file_changed": "- INPUT_FILE: content has changed"
+  },
+  "language": {
+    "en": "English",
+    "de": "German",
+    "fr": "French",
+    "it": "Italian",
+    "es": "Spanish",
+    "ja": "Japanese"
+  },
+  "game_system": {
+    "dnd5e": "Dungeons & Dragons (DnD5e)",
+    "tde5": "The Dark Eye/Das Schwarze Auge (TDE5/DSA5)",
+    "pf2e": "Pathfinder (PF2e)",
+    "generic": "Generic (system-agnostic)"
+  },
+  "genre": {
+    "classical_fantasy": "Classical Fantasy",
+    "sci_fi": "Sci-Fi",
+    "horror": "Horror",
+    "generic": "Generic"
+  },
+  "tooltip": {
+    "settings": "Opens the application settings.",
+    "input_file": "Pick the file to translate: a Babele JSON export or a Foundry localization file (lang/*.json).",
+    "no_file_selected": "No file selected yet.",
+    "output_folder": "Where the translated file and the review items are written. Default: your user data folder.",
+    "reset_output_folder": "Back to the default output folder.",
+    "input_type": "What kind of file you are translating. Changes how texts are extracted and the output is named.",
+    "language": "Source and target language of the translation.",
+    "flavour": "Game system and genre. They steer terminology and style of the AI translation.",
+    "module_name": "Used to name the output folder and files. Derived from the input file and/or its path. Edit as needed. Best practice: Name it exactly after the module-id of the source Foundry VTT mod.",
+    "max_batch_size": "Maximum characters per single AI request. Larger batches need fewer requests, but can fail if they exceed limits. Smaller batches are more failsafe (less retries), but may cause overhead and increase total processing time.",
+    "review_terminology": "Stops after the terminology is complete, so you can review and edit it as needed. Then click Start to continue. Option is recommended for each new input file, and auto-disables itself after each run.",
+    "simulate_only": "Simulates all AI requests without costs. Nothing real is translated, and progress is kept separate from real runs.",
+    "prepare": "Analyzes the input file and builds the batches. Nothing is sent to the AI yet.",
+    "start": "Starts (or resumes) terminology and translation.",
+    "cancel": "Completes the current batch, then stops. Progress is kept, so you can resume later.",
+    "waiting": "Waiting for the current batch to complete. Then the run stops.",
+    "reconfigure": "Back to the settings. Existing progress is kept.",
+    "clear_terminology": "Discards the terminology of this input file. It will be rebuilt on next start.",
+    "clear_translation": "Discards all translations of this input file. They will be redone on next start.",
+    "show_review_items": "Opens the list of translation issues you accepted, with the context of each, so that you can fix them later by hand.",
+    "pop_out_log": "Opens the log in its own window, which keeps updating during the run."
+  }
+}

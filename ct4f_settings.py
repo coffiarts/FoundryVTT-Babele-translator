@@ -36,3 +36,17 @@ def update_settings(changes: dict) -> None:
     settings = load_settings()
     settings.update(changes)
     save_settings(settings)
+
+
+# ------------------------------------------------------------
+# Function: Load UI Language
+# The language code of the UI, needed before the window is built.
+# Falls back to the default if there is no (readable) setting
+# ------------------------------------------------------------
+def load_ui_language() -> str:
+
+    try:
+        return load_settings().get("ui_language") or config.UI_LANGUAGE
+
+    except (OSError, ValueError):
+        return config.UI_LANGUAGE
