@@ -40,6 +40,7 @@
     "prepare": "Prepare",
     "start": "Start ▶▶",
     "cancel": "Cancel",
+    "clear": "Clear",
     "please_wait": "Please wait for batch to complete ...",
     "reconfigure": "◀ Reconfigure",
     "show": "Show",
@@ -52,7 +53,8 @@
     "batches": "Batches:",
     "review_items": "Review Items:",
     "terminology": "Terminology",
-    "translation": "Translation"
+    "translation": "Translation",
+    "batch_progress": "{completed} / {total} completed"
   },
   "dialog": {
     "unexpected_error": "An unexpected error occurred:\n{message}",

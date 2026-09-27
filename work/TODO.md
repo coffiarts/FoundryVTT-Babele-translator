@@ -106,15 +106,13 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 - population of the theme picker in Settings with a live preview of each theme's font
 - allow for easy integration of more themes without having to extend the code and recompile
 
-☐ Localization bugfix: Progress bars (Terminology + Translation) still show untranslated parts:
+☑ Fix missing localization: Progress bars (Terminology + Translation) still show untranslated parts:
 - "completed in "x/y completed" counter
 - "Clear" button labels
 
-☐ UX: Change tooltip font to LOG_FONT, for better readability
+☐ UX: Change taskbar icon to app icon instead of default python icon
 
 ☐ Feature: Add help ("?") button: links to documentation and credits/license notices
-
-☐ UX: Change taskbar icon to app icon instead of default python icon
 
 ☐ Feature: Disclose and persist as "advanced" setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list
 

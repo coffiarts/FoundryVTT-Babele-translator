@@ -40,6 +40,7 @@
     "prepare": "Vorbereiten",
     "start": "Start ▶▶",
     "cancel": "Abbrechen",
+    "clear": "Löschen",
     "please_wait": "Bitte warte, bis der Batch abgeschlossen ist ...",
     "reconfigure": "◀ Neu konfigurieren",
     "show": "Anzeigen",
@@ -52,7 +53,8 @@
     "batches": "Batches:",
     "review_items": "Prüfeinträge:",
     "terminology": "Terminologie",
-    "translation": "Übersetzung"
+    "translation": "Übersetzung",
+    "batch_progress": "{completed} / {total} abgeschlossen"
   },
   "dialog": {
     "unexpected_error": "Ein unerwarteter Fehler ist aufgetreten:\n{message}",

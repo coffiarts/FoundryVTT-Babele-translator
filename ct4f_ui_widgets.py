@@ -1,8 +1,8 @@
-from collections.abc import Callable
-
 import ct4f_config as config
+import ct4f_i18n as i18n
 import customtkinter as ctk
 import tkinter as tk
+from collections.abc import Callable
 
 ICON_SIZE = 22  # px, size of one batch square
 ICON_GAP = 4    # px, gap between squares
@@ -71,7 +71,7 @@ class BatchStatusBar(ctk.CTkFrame):
         self.title_label = ctk.CTkLabel(self.header, text=title, font=config.FONT_HEADING)
         self.title_label.pack(side="left")
 
-        self.clear_button = ctk.CTkButton(self.header, text="Clear", width=70, command=on_clear)
+        self.clear_button = ctk.CTkButton(self.header, text=i18n.t("button.clear"), width=70, command=on_clear)
         self.clear_button.pack(side="right")
         self._clear_default_color = self.clear_button.cget("fg_color")
 
@@ -113,7 +113,7 @@ class BatchStatusBar(ctk.CTkFrame):
             1 for batch in self.batches
             if batch["status"] in (config.COMPLETED, config.REVIEW_REQUIRED)
         )
-        self.caption_label.configure(text=f"{completed} / {len(self.batches)} completed")
+        self.caption_label.configure(text=i18n.t("stats.batch_progress", completed=completed, total=len(self.batches)))
 
 
     # ===========================================
