@@ -25,11 +25,25 @@ config.UI_LANGUAGE = settings.load_ui_language()
 i18n.load(fn.resource_path("lang"), config.UI_LANGUAGE)
 
 config.UI_THEME = settings.load_ui_theme()
-config.FONT_FAMILY_HEADING = config.THEME_FONT_FAMILIES[config.UI_THEME]
-config.FONT_FAMILY_TEXT = config.THEME_FONT_FAMILIES[config.UI_THEME]
-config.FONT_HEADING = (config.FONT_FAMILY_HEADING, 15, "bold")
-config.FONT_TEXT = (config.FONT_FAMILY_TEXT, 15)
-config.FONT_TOOLTIP = (config.FONT_FAMILY_TEXT, 12)
+
+theme_extras = fn.load_theme_extras(config.THEME_FILES[config.UI_THEME])
+
+for category, values in theme_extras.items():
+    target = config.theme_extras.setdefault(category, {})
+    for key, value in values.items():
+        # One level of merging, so a theme can override e.g. just "fonts.Heading" without
+        # losing the other font roles, or "fonts.Heading.size" without losing its family/weight
+        if isinstance(value, dict) and isinstance(target.get(key), dict):
+            target[key].update(value)
+        else:
+            target[key] = value
+
+def _font_tuple(font_def):
+    return (font_def["family"], font_def["size"], font_def["weight"])
+
+config.FONT_HEADING = _font_tuple(config.theme_extras["fonts"]["Heading"])
+config.FONT_TEXT = _font_tuple(config.theme_extras["fonts"]["Text"])
+config.FONT_TOOLTIP = _font_tuple(config.theme_extras["fonts"]["Tooltip"])
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme(fn.resource_path(config.THEME_FILES[config.UI_THEME]))
@@ -40,7 +54,7 @@ for font_file in config.FONT_FILES:
 BANNER_HEIGHT = 90
 BANNER_IMAGE_WIDTH_RATIO = 0.95   # share of the banner width covered by the image
 
-SW_IMAGE_HEIGHT_RATIO = 0.43   # share of the frame height covered by the image
+DECO_IMAGE_HEIGHT_RATIO = 0.43   # share of the frame height covered by the image
 
 MENU_WIDTH_WIDE = 300      # Source Language / Game System (and the full-width controls below them)
 MENU_WIDTH_NARROW = 170    # Target Language / Genre
@@ -52,7 +66,6 @@ BIG_BUTTON_WIDTH = 220
 BIG_BUTTON_HEIGHT = 56
 BIG_BUTTON_CORNER_RADIUS = 12
 BIG_BUTTON_BORDER_WIDTH = 3
-BIG_BUTTON_BORDER_COLOR = config.INK   # same ink brown as the text
 
 # Hover info of the main button, depending on its current role (see set_main_button_role)
 TOOLTIP_PREPARE = "tooltip.prepare"
@@ -78,11 +91,11 @@ class App(ctk.CTk):
         # =========================================
         # Layout skeleton
         # =========================================
-        self.banner_frame = ctk.CTkFrame(self, height=BANNER_HEIGHT, fg_color=config.PARCHMENT, corner_radius=0)
+        self.banner_frame = ctk.CTkFrame(self, height=BANNER_HEIGHT, corner_radius=0)
         self.banner_frame.pack(side="top", fill="x")
         self.banner_frame.pack_propagate(False)
-        self.banner_source_image = Image.open(fn.resource_path("assets/img/banner.png"))
 
+        self.banner_source_image = Image.open(fn.resource_path(f"{config.IMG_DIR}/{config.theme_extras['images']['banner']}"))
         self.banner_image = None
         self.banner_image_width = 0
 
@@ -118,12 +131,12 @@ class App(ctk.CTk):
 
         # Decorative image in the free bottom-left zone. It is place()d (not gridded), so it doesn't
         # affect the layout, and it's created first, so all widgets are drawn on top of it
-        self.sw_source_image = Image.open(fn.resource_path("assets/img/sw-image.png"))
-        self.sw_image = None
-        self.sw_image_size = None
+        self.deco_source_image = Image.open(fn.resource_path(f"{config.IMG_DIR}/{config.theme_extras['images']['deco_image']}"))
+        self.deco_image = None
+        self.deco_image_size = None
 
-        self.sw_image_label = ctk.CTkLabel(self.configuration_frame, text="")
-        self.sw_image_label.place(relx=0, rely=1, anchor="sw")
+        self.deco_image_label = ctk.CTkLabel(self.configuration_frame, text="")
+        self.deco_image_label.place(relx=0, rely=1, anchor="sw")
         self.configuration_frame.bind("<Configure>", self.on_configuration_resized)
 
         self.monitoring_frame = ctk.CTkFrame(self.body_frame)
@@ -399,8 +412,7 @@ class App(ctk.CTk):
             height=BIG_BUTTON_HEIGHT,
             font=BIG_BUTTON_FONT,
             corner_radius=BIG_BUTTON_CORNER_RADIUS,
-            border_width=BIG_BUTTON_BORDER_WIDTH,
-            border_color=BIG_BUTTON_BORDER_COLOR
+            border_width=BIG_BUTTON_BORDER_WIDTH
         )
         self.main_button.pack(side="left")
 
@@ -413,14 +425,13 @@ class App(ctk.CTk):
         self.reconfigure_button = ctk.CTkButton(
             self.start_frame,
             text=i18n.t("button.reconfigure"),
-            fg_color=config.INK_LIGHT,
+            fg_color=config.theme_extras["colors"]["INK_LIGHT"],
             command=self.reconfigure,
             width=BIG_BUTTON_WIDTH,
             height=BIG_BUTTON_HEIGHT,
             font=BIG_BUTTON_FONT,
             corner_radius=BIG_BUTTON_CORNER_RADIUS,
-            border_width=BIG_BUTTON_BORDER_WIDTH,
-            border_color=BIG_BUTTON_BORDER_COLOR
+            border_width=BIG_BUTTON_BORDER_WIDTH
         )
 
         # =========================================
@@ -432,9 +443,9 @@ class App(ctk.CTk):
         # Stats Info Box: a framed "card" with one grid row per stat (name | value), values are set in show_bars
         self.stats_frame = ctk.CTkFrame(
             self.bars_frame,
-            fg_color=config.PARCHMENT_LIGHT,
+            fg_color=config.theme_extras["colors"]["PARCHMENT_LIGHT"],
             border_width=2,
-            border_color=config.INK_LIGHT,
+            border_color=config.theme_extras["colors"]["INK_LIGHT"],
             corner_radius=8
         )
         self.stats_frame.pack(fill="x", pady=(0, 10))
@@ -442,14 +453,14 @@ class App(ctk.CTk):
         self.stats_grid = ctk.CTkFrame(self.stats_frame, fg_color="transparent")
         self.stats_grid.pack(anchor="w", padx=15, pady=10)
 
-        self.chars_name_label = ctk.CTkLabel(self.stats_grid, text=i18n.t("stats.chars"), anchor="w", font=config.FONT_HEADING)
+        self.chars_name_label = ctk.CTkLabel(self.stats_grid, text=i18n.t("stats.chars"), anchor="w", font=config.FONT_HEADING, text_color=config.theme_extras["colors"]["INK_CONTRAST"])
         self.chars_name_label.grid(row=0, column=0, sticky="w", padx=(0, 10))
-        self.chars_value_label = ctk.CTkLabel(self.stats_grid, text="", anchor="w", font=config.FONT_TEXT)
+        self.chars_value_label = ctk.CTkLabel(self.stats_grid, text="", anchor="w", font=config.FONT_TEXT, text_color=config.theme_extras["colors"]["INK_CONTRAST"])
         self.chars_value_label.grid(row=0, column=1, sticky="w")
 
-        self.batches_name_label = ctk.CTkLabel(self.stats_grid, text=i18n.t("stats.batches"), anchor="w", font=config.FONT_HEADING)
+        self.batches_name_label = ctk.CTkLabel(self.stats_grid, text=i18n.t("stats.batches"), anchor="w", font=config.FONT_HEADING, text_color=config.theme_extras["colors"]["INK_CONTRAST"])
         self.batches_name_label.grid(row=1, column=0, sticky="w", padx=(0, 10))
-        self.batches_value_label = ctk.CTkLabel(self.stats_grid, text="", anchor="w", font=config.FONT_TEXT)
+        self.batches_value_label = ctk.CTkLabel(self.stats_grid, text="", anchor="w", font=config.FONT_TEXT, text_color=config.theme_extras["colors"]["INK_CONTRAST"])
         self.batches_value_label.grid(row=1, column=1, sticky="w")
 
         # Only shown when there are Review Items (see show_bars)
@@ -887,7 +898,7 @@ class App(ctk.CTk):
         self.disable_configuration_controls()
 
         # The main button turns into the Cancel button while running
-        self.set_main_button_role(i18n.t("button.cancel"), self.cancel, TOOLTIP_CANCEL, color=config.YELLOW, text_color=config.INK)
+        self.set_main_button_role(i18n.t("button.cancel"), self.cancel, TOOLTIP_CANCEL, color=config.YELLOW, text_color=config.theme_extras["colors"]["INK_CONTRAST"])
         self.show_status(i18n.t("status.running"))
 
         self.is_busy = True
@@ -1124,15 +1135,15 @@ class App(ctk.CTk):
     # Rescales the bottom-left image to its share of the frame height (keeping its aspect ratio)
     # ===========================================
     def on_configuration_resized(self, event):
-        height = int(event.height * SW_IMAGE_HEIGHT_RATIO)
-        width = int(height * self.sw_source_image.width / self.sw_source_image.height)
+        height = int(event.height * DECO_IMAGE_HEIGHT_RATIO)
+        width = int(height * self.deco_source_image.width / self.deco_source_image.height)
 
-        if (width, height) == self.sw_image_size:
+        if (width, height) == self.deco_image_size:
             return
 
-        self.sw_image_size = (width, height)
-        self.sw_image = ctk.CTkImage(light_image=self.sw_source_image, size=self.sw_image_size)
-        self.sw_image_label.configure(image=self.sw_image)
+        self.deco_image_size = (width, height)
+        self.deco_image = ctk.CTkImage(light_image=self.deco_source_image, size=self.deco_image_size)
+        self.deco_image_label.configure(image=self.deco_image)
 
     # ===========================================
     # Function: Refresh Module Name Suggestion
@@ -1196,7 +1207,7 @@ class App(ctk.CTk):
         self.genre_menu.configure(state="normal")
         self.max_batch_size_slider.configure(state="normal")
         self.max_batch_size_entry.configure(state="normal")
-        self.configuration_frame.configure(fg_color=config.PARCHMENT)
+        self.configuration_frame.configure()
         self.set_configuration_panel_locked(False)
         self.set_controls_locked(False)
         self.pause_after_terminology_checkbox.configure(state="normal")
@@ -1207,13 +1218,11 @@ class App(ctk.CTk):
     # Disabled CTk widgets barely look different, so the panel is tinted and its labels are dimmed
     # ===========================================
     def set_configuration_panel_locked(self, locked):
-        self.configuration_frame.configure(
-            fg_color=config.PARCHMENT_LOCKED if locked else config.PARCHMENT
-        )
+        self.locked_look.apply(self.configuration_frame, locked)
 
         for child in self.configuration_frame.winfo_children():
-            if isinstance(child, ctk.CTkLabel) and child is not self.sw_image_label:
-                child.configure(text_color=config.INK_LOCKED if locked else config.INK)
+            if isinstance(child, ctk.CTkLabel) and child is not self.deco_image_label:
+                self.locked_look.apply(child, locked)
 
 
     # ===========================================

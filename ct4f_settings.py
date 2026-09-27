@@ -61,7 +61,7 @@ def load_ui_theme() -> str:
 
     try:
         style:str = str(load_settings().get("ui_theme"))
-        return style if style in config.THEME_FONT_FAMILIES else config.UI_THEME
+        return style if style in config.THEME_FILES else config.UI_THEME
 
     except (OSError, ValueError):
         return config.UI_THEME

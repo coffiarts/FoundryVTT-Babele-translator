@@ -370,14 +370,27 @@ BLUE = "#4a90d9"
 WHITE = "#ffffff"
 BLACK = "#000000"
 
-# Parchment theme colors (assets/ct4f-theme-*.json files repeat these values, because JSON cannot refer to Python names)
-# TODO - should be migrated to the themes as well
-PARCHMENT = "#d9c9a3"          # frame and banner background
-PARCHMENT_LIGHT = "#e6d9b8"    # emphasized boxes on parchment
-PARCHMENT_LOCKED = "#bdb5a0"   # muted parchment for panels whose controls are disabled
-INK_LOCKED = "#857d6a"         # muted text color for the labels of such panels
-INK = "#3b2f1e"                # text and outlines
-INK_LIGHT = "#8a7550"          # borders and secondary elements
+# Colors and fonts applied by explicit code (not linked to a named CTk element), so they
+# aren't part of CTk's own theme format. These are the defaults; a theme's own "extras" section
+# (assets/themes/ct4f-theme-*.json) can override any of them, and simply omitting a key here keeps it
+theme_extras = {
+    "colors": {
+        "PARCHMENT_LIGHT": "#e6d9b8",
+        "PARCHMENT_LOCKED": "#bdb5a0",
+        "INK_LOCKED": "#857d6a",
+        "INK_CONTRAST": "#3b2f1e",
+        "INK_LIGHT": "#8a7550",
+    },
+    "fonts": {
+        "Heading": {"family": "Metamorphous", "size": 15, "weight": "bold"},
+        "Text": {"family": "Metamorphous", "size": 14, "weight": "normal"},
+        "Tooltip": {"family": "Metamorphous", "size": 12, "weight": "normal"}
+    },
+    "images": {
+        "banner": "banner-fantasy.png",
+        "deco_image": "deco-image-fantasy.png"
+    }
+}
 
 # Batch status => UI color
 STATUS_COLORS = {
@@ -388,18 +401,9 @@ STATUS_COLORS = {
     REVIEW_REQUIRED: MAGENTA
 }
 
-# Selectable UI font styles: id => font family. The family name must match a font file in
-# assets/fonts (loaded at startup, see FONT_FILES).
-# ct4f_app.py resolves UI_THEME early and reassigns FONT_FAMILY_HEADING/TEXT and the font
-# tuples below accordingly, before the theme and any widget are set up
-THEME_FONT_FAMILIES = {
-    "fantasy": "Metamorphous",
-    "neutral": "Almarai",
-    "scifi": "Michroma"
-}
-UI_THEME = "fantasy"
+UI_THEME = "fantasy" # just the default and fallback
 
-# assets/ct4f-theme-<style>.json holds the same colors, but a different default font family
+# assets/themes/ct4f-theme-<style>.json holds each theme's colors and fonts
 THEMES_DIR = "assets/themes"
 THEME_FILES = {
     "fantasy": "assets/themes/ct4f-theme-fantasy.json",
@@ -407,16 +411,16 @@ THEME_FILES = {
     "scifi": "assets/themes/ct4f-theme-scifi.json"
 }
 
-FONT_FAMILY_HEADING = THEME_FONT_FAMILIES[UI_THEME]
-FONT_FAMILY_TEXT = THEME_FONT_FAMILIES[UI_THEME]
+IMG_DIR = "assets/img"
+
 FONT_FAMILY_LOG = "Arial"
 
 FONTS_DIR = f"{THEMES_DIR}/fonts"
 FONT_FILES = ("Metamorphous-Regular.ttf", "Almarai-Regular.ttf", "Almarai-Bold.ttf", "Michroma-Regular.ttf")
 
-FONT_HEADING = (FONT_FAMILY_HEADING, 15, "bold")   # field names and buttons
-FONT_TEXT = (FONT_FAMILY_TEXT, 15)             # displayed values
-FONT_TOOLTIP = (FONT_FAMILY_TEXT, 12)          # hover info texts
+FONT_HEADING = None   # resolved from the active theme at startup, see ct4f_app.py
+FONT_TEXT = None
+FONT_TOOLTIP = None
 FONT_LOG = (FONT_FAMILY_LOG, 13)               # The font is explicit (non-serif)
 
 # Log output (inline log, pop-out log and error views)

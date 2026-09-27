@@ -99,7 +99,11 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ UX: Fix initial position of popup prompts, so that they always appear in a centered position on the same screen as the app
 
-☐ UX: Extend themes to control more than just font families (font-sized, colors and potentially images)
+☑ UX: Extend themes to control more than just font families (font-sized, colors and images)
+
+☐ Refactoring: Allow dynamic adding of new themes by: available_themes() unification (replacing THEME_FILES, the picker's repeated file reads, and moving FONT_FILES per-theme)
+
+☐ Bugfix: Progress bars (Terminology + Translation) still show untranslated word "completed in "x/y completed" counter
 
 ☐ Feature: Add help ("?") button
 

@@ -1678,6 +1678,22 @@ def resource_path(relative_path):
 
 
 # ------------------------------------------------------------
+# Function: Load Theme Extras
+# Reads the custom "ct4f_extras" section from a theme file: whatever CTk's own theme format
+# doesn't cover (because these styles are applied by explicit code instead of being linked to named CTK elements).
+# Returns {} if the file or section is missing,
+# so a theme that doesn't define an extra simply keeps the config.py default
+# ------------------------------------------------------------
+def load_theme_extras(theme_file):
+    try:
+        with open(resource_path(theme_file), encoding="utf-8") as file:
+            return json.load(file).get("extras", {})
+
+    except (OSError, ValueError):
+        return {}
+
+
+# ------------------------------------------------------------
 # Function: Init System Dirs
 # Initialized the localized root paths:
 # - APP_DIR: The directory in which the app is running

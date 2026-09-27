@@ -1,14 +1,32 @@
 {
+  "extras": {
+    "colors": {
+      "PARCHMENT_LIGHT": "#999999",
+      "PARCHMENT_LOCKED": "#666666",
+      "INK_LOCKED": "#857d6a",
+      "INK_CONTRAST": "#000000",
+      "INK_LIGHT": "#8a7550"
+    },
+    "fonts": {
+      "Heading": {"family": "Metamorphous", "size": 15, "weight": "bold"},
+      "Text": {"family": "Metamorphous", "size": 14, "weight": "normal"},
+      "Tooltip": {"family": "Metamorphous", "size": 12, "weight": "normal"}
+    },
+    "images": {
+      "banner": "banner-fantasy.png",
+      "deco_image": "deco-image-fantasy.png"
+    }
+  },
   "CTk": {
-    "fg_color": ["#c9b88f", "#c9b88f"]
+    "fg_color": ["#333333", "#333333"]
   },
   "CTkToplevel": {
-    "fg_color": ["#c9b88f", "#c9b88f"]
+    "fg_color": ["#333333", "#333333"]
   },
   "CTkFrame": {
     "corner_radius": 6,
     "border_width": 0,
-    "fg_color": ["#d9c9a3", "#d9c9a3"],
+    "fg_color": ["#333333", "#333333"],
     "top_fg_color": ["#cfbe94", "#cfbe94"],
     "border_color": ["#8a7550", "#8a7550"]
   },
@@ -17,7 +35,7 @@
     "border_width": 0,
     "fg_color": "transparent",
     "border_color": ["#8a7550", "#8a7550"],
-    "text_color": ["#3b2f1e", "#3b2f1e"]
+    "text_color": ["#a79f8c", "#a79f8c"]
   },
   "CTkButton": {
     "corner_radius": 6,
@@ -43,7 +61,7 @@
     "fg_color": ["#7a4e2d", "#7a4e2d"],
     "border_color": ["#5a4630", "#5a4630"],
     "hover_color": ["#5f3b21", "#5f3b21"],
-    "text_color": ["#3b2f1e", "#3b2f1e"],
+    "text_color": ["#a79f8c", "#a79f8c"],
     "text_color_disabled": ["#a8977a", "#a8977a"]
   },
   "CTkSwitch": {
@@ -77,7 +95,7 @@
   },
   "DropdownMenu": {
     "fg_color": ["#efe4c6", "#efe4c6"],
-    "hover_color": ["#d9c9a3", "#d9c9a3"],
+    "hover_color": ["#333333", "#333333"],
     "text_color": ["#3b2f1e", "#3b2f1e"]
   },
   "CTkCheckBox": {
@@ -87,7 +105,7 @@
     "border_color": ["#5a4630", "#5a4630"],
     "hover_color": ["#5f3b21", "#5f3b21"],
     "checkmark_color": ["#f3ead2", "#f3ead2"],
-    "text_color": ["#3b2f1e", "#3b2f1e"],
+    "text_color": ["#a79f8c", "#a79f8c"],
     "text_color_disabled": ["#a8977a", "#a8977a"]
   },
   "CTkProgressBar": {

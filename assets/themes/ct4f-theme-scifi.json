@@ -1,4 +1,22 @@
 {
+  "extras": {
+    "colors": {
+      "PARCHMENT_LIGHT": "#e6d9b8",
+      "PARCHMENT_LOCKED": "#bdb5a0",
+      "INK_LOCKED": "#857d6a",
+      "INK_CONTRAST": "#3b2f1e",
+      "INK_LIGHT": "#8a7550"
+    },
+    "fonts": {
+      "Heading": {"family": "Michroma", "size": 15, "weight": "bold"},
+      "Text": {"family": "Michroma", "size": 15, "weight": "normal"},
+      "Tooltip": {"family": "Michroma", "size": 12, "weight": "normal"}
+    },
+    "images": {
+      "banner": "banner-scifi.png",
+      "deco_image": "deco-image-scifi.png"
+    }
+  },
   "CTk": {
     "fg_color": ["#c9b88f", "#c9b88f"]
   },

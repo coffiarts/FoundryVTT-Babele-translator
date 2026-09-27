@@ -7,15 +7,19 @@ import tkinter as tk
 ICON_SIZE = 22  # px, size of one batch square
 ICON_GAP = 4    # px, gap between squares
 
-# CTk doesn't recolor disabled widgets by itself: widget type => colors to apply while locked
+# CTk doesn't recolor disabled widgets by itself: widget type => theme_extras color KEY to apply
+# while locked. The color itself is looked up lazily in LockedLook.apply(), not stored here directly,
+# since this module is imported before the active theme's colors are resolved
 LOCKED_COLORS = {
-    ctk.CTkButton: {"fg_color": config.INK_LOCKED},
-    ctk.CTkOptionMenu: {"fg_color": config.INK_LOCKED, "button_color": config.INK_LOCKED},
-    ctk.CTkRadioButton: {"fg_color": config.INK_LOCKED, "border_color": config.INK_LOCKED},
-    ctk.CTkCheckBox: {"fg_color": config.INK_LOCKED, "border_color": config.INK_LOCKED},
-    ctk.CTkEntry: {"border_color": config.INK_LOCKED, "text_color": config.INK_LOCKED},
-    ctk.CTkSlider: {"progress_color": config.INK_LOCKED, "button_color": config.INK_LOCKED},
-    ctk.CTkSwitch: {"progress_color": config.INK_LOCKED, "button_color": config.INK_LOCKED}
+    ctk.CTkButton: {"fg_color": "INK_LOCKED"},
+    ctk.CTkOptionMenu: {"fg_color": "INK_LOCKED", "button_color": "INK_LOCKED"},
+    ctk.CTkRadioButton: {"fg_color": "INK_LOCKED", "border_color": "INK_LOCKED"},
+    ctk.CTkCheckBox: {"fg_color": "INK_LOCKED", "border_color": "INK_LOCKED"},
+    ctk.CTkEntry: {"border_color": "INK_LOCKED", "text_color": "INK_LOCKED"},
+    ctk.CTkSlider: {"progress_color": "INK_LOCKED", "button_color": "INK_LOCKED"},
+    ctk.CTkSwitch: {"progress_color": "INK_LOCKED", "button_color": "INK_LOCKED"},
+    ctk.CTkFrame: {"fg_color": "PARCHMENT_LOCKED"},
+    ctk.CTkLabel: {"text_color": "INK_LOCKED"}
 }
 
 
@@ -30,7 +34,9 @@ class LockedLook:
         self._original_colors = {}
 
     def apply(self, widget, locked):
-        locked_colors = LOCKED_COLORS[type(widget)]
+
+        locked_keys = LOCKED_COLORS[type(widget)]
+        locked_colors = {prop: config.theme_extras["colors"][key] for prop, key in locked_keys.items()}
 
         if locked:
             # Locking twice must not overwrite the remembered original colors
@@ -40,6 +46,7 @@ class LockedLook:
 
         elif widget in self._original_colors:
             widget.configure(**self._original_colors.pop(widget))
+
 
 # ===========================================
 # Class: Batch Status Bar
@@ -61,7 +68,7 @@ class BatchStatusBar(ctk.CTkFrame):
         self.header = ctk.CTkFrame(self, fg_color="transparent")
         self.header.pack(fill="x")
 
-        self.title_label = ctk.CTkLabel(self.header, text=title, font=("Arial", 16, "bold"))
+        self.title_label = ctk.CTkLabel(self.header, text=title, font=config.FONT_HEADING)
         self.title_label.pack(side="left")
 
         self.clear_button = ctk.CTkButton(self.header, text="Clear", width=70, command=on_clear)
@@ -135,7 +142,7 @@ class BatchStatusBar(ctk.CTkFrame):
     def set_clear_enabled(self, enabled):
         self.clear_button.configure(
             state="normal" if enabled else "disabled",
-            fg_color=self._clear_default_color if enabled else config.INK_LOCKED
+            fg_color=self._clear_default_color if enabled else config.theme_extras["colors"]["INK_LOCKED"]
         )
 
 
@@ -213,8 +220,8 @@ class Tooltip:
             text=text,
             justify="left",
             wraplength=self.MAX_WIDTH,
-            background=config.PARCHMENT_LIGHT,
-            foreground=config.INK,
+            background=config.theme_extras["colors"]["PARCHMENT_LIGHT"],
+            foreground=config.theme_extras["colors"]["INK_CONTRAST"],
             relief="solid",
             borderwidth=1,
             font=config.FONT_TOOLTIP,

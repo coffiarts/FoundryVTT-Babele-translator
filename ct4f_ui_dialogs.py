@@ -6,7 +6,6 @@ import ct4f_core_functions as fn
 import ct4f_translator_dialogs as dialogs
 import ct4f_ui_widgets as ui_widgets
 import customtkinter as ctk
-from tkinter import TclError
 
 LOGGER = print
 
@@ -114,15 +113,15 @@ class SettingsDialog(ctk.CTkToplevel):
         theme_frame.pack(padx=20, pady=5, anchor="w")
         ctk.CTkRadioButton(
             theme_frame, text=i18n.t("settings.theme_fantasy"), value="fantasy", variable=self.ui_theme_var,
-            font=(config.THEME_FONT_FAMILIES["fantasy"], 16, "bold")
+            font=(fn.load_theme_extras(config.THEME_FILES["fantasy"])["fonts"]["Heading"]["family"], 16, "bold")
         ).pack(side="left", padx=(0, 20))
         ctk.CTkRadioButton(
             theme_frame, text=i18n.t("settings.theme_neutral"), value="neutral", variable=self.ui_theme_var,
-            font=(config.THEME_FONT_FAMILIES["neutral"], 16, "bold")
+            font=(fn.load_theme_extras(config.THEME_FILES["neutral"])["fonts"]["Heading"]["family"], 16, "bold")
         ).pack(side="left")
         ctk.CTkRadioButton(
             theme_frame, text=i18n.t("settings.theme_scifi"), value="scifi", variable=self.ui_theme_var,
-            font=(config.THEME_FONT_FAMILIES["scifi"], 16, "bold")
+            font=(fn.load_theme_extras(config.THEME_FILES["scifi"])["fonts"]["Heading"]["family"], 16, "bold")
         ).pack(side="left")
 
         # LLM model
@@ -143,7 +142,6 @@ class SettingsDialog(ctk.CTkToplevel):
         ctk.CTkLabel(
             self,
             text=i18n.t("settings.default_url", url=config.OPENAI_BASE_URL),
-            text_color=config.INK,
             font=(config.FONT_FAMILY_LOG, 12),
         ).pack(padx=30, pady=(0, 0), anchor="w")
 
@@ -181,7 +179,6 @@ class SettingsDialog(ctk.CTkToplevel):
         ctk.CTkLabel(
             self,
             text=i18n.t("settings.no_key_hint"),
-            text_color=config.INK,
             font=(config.FONT_FAMILY_LOG, 12),
         ).pack(padx=48, pady=(0, 5), anchor="w")
 
