@@ -104,7 +104,7 @@ class SettingsDialog(ctk.CTkToplevel):
             values=list(self.language_by_option), variable=self.ui_language_var
         ).pack(padx=20, pady=5, anchor="w")
 
-        # UI theme: two radio buttons, each rendered in its own theme's font (a live preview)
+        # UI theme: Radio buttons, each rendered in its own theme's font (a live preview)
         self.ui_theme_var = ctk.StringVar(value=config.UI_THEME)
 
         ctk.CTkLabel(self, text=i18n.t("settings.ui_theme"), font=(config.FONT_FAMILY_LOG, 14, "bold")).pack(
@@ -119,6 +119,10 @@ class SettingsDialog(ctk.CTkToplevel):
         ctk.CTkRadioButton(
             theme_frame, text=i18n.t("settings.theme_neutral"), value="neutral", variable=self.ui_theme_var,
             font=(config.THEME_FONT_FAMILIES["neutral"], 16, "bold")
+        ).pack(side="left")
+        ctk.CTkRadioButton(
+            theme_frame, text=i18n.t("settings.theme_scifi"), value="scifi", variable=self.ui_theme_var,
+            font=(config.THEME_FONT_FAMILIES["scifi"], 16, "bold")
         ).pack(side="left")
 
         # LLM model

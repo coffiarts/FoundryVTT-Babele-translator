@@ -35,7 +35,7 @@ ctk.set_appearance_mode("light")
 ctk.set_default_color_theme(fn.resource_path(config.THEME_FILES[config.UI_THEME]))
 
 for font_file in config.FONT_FILES:
-    ctk.FontManager.load_font(fn.resource_path(f"assets/fonts/{font_file}"))
+    ctk.FontManager.load_font(fn.resource_path(f"{config.FONTS_DIR}/{font_file}"))
 
 BANNER_HEIGHT = 90
 BANNER_IMAGE_WIDTH_RATIO = 0.95   # share of the banner width covered by the image

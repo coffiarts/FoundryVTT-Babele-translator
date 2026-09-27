@@ -95,6 +95,8 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ UX: Improve MBS slider
 
+☑ UX: Add another theme: "Sci-Fi"
+
 ☐ Feature: Add help ("?") button
 
 ☐ Feature: Disclose and persist as "advanced" setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list

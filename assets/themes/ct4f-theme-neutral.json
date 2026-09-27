@@ -139,17 +139,17 @@
   },
   "CTkFont": {
     "macOS": {
-      "family": "NanumGothic",
+      "family": "Almarai",
       "size": 14,
       "weight": "normal"
     },
     "Windows": {
-      "family": "NanumGothic",
+      "family": "Almarai",
       "size": 14,
       "weight": "normal"
     },
     "Linux": {
-      "family": "NanumGothic",
+      "family": "Almarai",
       "size": 14,
       "weight": "normal"
     }

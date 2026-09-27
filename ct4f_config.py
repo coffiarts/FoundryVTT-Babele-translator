@@ -370,7 +370,8 @@ BLUE = "#4a90d9"
 WHITE = "#ffffff"
 BLACK = "#000000"
 
-# Parchment theme colors (assets/ct4f-theme.json repeats these values, because JSON cannot refer to Python names)
+# Parchment theme colors (assets/ct4f-theme-*.json files repeat these values, because JSON cannot refer to Python names)
+# TODO - should be migrated to the themes as well
 PARCHMENT = "#d9c9a3"          # frame and banner background
 PARCHMENT_LIGHT = "#e6d9b8"    # emphasized boxes on parchment
 PARCHMENT_LOCKED = "#bdb5a0"   # muted parchment for panels whose controls are disabled
@@ -387,27 +388,31 @@ STATUS_COLORS = {
     REVIEW_REQUIRED: MAGENTA
 }
 
-# Two selectable UI font styles: id => font family. The family name must match a font file in
-# assets/fonts (loaded at startup, see FONT_FILES). Persisted as "ui_font_style" in settings.json;
+# Selectable UI font styles: id => font family. The family name must match a font file in
+# assets/fonts (loaded at startup, see FONT_FILES).
 # ct4f_app.py resolves UI_THEME early and reassigns FONT_FAMILY_HEADING/TEXT and the font
 # tuples below accordingly, before the theme and any widget are set up
 THEME_FONT_FAMILIES = {
     "fantasy": "Metamorphous",
-    "neutral": "NanumGothic"
+    "neutral": "Almarai",
+    "scifi": "Michroma"
 }
 UI_THEME = "fantasy"
 
 # assets/ct4f-theme-<style>.json holds the same colors, but a different default font family
+THEMES_DIR = "assets/themes"
 THEME_FILES = {
-    "fantasy": "assets/ct4f-theme-fantasy.json",
-    "neutral": "assets/ct4f-theme-neutral.json"
+    "fantasy": "assets/themes/ct4f-theme-fantasy.json",
+    "neutral": "assets/themes/ct4f-theme-neutral.json",
+    "scifi": "assets/themes/ct4f-theme-scifi.json"
 }
 
 FONT_FAMILY_HEADING = THEME_FONT_FAMILIES[UI_THEME]
 FONT_FAMILY_TEXT = THEME_FONT_FAMILIES[UI_THEME]
 FONT_FAMILY_LOG = "Arial"
 
-FONT_FILES = ("Metamorphous-Regular.ttf", "NanumGothic-Regular.ttf", "NanumGothic-Bold.ttf")
+FONTS_DIR = f"{THEMES_DIR}/fonts"
+FONT_FILES = ("Metamorphous-Regular.ttf", "Almarai-Regular.ttf", "Almarai-Bold.ttf", "Michroma-Regular.ttf")
 
 FONT_HEADING = (FONT_FAMILY_HEADING, 15, "bold")   # field names and buttons
 FONT_TEXT = (FONT_FAMILY_TEXT, 15)             # displayed values

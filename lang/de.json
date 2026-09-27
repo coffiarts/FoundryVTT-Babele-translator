@@ -85,6 +85,7 @@
     "ui_theme": "Stil der Benutzeroberfläche (Neustart erforderlich):",
     "theme_fantasy": "Fantasy",
     "theme_neutral": "Neutral",
+    "theme_scifi": "Sci-Fi",
     "restart_prompt": "Diese Änderung wird erst nach dem Neustart der App wirksam.\n\nWillst du jetzt neu starten?",
     "restart_busy": "Diese Änderung wird erst nach dem Neustart der App wirksam.\n\nBitte warte, bis der aktuelle Prozess beendet ist, und starte danach neu."
   },
