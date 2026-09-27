@@ -93,7 +93,7 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ Bugfix: Block changes to LLM settings while a process is still running
 
-☐ UX: Improve MBS slider
+☑ UX: Improve MBS slider
 
 ☐ Feature: Add help ("?") button
 

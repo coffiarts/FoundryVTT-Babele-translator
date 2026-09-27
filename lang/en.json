@@ -27,7 +27,7 @@
     "module_name": "Module Name",
     "pick_file_first": "(Please pick a file first)",
     "max_batch_size": "Max Batch Size",
-    "chars": "{count} chars"
+    "chars_unit": "chars"
   },
   "option": {
     "review_terminology": "Review terminology before translating (once)",

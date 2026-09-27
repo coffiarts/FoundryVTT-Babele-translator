@@ -346,14 +346,17 @@ class App(ctk.CTk):
         self.max_batch_size_slider.set(config.MAX_BATCH_SIZE)
         self.max_batch_size_slider.pack(side="left")
 
-        self.max_batch_size_label = ctk.CTkLabel(
+        self.max_batch_size_entry = ctk.CTkEntry(
             self.max_batch_size_frame,
             width=VALUE_LABEL_WIDTH,
-            anchor="w",
-            text=i18n.t("label.chars", count=f"{config.MAX_BATCH_SIZE:,}"),
             font=config.FONT_TEXT
         )
-        self.max_batch_size_label.pack(side="left", padx=(10, 0))
+        self.max_batch_size_entry.insert(0, str(config.MAX_BATCH_SIZE))
+        self.max_batch_size_entry.bind("<Return>", self.on_max_batch_size_entry_changed)
+        self.max_batch_size_entry.bind("<FocusOut>", self.on_max_batch_size_entry_changed)
+        self.max_batch_size_entry.pack(side="left", padx=(10, 5))
+
+        ctk.CTkLabel(self.max_batch_size_frame, text=i18n.t("label.chars_unit"), font=config.FONT_TEXT).pack(side="left")
 
         # =========================================
         # Review terminology before translating (once)
@@ -576,7 +579,7 @@ class App(ctk.CTk):
 
         batch_size_tip = i18n.t("tooltip.max_batch_size")
         tip(self.max_batch_size_slider, batch_size_tip)
-        tip(self.max_batch_size_label, batch_size_tip)
+        tip(self.max_batch_size_entry, batch_size_tip)
 
         tip(self.pause_after_terminology_checkbox, i18n.t("tooltip.review_terminology"))
         tip(self.mock_switch, i18n.t("tooltip.simulate_only"))
@@ -681,7 +684,8 @@ class App(ctk.CTk):
         config.TARGET_LANGUAGE = self.language_by_option[self.target_language_var.get()]
         config.GAME_SYSTEM_CONTEXT = self.game_system_by_option[self.game_system_var.get()]
         config.GENRE_CONTEXT = self.genre_by_option[self.genre_var.get()]
-        config.MAX_BATCH_SIZE = int(round(self.max_batch_size_slider.get()))
+        self.on_max_batch_size_entry_changed()
+        config.MAX_BATCH_SIZE = int(self.max_batch_size_entry.get())
         config.PAUSE_AFTER_TERMINOLOGY = self.pause_after_terminology_var.get()
 
         fn.adapt_file_paths()
@@ -1072,7 +1076,20 @@ class App(ctk.CTk):
     # Updates the live readout while the slider is being dragged
     # ===========================================
     def on_max_batch_size_changed(self, value):
-        self.max_batch_size_label.configure(text=i18n.t("label.chars", count=f"{int(round(value)):,}"))
+        self.max_batch_size_entry.delete(0, "end")
+        self.max_batch_size_entry.insert(0, str(int(round(value))))
+
+    def on_max_batch_size_entry_changed(self, event=None):
+        try:
+            value = int(self.max_batch_size_entry.get().strip())
+        except ValueError:
+            value = int(self.max_batch_size_slider.get())  # invalid input: revert to the slider's last value
+
+        value = fn.clamp(value, 500, 100000)
+
+        self.max_batch_size_entry.delete(0, "end")
+        self.max_batch_size_entry.insert(0, str(value))
+        self.max_batch_size_slider.set(value)
 
 
     # ===========================================
@@ -1154,6 +1171,7 @@ class App(ctk.CTk):
         self.game_system_menu.configure(state="disabled")
         self.genre_menu.configure(state="disabled")
         self.max_batch_size_slider.configure(state="disabled")
+        self.max_batch_size_entry.configure(state="disabled")
         self.set_configuration_panel_locked(True)
         self.set_controls_locked(True)
         self.pause_after_terminology_checkbox.configure(state="disabled")
@@ -1177,6 +1195,7 @@ class App(ctk.CTk):
         self.game_system_menu.configure(state="normal")
         self.genre_menu.configure(state="normal")
         self.max_batch_size_slider.configure(state="normal")
+        self.max_batch_size_entry.configure(state="normal")
         self.configuration_frame.configure(fg_color=config.PARCHMENT)
         self.set_configuration_panel_locked(False)
         self.set_controls_locked(False)

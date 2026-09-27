@@ -1713,16 +1713,10 @@ def init_system_dirs():
 # ------------------------------------------------------------
 # Function: Clamp
 # Limit value to min_max value range
-# (just a convenience replacement for Pythion missing a native "clamp"
+# (just a convenience replacement for Pythion missing a native "clamp")
 # ------------------------------------------------------------
 def clamp(value, min_value, max_value):
-    if (value < min_value):
-        return min_value
-    elif (value > max_value):
-        return max_value
-    else:
-        return value
-
+    return min(max(value, min_value), max_value)
 
 # ------------------------------------------------------------
 # Function: Open Folder
