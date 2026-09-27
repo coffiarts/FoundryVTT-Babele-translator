@@ -97,6 +97,8 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ UX: Add another theme: "Sci-Fi"
 
+☑ UX: Fix initial position of popup prompts, so that they always appear in a centered position on the same screen as the app
+
 ☐ UX: Extend themes to control more than just font families (font-sized, colors and potentially images)
 
 ☐ Feature: Add help ("?") button

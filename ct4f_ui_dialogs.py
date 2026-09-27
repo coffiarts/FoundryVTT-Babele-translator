@@ -211,6 +211,8 @@ class SettingsDialog(ctk.CTkToplevel):
             btn_frame, text=i18n.t("dialog.cancel"), fg_color=config.GREY, command=self.destroy
         ).pack(side="right")
 
+        ui_widgets.center_over_parent(self, parent)
+
     def _toggle_show(self):
         self.entry.configure(show="" if self.show_var.get() else "•")
 
@@ -301,6 +303,8 @@ class ErrorDialog(ctk.CTkToplevel):
             btn_frame, text=i18n.t("dialog.close"), fg_color=config.GREY, command=self.destroy
         ).pack(side="right")
 
+        ui_widgets.center_over_parent(self, parent)
+
 
 class HintDialog(ctk.CTkToplevel):
 
@@ -324,6 +328,8 @@ class HintDialog(ctk.CTkToplevel):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(10, 15), fill="x")
         ctk.CTkButton(btn_frame, text=i18n.t("dialog.ok"), command=self.destroy).pack(side="right")
+
+        ui_widgets.center_over_parent(self, parent)
 
 
 class ConfirmDialog(ctk.CTkToplevel):
@@ -358,6 +364,9 @@ class ConfirmDialog(ctk.CTkToplevel):
                 fg_color=config.GREY,
                 command=on_show_log
             ).pack(side="left", padx=(20, 0))
+
+        ui_widgets.center_over_parent(self, parent)
+
 
     def _answer(self, callback):
         self.destroy()
@@ -401,20 +410,10 @@ class LogViewerDialog(ctk.CTkToplevel):
     def show(self, modal=False):
         if self._normal_geometry:
             self.geometry(self._normal_geometry)
+        else:
+            ui_widgets.center_over_parent(self, self.master)
 
         self.deiconify()
-
-        if self._was_maximized:
-            try:
-                self.state("zoomed")
-            except TclError:
-                pass  # this window manager doesn't know the "zoomed" state
-
-        self.lift()
-        self.focus_force()
-
-        if modal:
-            self.grab_set()
 
     def hide(self):
         state = self.state()
@@ -458,6 +457,8 @@ class ReviewItemsDialog(ctk.CTkToplevel):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(0, 15), fill="x")
         ctk.CTkButton(btn_frame, text=i18n.t("dialog.close"), fg_color=config.GREY, command=self.destroy).pack(side="right")
+
+        ui_widgets.center_over_parent(self, parent)
 
 
     def _render_item(self, position, item):

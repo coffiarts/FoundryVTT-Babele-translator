@@ -243,3 +243,20 @@ class Tooltip:
         if self._popup is not None:
             self._popup.destroy()
             self._popup = None
+
+
+# ------------------------------------------------------------
+# Function: Center Over Parent
+# Positions <dialog> centered over <parent> (same screen as the app, not the top-left corner
+# Tk defaults new Toplevels to), clamped so it doesn't end up partially off-screen
+# ------------------------------------------------------------
+def center_over_parent(dialog, parent):
+    dialog.update_idletasks()
+
+    width = dialog.winfo_width()
+    height = dialog.winfo_height()
+
+    x = parent.winfo_x() + (parent.winfo_width() - width) // 2
+    y = parent.winfo_y() + (parent.winfo_height() - height) // 2
+
+    dialog.geometry(f"+{x}+{y}")
