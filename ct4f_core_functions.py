@@ -1742,7 +1742,10 @@ def open_folder(path):
 def restart_app():
 
     if getattr(sys, "frozen", False):
-        os.execv(sys.executable, sys.argv)
+        # os.execv would replace the frozen launcher process itself, which isn't what we want here,
+        # so a new, independent process is spawned instead, and this one exits normally
+        subprocess.Popen([sys.executable] + sys.argv[1:])
+        sys.exit(0)
     else:
         os.execv(sys.executable, [sys.executable] + sys.argv)
 
