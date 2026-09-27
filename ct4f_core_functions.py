@@ -1741,6 +1741,19 @@ def open_folder(path):
 
 
 # ------------------------------------------------------------
+# Function: Restart App
+# Replaces the running process with a fresh instance of itself (same executable/script, same
+# arguments). Works both for a plain script run and for a PyInstaller-frozen .exe
+# ------------------------------------------------------------
+def restart_app():
+
+    if getattr(sys, "frozen", False):
+        os.execv(sys.executable, sys.argv)
+    else:
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+
+
+# ------------------------------------------------------------
 # Function: Play Sound
 # Plays the WAV file at <path> asynchronously, using what the current platform offers.
 # Best effort only: a missing player or file must never disturb the app

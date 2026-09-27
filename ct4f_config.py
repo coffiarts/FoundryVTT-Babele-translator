@@ -387,20 +387,34 @@ STATUS_COLORS = {
     REVIEW_REQUIRED: MAGENTA
 }
 
-# Fonts. The family names must match the font files in assets/fonts (loaded at startup, see FONT_FILES).
-# The theme file assets/ct4f-theme.json repeats the text font family, because JSON cannot refer to Python names
-FONT_FAMILY_HEADING = "Almendra"
-FONT_FAMILY_TEXT = "EB Garamond"
-FONT_FAMILY_LOG = "Arial"
-FONT_FILES = ("Almendra-Regular.ttf", "Almendra-Bold.ttf", "EBGaramond-Regular.ttf")
+# Two selectable UI font styles: id => font family. The family name must match a font file in
+# assets/fonts (loaded at startup, see FONT_FILES). Persisted as "ui_font_style" in settings.json;
+# ct4f_app.py resolves UI_THEME early and reassigns FONT_FAMILY_HEADING/TEXT and the font
+# tuples below accordingly, before the theme and any widget are set up
+THEME_FONT_FAMILIES = {
+    "fantasy": "Metamorphous",
+    "neutral": "NanumGothic"
+}
+UI_THEME = "fantasy"
 
-FONT_NAME = (FONT_FAMILY_HEADING, 16, "bold")   # field names and buttons
-FONT_VALUE = (FONT_FAMILY_TEXT, 17)             # displayed values
-TOOLTIP_FONT = (FONT_FAMILY_TEXT, 13)           # hover info texts
+# assets/ct4f-theme-<style>.json holds the same colors, but a different default font family
+THEME_FILES = {
+    "fantasy": "assets/ct4f-theme-fantasy.json",
+    "neutral": "assets/ct4f-theme-neutral.json"
+}
+
+FONT_FAMILY_HEADING = THEME_FONT_FAMILIES[UI_THEME]
+FONT_FAMILY_TEXT = THEME_FONT_FAMILIES[UI_THEME]
+FONT_FAMILY_LOG = "Arial"
+
+FONT_FILES = ("Metamorphous-Regular.ttf", "NanumGothic-Regular.ttf", "NanumGothic-Bold.ttf")
+
+FONT_HEADING = (FONT_FAMILY_HEADING, 15, "bold")   # field names and buttons
+FONT_TEXT = (FONT_FAMILY_TEXT, 15)             # displayed values
+FONT_TOOLTIP = (FONT_FAMILY_TEXT, 12)          # hover info texts
+FONT_LOG = (FONT_FAMILY_LOG, 13)               # The font is explicit (non-serif)
 
 # Log output (inline log, pop-out log and error views)
-# The font is explicit (non-serif), whereas the theme default is a serif font handled by theme and UI
-LOG_FONT = (FONT_FAMILY_LOG, 13)
 LOG_BACKGROUND_COLOR = BLACK
 LOG_TEXT_COLOR = WHITE
 

@@ -87,9 +87,19 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ UX: UI Localization
 
+☑ UX: Optimize fonts, make font selectable by a theme selector setting ("fantasy" vs. "neutral")
+
+☑ UX: Optimize changing of UI language and theme settings by offering automatic restart on save, taking into account that a running process needs to be completed first
+
+☑ Bugfix: Block changes to LLM settings while a process is still running
+
 ☐ UX: Improve MBS slider
 
+☐ Feature: Add help ("?") button
+
 ☐ Feature: Disclose and persist as "advanced" setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list
+
+☐ UX: Provide most relevant localizations (fr, it, en, jpn?) => test jpn specifically)
 
 ☐ Feature: Disclose and persist as "advanced" setting: TRANSLATABLE_CONTAINERS => same as above
 

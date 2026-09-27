@@ -151,7 +151,7 @@ class LogTextbox(ctk.CTkTextbox):
             parent,
             fg_color=config.LOG_BACKGROUND_COLOR,
             text_color=config.LOG_TEXT_COLOR,
-            font=config.LOG_FONT,
+            font=config.FONT_LOG,
             **kwargs
         )
 
@@ -217,7 +217,7 @@ class Tooltip:
             foreground=config.INK,
             relief="solid",
             borderwidth=1,
-            font=config.TOOLTIP_FONT,
+            font=config.FONT_TOOLTIP,
             padx=8,
             pady=4
         ).pack()

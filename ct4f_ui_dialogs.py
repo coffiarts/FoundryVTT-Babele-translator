@@ -1,11 +1,12 @@
 import ct4f_config as config
-import ct4f_i18n as i18n
-import ct4f_translator_dialogs as dialogs
-import customtkinter as ctk
-import ct4f_security as security
-import ct4f_ui_widgets as ui_widgets
-from tkinter import TclError
 import ct4f_settings as settings
+import ct4f_i18n as i18n
+import ct4f_security as security
+import ct4f_core_functions as fn
+import ct4f_translator_dialogs as dialogs
+import ct4f_ui_widgets as ui_widgets
+import customtkinter as ctk
+from tkinter import TclError
 
 LOGGER = print
 
@@ -77,7 +78,7 @@ class SettingsDialog(ctk.CTkToplevel):
     def __init__(self, parent, on_save_callback=None):
         super().__init__(parent)
         self.title(i18n.t("settings.title"))
-        self.geometry("550x610")
+        self.geometry("550x670")
         self.resizable(False, False)
         self.transient(parent)
         self.grab_set()
@@ -102,6 +103,23 @@ class SettingsDialog(ctk.CTkToplevel):
             self, width=300, dynamic_resizing=False,
             values=list(self.language_by_option), variable=self.ui_language_var
         ).pack(padx=20, pady=5, anchor="w")
+
+        # UI theme: two radio buttons, each rendered in its own theme's font (a live preview)
+        self.ui_theme_var = ctk.StringVar(value=config.UI_THEME)
+
+        ctk.CTkLabel(self, text=i18n.t("settings.ui_theme"), font=(config.FONT_FAMILY_LOG, 14, "bold")).pack(
+            padx=20, pady=(15, 5), anchor="w"
+        )
+        theme_frame = ctk.CTkFrame(self, fg_color="transparent")
+        theme_frame.pack(padx=20, pady=5, anchor="w")
+        ctk.CTkRadioButton(
+            theme_frame, text=i18n.t("settings.theme_fantasy"), value="fantasy", variable=self.ui_theme_var,
+            font=(config.THEME_FONT_FAMILIES["fantasy"], 16, "bold")
+        ).pack(side="left", padx=(0, 20))
+        ctk.CTkRadioButton(
+            theme_frame, text=i18n.t("settings.theme_neutral"), value="neutral", variable=self.ui_theme_var,
+            font=(config.THEME_FONT_FAMILIES["neutral"], 16, "bold")
+        ).pack(side="left")
 
         # LLM model
         ctk.CTkLabel(self, text=i18n.t("settings.llm_model"), font=(config.FONT_FAMILY_LOG, 14, "bold")).pack(
@@ -149,12 +167,13 @@ class SettingsDialog(ctk.CTkToplevel):
 
         # Only relevant for servers other than OpenAI, which always needs a key
         self.no_key_var = ctk.BooleanVar(value=not config.API_KEY_REQUIRED)
-        ctk.CTkCheckBox(
+        self.no_key_checkbox = ctk.CTkCheckBox(
             self,
             text=i18n.t("settings.no_key_needed"),
             variable=self.no_key_var,
             command=self._update_key_controls,
-        ).pack(padx=20, pady=(15, 0), anchor="w")
+        )
+        self.no_key_checkbox.pack(padx=20, pady=(15, 0), anchor="w")
         ctk.CTkLabel(
             self,
             text=i18n.t("settings.no_key_hint"),
@@ -163,6 +182,12 @@ class SettingsDialog(ctk.CTkToplevel):
         ).pack(padx=48, pady=(0, 5), anchor="w")
 
         self._update_key_controls()
+
+        # LLM connection settings must not change while a run is active, since they take effect immediately
+        if parent.is_busy:
+            for widget in (self.model_entry, self.base_url_entry, self.entry, self.show_key_checkbox, self.no_key_checkbox):
+                widget.configure(state="disabled")
+                self.locked_look.apply(widget, True)
 
         # Hide tooltips option
         self.hide_tooltips_var = ctk.BooleanVar(value=config.HIDE_TOOLTIPS)
@@ -212,12 +237,19 @@ class SettingsDialog(ctk.CTkToplevel):
 
         security.set_api_key(self.entry.get().strip())
 
-        # A changed UI language only takes effect after a restart
+        # A changed UI language or theme only takes effect after a restart
         new_language = self.language_by_option[self.ui_language_var.get()]
         language_changed = new_language != config.UI_LANGUAGE
+        theme_changed = self.ui_theme_var.get() != config.UI_THEME
 
         if language_changed:
             settings.update_settings({"ui_language": new_language})
+
+        if theme_changed:
+            settings.update_settings({"ui_theme": self.ui_theme_var.get()})
+
+        config.UI_LANGUAGE = new_language
+        config.UI_THEME = self.ui_theme_var.get()
 
         if self.on_save_callback:
             self.on_save_callback()
@@ -225,8 +257,16 @@ class SettingsDialog(ctk.CTkToplevel):
         parent = self.master
         self.destroy()
 
-        if language_changed:
-            HintDialog(parent, message=i18n.t("settings.restart_needed"))
+        if language_changed or theme_changed:
+            if parent.is_busy:
+                HintDialog(parent, message=i18n.t("settings.restart_busy"))
+            else:
+                ConfirmDialog(
+                    parent,
+                    question=i18n.t("settings.restart_prompt"),
+                    on_yes=fn.restart_app,
+                    on_no=None
+                )
 
 
 class ErrorDialog(ctk.CTkToplevel):
@@ -244,7 +284,7 @@ class ErrorDialog(ctk.CTkToplevel):
         # =========================================
         self.err_window = ctk.CTkTextbox(
             self, width=300, height=300,
-            fg_color=config.LOG_BACKGROUND_COLOR, text_color=config.LOG_TEXT_COLOR, font=config.LOG_FONT
+            fg_color=config.LOG_BACKGROUND_COLOR, text_color=config.LOG_TEXT_COLOR, font=config.FONT_LOG
         )
         self.err_window.tag_config(config.TAG_ERROR, foreground=config.LOG_TAG_COLORS[config.TAG_ERROR])
         self.err_window.pack(padx=20, pady=20, fill="both", expand=False)
@@ -398,7 +438,7 @@ class ReviewItemsDialog(ctk.CTkToplevel):
         # Review items content (read-only, scrollable)
         self.view = ctk.CTkTextbox(
             self, fg_color=config.LOG_BACKGROUND_COLOR, text_color=config.LOG_TEXT_COLOR,
-            font=config.LOG_FONT, wrap="word"
+            font=config.FONT_LOG, wrap="word"
         )
         self.view.pack(padx=20, pady=20, fill="both", expand=True)
         self.view.tag_config("header", foreground=config.MAGENTA)

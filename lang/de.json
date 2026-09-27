@@ -1,6 +1,6 @@
 {
   "meta": {
-    "language_name": "Englisch"
+    "language_name": "Deutsch"
   },
   "status": {
     "waiting_for_configuration": "Warte auf Konfiguration ...",
@@ -81,8 +81,12 @@
     "no_key_needed": "Dieser Server benötigt keinen API-Schlüssel",
     "no_key_hint": "Nur lokale Server. OpenAI erfordert immer einen Schlüssel.",
     "hide_tooltips": "Tooltips ausblenden",
-    "ui_language": "Sprache der Benutzeroberfläche:",
-    "restart_needed": "Die Sprachänderung wird nach dem Neustart der App wirksam."
+    "ui_language": "Sprache der Benutzeroberfläche (Neustart erforderlich):",
+    "ui_theme": "Stil der Benutzeroberfläche (Neustart erforderlich):",
+    "theme_fantasy": "Fantasy",
+    "theme_neutral": "Neutral",
+    "restart_prompt": "Diese Änderung wird erst nach dem Neustart der App wirksam.\n\nWillst du jetzt neu starten?",
+    "restart_busy": "Diese Änderung wird erst nach dem Neustart der App wirksam.\n\nBitte warte, bis der aktuelle Prozess beendet ist, und starte danach neu."
   },
   "review": {
     "title": "Prüfeinträge ({count})",

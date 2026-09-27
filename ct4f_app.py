@@ -16,8 +16,23 @@ import customtkinter as ctk
 from PIL import Image
 
 
+# The UI language and font style must be known before the theme is loaded and the window is built.
+# Both are persisted in the settings file, whose location is only known after the system dirs
+# have been initialized
+fn.init_system_dirs()
+
+config.UI_LANGUAGE = settings.load_ui_language()
+i18n.load(fn.resource_path("lang"), config.UI_LANGUAGE)
+
+config.UI_THEME = settings.load_ui_theme()
+config.FONT_FAMILY_HEADING = config.THEME_FONT_FAMILIES[config.UI_THEME]
+config.FONT_FAMILY_TEXT = config.THEME_FONT_FAMILIES[config.UI_THEME]
+config.FONT_HEADING = (config.FONT_FAMILY_HEADING, 15, "bold")
+config.FONT_TEXT = (config.FONT_FAMILY_TEXT, 15)
+config.FONT_TOOLTIP = (config.FONT_FAMILY_TEXT, 12)
+
 ctk.set_appearance_mode("light")
-ctk.set_default_color_theme(fn.resource_path("assets/ct4f-theme.json"))
+ctk.set_default_color_theme(fn.resource_path(config.THEME_FILES[config.UI_THEME]))
 
 for font_file in config.FONT_FILES:
     ctk.FontManager.load_font(fn.resource_path(f"assets/fonts/{font_file}"))
@@ -32,7 +47,7 @@ MENU_WIDTH_NARROW = 170    # Target Language / Genre
 MENU_GAP_WIDTH = 40        # gap between the two dropdowns of a pair
 VALUE_LABEL_WIDTH = 90     # the "n chars" label next to the slider
 
-BIG_BUTTON_FONT = config.FONT_NAME
+BIG_BUTTON_FONT = config.FONT_HEADING
 BIG_BUTTON_WIDTH = 220
 BIG_BUTTON_HEIGHT = 56
 BIG_BUTTON_CORNER_RADIUS = 12
@@ -119,7 +134,7 @@ class App(ctk.CTk):
         # Settings button
         # =========================================
         self.settings_button = ctk.CTkButton(
-            self.banner_frame, text="⚙", width=60, height=60, command=self.open_settings, font=config.FONT_VALUE
+            self.banner_frame, text="⚙", width=60, height=60, command=self.open_settings, font=config.FONT_TEXT
         )
         self.settings_button.pack(side="right", padx=10, pady=5)
 
@@ -128,7 +143,7 @@ class App(ctk.CTk):
         # =========================================
         self.selected_file = None
 
-        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.input_file"), anchor="w", font=config.FONT_NAME) \
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.input_file"), anchor="w", font=config.FONT_HEADING) \
             .grid(row=0, column=0, sticky="w", padx=(20, 10), pady=(20, 5))
 
         self.file_button = ctk.CTkButton(
@@ -142,7 +157,7 @@ class App(ctk.CTk):
             self.configuration_frame,
             text=i18n.t("label.no_file_selected"),
             anchor="w",
-            font=config.FONT_VALUE
+            font=config.FONT_TEXT
         )
         self.file_label.grid(row=1, column=1, sticky="w", padx=(0, 20), pady=(0, 10))
 
@@ -152,7 +167,7 @@ class App(ctk.CTk):
         self.selected_output_dir = None
         self.output_dir_default_text = i18n.t("label.default_output_folder")
 
-        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.output_folder"), anchor="w", font=config.FONT_NAME) \
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.output_folder"), anchor="w", font=config.FONT_HEADING) \
             .grid(row=2, column=0, sticky="w", padx=(20, 10), pady=(0, 5))
 
         self.output_dir_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
@@ -177,14 +192,14 @@ class App(ctk.CTk):
             self.configuration_frame,
             text=self.output_dir_default_text,
             anchor="w",
-            font=config.FONT_VALUE
+            font=config.FONT_TEXT
         )
         self.output_dir_label.grid(row=3, column=1, sticky="w", padx=(0, 20), pady=(0, 10))
 
         # =========================================
         # Input type selector
         # =========================================
-        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.input_type"), anchor="w", font=config.FONT_NAME) \
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.input_type"), anchor="w", font=config.FONT_HEADING) \
             .grid(row=4, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.input_type_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
@@ -195,7 +210,7 @@ class App(ctk.CTk):
 
         self.radio_input_type_babele = ctk.CTkRadioButton(
             self.input_type_frame,
-            font=config.FONT_VALUE,
+            font=config.FONT_TEXT,
             text=i18n.t("label.input_type_babele"),
             variable=self.input_type_var,
             value=config.INPUT_TYPE_BABELE
@@ -204,7 +219,7 @@ class App(ctk.CTk):
 
         self.radio_input_type_localization = ctk.CTkRadioButton(
             self.input_type_frame,
-            font=config.FONT_VALUE,
+            font=config.FONT_TEXT,
             text=i18n.t("label.input_type_localization"),
             variable=self.input_type_var,
             value=config.INPUT_TYPE_LOCALIZATION
@@ -223,7 +238,7 @@ class App(ctk.CTk):
         }
         language_option_by_code = {lang["code"]: option for option, lang in self.language_by_option.items()}
 
-        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.language"), anchor="w", font=config.FONT_NAME) \
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.language"), anchor="w", font=config.FONT_HEADING) \
             .grid(row=5, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.language_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
@@ -241,7 +256,7 @@ class App(ctk.CTk):
         )
         self.source_language_menu.grid(row=0, column=0)
 
-        ctk.CTkLabel(self.language_frame, text="→", width=MENU_GAP_WIDTH, font=config.FONT_NAME).grid(row=0, column=1)
+        ctk.CTkLabel(self.language_frame, text="→", width=MENU_GAP_WIDTH, font=config.FONT_HEADING).grid(row=0, column=1)
 
         self.target_language_var = ctk.StringVar(
             value=language_option_by_code[config.TARGET_LANGUAGE["code"]]
@@ -258,7 +273,7 @@ class App(ctk.CTk):
         # =========================================
         # Translation Flavour (Game System / Genre)
         # =========================================
-        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.flavour"), anchor="w", font=config.FONT_NAME) \
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.flavour"), anchor="w", font=config.FONT_HEADING) \
             .grid(row=6, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.flavour_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
@@ -300,13 +315,13 @@ class App(ctk.CTk):
         # =========================================
         # Module name suggestion (editable)
         # =========================================
-        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.module_name"), anchor="w", font=config.FONT_NAME) \
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.module_name"), anchor="w", font=config.FONT_HEADING) \
             .grid(row=7, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.module_name_entry = ctk.CTkEntry(
             self.configuration_frame,
             width=MENU_WIDTH_WIDE,
-            font=config.FONT_VALUE
+            font=config.FONT_TEXT
         )
         self.module_name_entry.grid(row=7, column=1, sticky="w", padx=(0, 20), pady=5)
         self.module_name_entry.insert(0, i18n.t("label.pick_file_first"))
@@ -314,7 +329,7 @@ class App(ctk.CTk):
         # =========================================
         # Max Batch Size
         # =========================================
-        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.max_batch_size"), anchor="w", font=config.FONT_NAME) \
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.max_batch_size"), anchor="w", font=config.FONT_HEADING) \
             .grid(row=8, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.max_batch_size_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
@@ -336,7 +351,7 @@ class App(ctk.CTk):
             width=VALUE_LABEL_WIDTH,
             anchor="w",
             text=i18n.t("label.chars", count=f"{config.MAX_BATCH_SIZE:,}"),
-            font=config.FONT_VALUE
+            font=config.FONT_TEXT
         )
         self.max_batch_size_label.pack(side="left", padx=(10, 0))
 
@@ -346,7 +361,7 @@ class App(ctk.CTk):
         self.pause_after_terminology_var = ctk.BooleanVar(value=config.PAUSE_AFTER_TERMINOLOGY)
         self.pause_after_terminology_checkbox = ctk.CTkCheckBox(
             self.configuration_frame,
-            font=config.FONT_VALUE,
+            font=config.FONT_TEXT,
             text=i18n.t("option.review_terminology"),
             variable=self.pause_after_terminology_var
         )
@@ -358,7 +373,7 @@ class App(ctk.CTk):
         self.mock_mode_var = ctk.BooleanVar(value=config.MOCK_MODE)
         self.mock_switch = ctk.CTkSwitch(
             self.configuration_frame,
-            font=config.FONT_VALUE,
+            font=config.FONT_TEXT,
             text=i18n.t("option.simulate_only"),
             variable=self.mock_mode_var,
             command=self.on_mock_mode_changed,
@@ -424,25 +439,25 @@ class App(ctk.CTk):
         self.stats_grid = ctk.CTkFrame(self.stats_frame, fg_color="transparent")
         self.stats_grid.pack(anchor="w", padx=15, pady=10)
 
-        self.chars_name_label = ctk.CTkLabel(self.stats_grid, text=i18n.t("stats.chars"), anchor="w", font=config.FONT_NAME)
+        self.chars_name_label = ctk.CTkLabel(self.stats_grid, text=i18n.t("stats.chars"), anchor="w", font=config.FONT_HEADING)
         self.chars_name_label.grid(row=0, column=0, sticky="w", padx=(0, 10))
-        self.chars_value_label = ctk.CTkLabel(self.stats_grid, text="", anchor="w", font=config.FONT_VALUE)
+        self.chars_value_label = ctk.CTkLabel(self.stats_grid, text="", anchor="w", font=config.FONT_TEXT)
         self.chars_value_label.grid(row=0, column=1, sticky="w")
 
-        self.batches_name_label = ctk.CTkLabel(self.stats_grid, text=i18n.t("stats.batches"), anchor="w", font=config.FONT_NAME)
+        self.batches_name_label = ctk.CTkLabel(self.stats_grid, text=i18n.t("stats.batches"), anchor="w", font=config.FONT_HEADING)
         self.batches_name_label.grid(row=1, column=0, sticky="w", padx=(0, 10))
-        self.batches_value_label = ctk.CTkLabel(self.stats_grid, text="", anchor="w", font=config.FONT_VALUE)
+        self.batches_value_label = ctk.CTkLabel(self.stats_grid, text="", anchor="w", font=config.FONT_TEXT)
         self.batches_value_label.grid(row=1, column=1, sticky="w")
 
         # Only shown when there are Review Items (see show_bars)
         self.review_name_label = ctk.CTkLabel(
             self.stats_grid, text=i18n.t("stats.review_items"), anchor="w",
-            text_color=config.MAGENTA, font=config.FONT_NAME
+            text_color=config.MAGENTA, font=config.FONT_HEADING
         )
         self.review_name_label.grid(row=2, column=0, sticky="w", padx=(0, 10))
         self.review_value_label = ctk.CTkLabel(
             self.stats_grid, text="", anchor="w",
-            text_color=config.MAGENTA, font=config.FONT_NAME
+            text_color=config.MAGENTA, font=config.FONT_HEADING
         )
         self.review_value_label.grid(row=2, column=1, sticky="w")
         self.review_name_label.grid_remove()
@@ -511,6 +526,7 @@ class App(ctk.CTk):
         self.current_request = None
         self.current_confirm_dialog = None
         self.cancel_event = threading.Event()
+        self.is_busy = False  # True while preparing or running, see prepare()/run_translation()
 
         # =========================================
         # Hover info texts
@@ -673,6 +689,8 @@ class App(ctk.CTk):
 
         self.disable_configuration_controls()
         self.show_status(i18n.t("status.preparing"))
+
+        self.is_busy = True
 
         threading.Thread(
             target=translator.prepare,
@@ -868,6 +886,8 @@ class App(ctk.CTk):
         self.set_main_button_role(i18n.t("button.cancel"), self.cancel, TOOLTIP_CANCEL, color=config.YELLOW, text_color=config.INK)
         self.show_status(i18n.t("status.running"))
 
+        self.is_busy = True
+
         threading.Thread(
             target=translator.run,
             kwargs={
@@ -898,6 +918,8 @@ class App(ctk.CTk):
     # ===========================================
     def handle_preparation_outcome(self, outcome):
 
+        self.is_busy = False
+
         if outcome["outcome"] == config.OUTCOME_SUCCESS:
             self.enter_prepared_state(outcome["result"])
             return
@@ -924,6 +946,9 @@ class App(ctk.CTk):
     # Function: Handle Run Outcome
     # ===========================================
     def handle_run_outcome(self, outcome):
+
+        self.is_busy = False
+
         self.show_outcome_message(outcome)
 
         # The progress is persisted, whatever happened, so continue from it
@@ -1481,15 +1506,8 @@ class App(ctk.CTk):
             self.module_name_entry.insert(0, module_name)
 
 
-# The UI language has to be known before the window is built, and it is persisted in the settings file,
-# whose location is only known after the system dirs have been initialized
-fn.init_system_dirs()
-config.UI_LANGUAGE = settings.load_ui_language()
-i18n.load(fn.resource_path("lang"), config.UI_LANGUAGE)
-
 # Initialize the app
 app = App()
-
 fn.set_logger(app.LOGGER)
 
 fn.set_batch_listener(app.batches_changed)

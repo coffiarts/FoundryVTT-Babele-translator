@@ -81,8 +81,12 @@
     "no_key_needed": "This server needs no API key",
     "no_key_hint": "Local servers only. OpenAI always requires a key.",
     "hide_tooltips": "Hide tooltips",
-    "ui_language": "Language of the user interface:",
-    "restart_needed": "The language change takes effect after restarting the app."
+    "ui_language": "Language of the user interface (requires restart):",
+    "ui_theme": "UI Theme (requires restart):",
+    "theme_fantasy": "Fantasy",
+    "theme_neutral": "Neutral",
+    "restart_prompt": "This change takes effect after restarting the app.\n\nDo you want to restart now?",
+    "restart_busy": "This change takes effect after restarting the app.\n\nPlease wait for the current process to finish, then restart the app."
   },
   "review": {
     "title": "Review Items ({count})",
