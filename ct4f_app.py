@@ -26,9 +26,12 @@ i18n.load(fn.resource_path("lang"), config.UI_LANGUAGE)
 
 config.UI_THEME = settings.load_ui_theme()
 
-theme_extras = fn.load_theme_extras(config.THEME_FILES[config.UI_THEME])
+available_themes = fn.available_themes()
+theme_extras = available_themes[config.UI_THEME]["extras"]
 
 for category, values in theme_extras.items():
+    if not isinstance(values, dict):
+        continue  # e.g. "font_files": a list, handled separately below, not merged into config.theme_extras
     target = config.theme_extras.setdefault(category, {})
     for key, value in values.items():
         # One level of merging, so a theme can override e.g. just "fonts.Heading" without
@@ -46,9 +49,15 @@ config.FONT_TEXT = _font_tuple(config.theme_extras["fonts"]["Text"])
 config.FONT_TOOLTIP = _font_tuple(config.theme_extras["fonts"]["Tooltip"])
 
 ctk.set_appearance_mode("light")
-ctk.set_default_color_theme(fn.resource_path(config.THEME_FILES[config.UI_THEME]))
+ctk.set_default_color_theme(fn.resource_path(available_themes[config.UI_THEME]["file"]))
 
-for font_file in config.FONT_FILES:
+# Every theme's fonts are loaded upfront, so any theme can be selected without a restart
+all_font_files = sorted({
+    font_file
+    for theme in available_themes.values()
+    for font_file in theme["extras"].get("font_files", [])
+})
+for font_file in all_font_files:
     ctk.FontManager.load_font(fn.resource_path(f"{config.FONTS_DIR}/{font_file}"))
 
 BANNER_HEIGHT = 90

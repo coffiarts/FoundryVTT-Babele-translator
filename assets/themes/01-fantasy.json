@@ -10,8 +10,9 @@
     "fonts": {
       "Heading": {"family": "Metamorphous", "size": 15, "weight": "bold"},
       "Text": {"family": "Metamorphous", "size": 14, "weight": "normal"},
-      "Tooltip": {"family": "Metamorphous", "size": 12, "weight": "normal"}
+      "Tooltip": {"family": "Almarai", "size": 12, "weight": "normal"}
     },
+    "font_files": ["Metamorphous-Regular.ttf", "Almarai-Regular.ttf", "Almarai-Bold.ttf"],
     "images": {
       "banner": "banner-fantasy.png",
       "deco_image": "deco-image-fantasy.png"

@@ -101,11 +101,20 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ UX: Extend themes to control more than just font families (font-sized, colors and images)
 
-☐ Refactoring: Allow dynamic adding of new themes by: available_themes() unification (replacing THEME_FILES, the picker's repeated file reads, and moving FONT_FILES per-theme)
+☑ Theming Refactoring: Build up information about all available themes on startup to allow:
+- loading of all required header fonts
+- population of the theme picker in Settings with a live preview of each theme's font
+- allow for easy integration of more themes without having to extend the code and recompile
 
-☐ Bugfix: Progress bars (Terminology + Translation) still show untranslated word "completed in "x/y completed" counter
+☐ Localization bugfix: Progress bars (Terminology + Translation) still show untranslated parts:
+- "completed in "x/y completed" counter
+- "Clear" button labels
 
-☐ Feature: Add help ("?") button
+☐ UX: Change tooltip font to LOG_FONT, for better readability
+
+☐ Feature: Add help ("?") button: links to documentation and credits/license notices
+
+☐ UX: Change taskbar icon to app icon instead of default python icon
 
 ☐ Feature: Disclose and persist as "advanced" setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list
 

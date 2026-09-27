@@ -405,22 +405,14 @@ UI_THEME = "fantasy" # just the default and fallback
 
 # assets/themes/ct4f-theme-<style>.json holds each theme's colors and fonts
 THEMES_DIR = "assets/themes"
-THEME_FILES = {
-    "fantasy": "assets/themes/ct4f-theme-fantasy.json",
-    "neutral": "assets/themes/ct4f-theme-neutral.json",
-    "scifi": "assets/themes/ct4f-theme-scifi.json"
-}
-
 IMG_DIR = "assets/img"
-
-FONT_FAMILY_LOG = "Arial"
-
 FONTS_DIR = f"{THEMES_DIR}/fonts"
-FONT_FILES = ("Metamorphous-Regular.ttf", "Almarai-Regular.ttf", "Almarai-Bold.ttf", "Michroma-Regular.ttf")
 
 FONT_HEADING = None   # resolved from the active theme at startup, see ct4f_app.py
 FONT_TEXT = None
 FONT_TOOLTIP = None
+
+FONT_FAMILY_LOG = "Arial"
 FONT_LOG = (FONT_FAMILY_LOG, 13)               # The font is explicit (non-serif)
 
 # Log output (inline log, pop-out log and error views)

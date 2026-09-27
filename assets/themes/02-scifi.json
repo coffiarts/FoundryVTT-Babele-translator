@@ -10,8 +10,9 @@
     "fonts": {
       "Heading": {"family": "Michroma", "size": 15, "weight": "bold"},
       "Text": {"family": "Michroma", "size": 15, "weight": "normal"},
-      "Tooltip": {"family": "Michroma", "size": 12, "weight": "normal"}
+      "Tooltip": {"family": "Almarai", "size": 12, "weight": "normal"}
     },
+    "font_files": ["Michroma-Regular.ttf", "Almarai-Regular.ttf", "Almarai-Bold.ttf"],
     "images": {
       "banner": "banner-scifi.png",
       "deco_image": "deco-image-scifi.png"

@@ -1678,6 +1678,27 @@ def resource_path(relative_path):
 
 
 # ------------------------------------------------------------
+# Function: Available Themes
+# {theme_id: {"file": path, "extras": {...}}} for every *.json file found directly in THEMES_DIR
+# (the folder itself marks its contents as themes, so no filename convention is required).
+# Discovered dynamically, like i18n.available_languages(), so a new theme just needs its file
+# dropped into that folder - no code change needed
+# ------------------------------------------------------------
+def available_themes():
+    themes = {}
+
+    for path in sorted(Path(resource_path(config.THEMES_DIR)).glob("*.json")):
+        theme_id = re.sub(r"^\d+-", "", path.stem)   # drop an optional "<n>-" sort prefix, e.g. "1-fantasy" -> "fantasy"
+        relative_path = f"{config.THEMES_DIR}/{path.name}"
+        themes[theme_id] = {
+            "file": relative_path,
+            "extras": load_theme_extras(relative_path)
+        }
+
+    return themes
+
+
+# ------------------------------------------------------------
 # Function: Load Theme Extras
 # Reads the custom "ct4f_extras" section from a theme file: whatever CTk's own theme format
 # doesn't cover (because these styles are applied by explicit code instead of being linked to named CTK elements).

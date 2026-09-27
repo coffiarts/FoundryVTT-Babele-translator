@@ -111,18 +111,11 @@ class SettingsDialog(ctk.CTkToplevel):
         )
         theme_frame = ctk.CTkFrame(self, fg_color="transparent")
         theme_frame.pack(padx=20, pady=5, anchor="w")
-        ctk.CTkRadioButton(
-            theme_frame, text=i18n.t("settings.theme_fantasy"), value="fantasy", variable=self.ui_theme_var,
-            font=(fn.load_theme_extras(config.THEME_FILES["fantasy"])["fonts"]["Heading"]["family"], 16, "bold")
-        ).pack(side="left", padx=(0, 20))
-        ctk.CTkRadioButton(
-            theme_frame, text=i18n.t("settings.theme_neutral"), value="neutral", variable=self.ui_theme_var,
-            font=(fn.load_theme_extras(config.THEME_FILES["neutral"])["fonts"]["Heading"]["family"], 16, "bold")
-        ).pack(side="left")
-        ctk.CTkRadioButton(
-            theme_frame, text=i18n.t("settings.theme_scifi"), value="scifi", variable=self.ui_theme_var,
-            font=(fn.load_theme_extras(config.THEME_FILES["scifi"])["fonts"]["Heading"]["family"], 16, "bold")
-        ).pack(side="left")
+        for theme_id, theme in fn.available_themes().items():
+            ctk.CTkRadioButton(
+                theme_frame, text=i18n.t(f"settings.theme_{theme_id}"), value=theme_id, variable=self.ui_theme_var,
+                font=(theme["extras"]["fonts"]["Heading"]["family"], 16, "bold")
+            ).pack(side="left", padx=(0, 20))
 
         # LLM model
         ctk.CTkLabel(self, text=i18n.t("settings.llm_model"), font=(config.FONT_FAMILY_LOG, 14, "bold")).pack(
