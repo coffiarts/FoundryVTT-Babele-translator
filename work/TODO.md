@@ -112,14 +112,18 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☑ UX: Change taskbar icon to app icon instead of default python icon
 
-☐ UX: Cleanup/fix of Log view colors: Replace console colors by log colors (taking care not to break console coloring, if still needed)
+☑ Bugfix: Cleanup/fix of Log view colors: Replace console colors by log colors (taking care not to break console coloring, if still needed)
+
+☐ Refactoring: Create and include cleaned up and royalty-free input examples, package them into the app, making sure that nothing else gets included
+
+☐ User documentation: create and include
 
 ☐ Feature: Add help ("?") button:
 - Version
-- Documentation (to be created)
-- credits/license notices (if possible: links to packaged files)
+- Documentation (link packaged file?)
+- credits/license notices (link packaged files?)
 
-☐ UX: Generate most relevant localizations (fr, it, en, jpn?) => test jpn specifically)
+☐ UX: Generate and include most relevant localizations (fr, it, en, jpn?) => test jpn specifically)
 
 ---------------- Finish Release 1.0 -----------------
 

@@ -1265,7 +1265,7 @@ def separator(extra_line_breaks=0) -> str:
 # Function: Header Title Line
 # Returns a unified string for it - self-explaining
 # ------------------------------------------------------------
-def log_header(text, batch_id=None, batch_cnt=None, color=None) -> str:
+def log_header(text, batch_id=None, batch_cnt=None) -> str:
 
     batch_prefix = (
         f"Batch {batch_id+1}/{batch_cnt}: "
@@ -1273,14 +1273,9 @@ def log_header(text, batch_id=None, batch_cnt=None, color=None) -> str:
         else ""
     )
 
-    format_prefix = ("" if color is None else color)
-    format_postfix = ("" if color is None else config.CONSOLE_RESET)
-
-    return f"\n{format_prefix}"\
-           f"{separator(extra_line_breaks=1)}"\
-           f"=== {batch_prefix}{text}\n"\
-           f"{separator(extra_line_breaks=1)}"\
-           f"{format_postfix}"
+    return f"\n{separator(extra_line_breaks=1)}" \
+           f"=== {batch_prefix}{text}\n" \
+           f"{separator(extra_line_breaks=1)}"
 
 
 # ------------------------------------------------------------
@@ -1288,7 +1283,7 @@ def log_header(text, batch_id=None, batch_cnt=None, color=None) -> str:
 # Returns a preprocessed batch-related log message, including
 # information about the batch in a unified format
 # ------------------------------------------------------------
-def batch_log_msg(text, batch_id=None, batch_cnt=None, color=None) -> str:
+def batch_log_msg(text, batch_id=None, batch_cnt=None) -> str:
 
     batch_prefix = (
         f"Batch {batch_id+1}/{batch_cnt}: "
@@ -1296,10 +1291,7 @@ def batch_log_msg(text, batch_id=None, batch_cnt=None, color=None) -> str:
         else ""
     )
 
-    format_prefix = ("" if color is None else color)
-    format_postfix = ("" if color is None else config.CONSOLE_RESET)
-
-    return f"{format_prefix}{batch_prefix}{text}{format_postfix}"
+    return f"{batch_prefix}{text}"
 
 
 # ------------------------------------------------------------

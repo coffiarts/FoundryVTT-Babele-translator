@@ -113,7 +113,7 @@ def _prepare(logger: Callable[str]):
     try:
 
         run_mode = fn.determine_run_mode()
-        fn.LOGGER(fn.log_header(f"Run mode: {run_mode}", color=config.CONSOLE_YELLOW))
+        fn.LOGGER(fn.log_header(f"Run mode: {run_mode}"), config.TAG_WARNING)
 
     except ValueError as e:
 
@@ -762,8 +762,8 @@ def _run(logger: Callable[str], cancel_event):
                         fn.LOGGER(
                             fn.batch_log_msg(f"... completeness check: PASSED",
                                              batch_id=batch["id"],
-                                             batch_cnt=len(batches),
-                                             color=config.CONSOLE_GREEN)
+                                             batch_cnt=len(batches)),
+                            config.TAG_SUCCESS
                         )
 
                         # ---------------------------------------------------
