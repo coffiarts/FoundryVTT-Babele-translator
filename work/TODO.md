@@ -110,13 +110,20 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 - "completed in "x/y completed" counter
 - "Clear" button labels
 
-☐ UX: Change taskbar icon to app icon instead of default python icon
+☑ UX: Change taskbar icon to app icon instead of default python icon
 
-☐ Feature: Add help ("?") button: links to documentation and credits/license notices
+☐ UX: Cleanup/fix of Log view colors: Replace console colors by log colors (taking care not to break console coloring, if still needed)
+
+☐ Feature: Add help ("?") button:
+- Version
+- Documentation (to be created)
+- credits/license notices (if possible: links to packaged files)
+
+☐ UX: Generate most relevant localizations (fr, it, en, jpn?) => test jpn specifically)
+
+---------------- Finish Release 1.0 -----------------
 
 ☐ Feature: Disclose and persist as "advanced" setting: TRANSLATABLE_FIELDS => probably more complex, as it is a list
-
-☐ UX: Provide most relevant localizations (fr, it, en, jpn?) => test jpn specifically)
 
 ☐ Feature: Disclose and persist as "advanced" setting: TRANSLATABLE_CONTAINERS => same as above
 
@@ -128,9 +135,7 @@ any postfix from input file (like in en-US.json). Instead, it should keep the po
 
 ☐ Feature: Allow storing of setting presets
 
-☐ UX: Cleanup/fix of Log view colors: Replace console colors by log colors (taking care not to break console coloring, if still needed)
-
-☐ UX: Animate current PROCESSING batch?
+☐ UX fancy stuff: Animate current PROCESSING batch?
 
 ☐ Refactoring: General review and rework of ct4f.run_translation() => split it up into better testable units?
 

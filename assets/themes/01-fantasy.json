@@ -1,10 +1,10 @@
 {
   "extras": {
     "colors": {
-      "PARCHMENT_LIGHT": "#999999",
-      "PARCHMENT_LOCKED": "#666666",
+      "PARCHMENT_LIGHT": "#f3ead2",
+      "PARCHMENT_LOCKED": "#5a4d3f",
       "INK_LOCKED": "#857d6a",
-      "INK_CONTRAST": "#000000",
+      "INK_CONTRAST": "#3b2f1e",
       "INK_LIGHT": "#8a7550"
     },
     "fonts": {
@@ -28,7 +28,7 @@
     "corner_radius": 6,
     "border_width": 0,
     "fg_color": ["#333333", "#333333"],
-    "top_fg_color": ["#cfbe94", "#cfbe94"],
+    "top_fg_color": ["#4a3d2f", "#4a3d2f"],
     "border_color": ["#8a7550", "#8a7550"]
   },
   "CTkLabel": {
@@ -73,7 +73,7 @@
     "progress_color": ["#7a4e2d", "#7a4e2d"],
     "button_color": ["#7a4e2d", "#7a4e2d"],
     "button_hover_color": ["#5f3b21", "#5f3b21"],
-    "text_color": ["#3b2f1e", "#3b2f1e"],
+    "text_color": ["#a79f8c", "#a79f8c"],
     "text_color_disabled": ["#a8977a", "#a8977a"]
   },
   "CTkSlider": {

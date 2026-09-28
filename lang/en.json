@@ -88,6 +88,7 @@
     "theme_fantasy": "Fantasy",
     "theme_scifi": "Sci-Fi",
     "theme_horror": "Horror!",
+    "theme_desert": "Desert",
     "theme_neutral": "Neutral",
     "restart_prompt": "This change takes effect after restarting the app.\n\nDo you want to restart now?",
     "restart_busy": "This change takes effect after restarting the app.\n\nPlease wait for the current process to finish, then restart the app."

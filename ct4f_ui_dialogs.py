@@ -77,7 +77,7 @@ class SettingsDialog(ctk.CTkToplevel):
     def __init__(self, parent, on_save_callback=None):
         super().__init__(parent)
         self.title(i18n.t("settings.title"))
-        self.geometry("550x670")
+        self.geometry("700x720")
         self.resizable(False, False)
         self.transient(parent)
         self.grab_set()
@@ -150,11 +150,12 @@ class SettingsDialog(ctk.CTkToplevel):
         if current_key:
             self.entry.insert(0, current_key)
 
-        # Toggle visibility
+        # Show key - toggle visibility
         self.show_var = ctk.BooleanVar(value=False)
         self.show_key_checkbox = ctk.CTkCheckBox(
             self,
             text=i18n.t("settings.show_key"),
+            font=(config.FONT_FAMILY_LOG, 14),
             variable=self.show_var,
             command=self._toggle_show,
         )
@@ -165,6 +166,7 @@ class SettingsDialog(ctk.CTkToplevel):
         self.no_key_checkbox = ctk.CTkCheckBox(
             self,
             text=i18n.t("settings.no_key_needed"),
+            font=(config.FONT_FAMILY_LOG, 14),
             variable=self.no_key_var,
             command=self._update_key_controls,
         )
@@ -188,6 +190,7 @@ class SettingsDialog(ctk.CTkToplevel):
         ctk.CTkCheckBox(
             self,
             text=i18n.t("settings.hide_tooltips"),
+            font=(config.FONT_FAMILY_LOG, 14),
             variable=self.hide_tooltips_var,
         ).pack(padx=20, pady=(20, 5), anchor="w")
 

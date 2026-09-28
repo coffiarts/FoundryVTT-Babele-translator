@@ -9,8 +9,8 @@
     "running": "Wird ausgeführt ...",
     "cancelled": "Vom Benutzer abgebrochen",
     "aborted": "Vom Benutzer beendet",
-    "error": "Fehler – Details findest du im Protokoll: {message}",
-    "unexpected_error": "Unerwarteter Fehler – Details findest du im Protokoll",
+    "error": "Fehler – Details findest du im Log: {message}",
+    "unexpected_error": "Unerwarteter Fehler – Details findest du im Log",
     "terminology_review": "Die Terminologie ist zur Überprüfung bereit. Bearbeite sie nach Bedarf und klicke dann auf Start, um fortzufahren: {file}",
     "translation_completed": "Übersetzung abgeschlossen: {file}"
   },
@@ -44,7 +44,7 @@
     "please_wait": "Bitte warte, bis der Batch abgeschlossen ist ...",
     "reconfigure": "◀ Neu konfigurieren",
     "show": "Anzeigen",
-    "pop_out_log": "Protokoll in eigenem Fenster öffnen",
+    "pop_out_log": "Log in eigenem Fenster öffnen",
     "open_output_folder": "Ausgabeordner öffnen",
     "open_terminology_folder": "Terminologieordner öffnen"
   },
@@ -64,8 +64,8 @@
     "ok": "OK",
     "yes": "Ja",
     "no": "Nein",
-    "show_log": "Protokoll anzeigen",
-    "log_title": "Protokoll",
+    "show_log": "Log anzeigen",
+    "log_title": "Log",
     "hint_title": "Bitte beachte",
     "confirm_title": "Bitte bestätige",
     "error_title": "Ups ... wir haben ein Problem!",
@@ -88,6 +88,7 @@
     "theme_fantasy": "Fantasy",
     "theme_scifi": "Sci-Fi",
     "theme_horror": "Horror!",
+    "theme_desert": "Wüste",
     "theme_neutral": "Neutral",
     "restart_prompt": "Diese Änderung wird erst nach dem Neustart der App wirksam.\n\nWillst du jetzt neu starten?",
     "restart_busy": "Diese Änderung wird erst nach dem Neustart der App wirksam.\n\nBitte warte, bis der aktuelle Prozess beendet ist, und starte danach neu."
@@ -161,6 +162,6 @@
     "clear_terminology": "Verwirft die Terminologie dieser Eingabedatei. Sie wird beim nächsten Start neu erstellt.",
     "clear_translation": "Verwirft alle Übersetzungen dieser Eingabedatei. Sie werden beim nächsten Start erneut erstellt.",
     "show_review_items": "Öffnet die Liste der von dir akzeptierten Übersetzungsprobleme mit dem jeweiligen Kontext, damit du sie später manuell beheben kannst.",
-    "pop_out_log": "Öffnet das Protokoll in einem eigenen Fenster, das während des Laufs fortlaufend aktualisiert wird."
+    "pop_out_log": "Öffnet das Log in einem eigenen Fenster, das während des Laufs fortlaufend aktualisiert wird."
   }
 }
