@@ -538,7 +538,7 @@ class App(ctk.CTk):
         # Enable only the UI elements that are relevant first
         # =========================================
         self.locked_look = ui_widgets.LockedLook()
-        self.disable_configuration_controls()
+        self.disable_configuration_controls(tint_frame=False)
         self.file_button.configure(state="normal")
         self.output_dir_button.configure(state="normal")
         self.output_dir_reset_button.configure(state="normal")
@@ -1176,7 +1176,7 @@ class App(ctk.CTk):
     # Function: Disable Configuration Controls
     #
     # ===========================================
-    def disable_configuration_controls(self):
+    def disable_configuration_controls(self, tint_frame=True):
 
         self.file_button.configure(state="disabled")
         self.output_dir_button.configure(state="disabled")
@@ -1192,7 +1192,7 @@ class App(ctk.CTk):
         self.genre_menu.configure(state="disabled")
         self.max_batch_size_slider.configure(state="disabled")
         self.max_batch_size_entry.configure(state="disabled")
-        self.set_configuration_panel_locked(True)
+        self.set_configuration_panel_locked(True, tint_frame=tint_frame)
         self.set_controls_locked(True)
         self.pause_after_terminology_checkbox.configure(state="disabled")
 
@@ -1226,8 +1226,9 @@ class App(ctk.CTk):
     # Function: Set Configuration Panel Locked
     # Disabled CTk widgets barely look different, so the panel is tinted and its labels are dimmed
     # ===========================================
-    def set_configuration_panel_locked(self, locked):
-        self.locked_look.apply(self.configuration_frame, locked)
+    def set_configuration_panel_locked(self, locked, tint_frame=True):
+        if tint_frame:
+            self.locked_look.apply(self.configuration_frame, locked)
 
         for child in self.configuration_frame.winfo_children():
             if isinstance(child, ctk.CTkLabel) and child is not self.deco_image_label:
