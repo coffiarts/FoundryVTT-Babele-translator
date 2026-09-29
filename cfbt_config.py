@@ -140,7 +140,7 @@ API_KEY_REQUIRED = True
 # If True, no hover info texts (tooltips) are shown
 HIDE_TOOLTIPS = False
 
-# Language of the user interface: code of a language file in the lang folder (see ct4f_i18n.py)
+# Language of the user interface: code of a language file in the lang folder (see cfbt_i18n.py)
 UI_LANGUAGE = "en"
 
 
@@ -313,8 +313,8 @@ TERMINOLOGY_OUTPUT_STRUCTURE = {
 # String Constants (better not edit at all!)
 # ------------------------------------------------------------
 APP_AUTHOR = "coffiarts"
-APP_SHORT_NAME = "CT4F"
-APP_FULL_NAME = "coffiarts' Translator for Foundry VTT"
+APP_SHORT_NAME = "CFBT"
+APP_FULL_NAME = "Coffiarts' FoundryVTT Babele Translator"
 
 # Run Modes
 NEW_RUN = "NEW_RUN"
@@ -372,7 +372,7 @@ BLACK = "#000000"
 
 # Colors and fonts applied by explicit code (not linked to a named CTk element), so they
 # aren't part of CTk's own theme format. These are the defaults; a theme's own "extras" section
-# (assets/themes/ct4f-theme-*.json) can override any of them, and simply omitting a key here keeps it
+# (assets/themes/cfbt-theme-*.json) can override any of them, and simply omitting a key here keeps it
 theme_extras = {
     "colors": {
         "PARCHMENT_LIGHT": "#e6d9b8",
@@ -403,12 +403,12 @@ STATUS_COLORS = {
 
 UI_THEME = "fantasy" # just the default and fallback
 
-# assets/themes/ct4f-theme-<style>.json holds each theme's colors and fonts
+# assets/themes/cfbt-theme-<style>.json holds each theme's colors and fonts
 THEMES_DIR = "assets/themes"
 IMG_DIR = "assets/img"
 FONTS_DIR = f"{THEMES_DIR}/fonts"
 
-FONT_HEADING = None   # resolved from the active theme at startup, see ct4f_app.py
+FONT_HEADING = None   # resolved from the active theme at startup, see cfbt_app.py
 FONT_TEXT = None
 FONT_TOOLTIP = None
 
@@ -449,7 +449,7 @@ UNKNOWN_MODULE_NAME = "unknown-module"
 # ---------------------------------------------------------------
 # Folders and file names (usually no reason to change any of these)
 # If you adjust this anyway, do not add module names or language suffixes (like input/my-module/en),
-# because all of these will be added dynamically later in ct4f_core_functions.adapt_file_paths()
+# because all of these will be added dynamically later in cfbt_core_functions.adapt_file_paths()
 # ---------------------------------------------------------------
 INPUT_FOLDER_NAME = "input"
 OUTPUT_FOLDER_NAME = "output"

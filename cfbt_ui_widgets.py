@@ -1,5 +1,5 @@
-import ct4f_config as config
-import ct4f_i18n as i18n
+import cfbt_config as config
+import cfbt_i18n as i18n
 import customtkinter as ctk
 import tkinter as tk
 from collections.abc import Callable

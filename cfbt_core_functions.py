@@ -1,7 +1,7 @@
-import ct4f_config as config
-from ct4f_security import get_api_key
-import ct4f_exceptions as exceptions
-import ct4f_i18n as i18n
+import cfbt_config as config
+from cfbt_security import get_api_key
+import cfbt_exceptions as exceptions
+import cfbt_i18n as i18n
 import hashlib
 import json
 import os
@@ -1692,7 +1692,7 @@ def available_themes():
 
 # ------------------------------------------------------------
 # Function: Load Theme Extras
-# Reads the custom "ct4f_extras" section from a theme file: whatever CTk's own theme format
+# Reads the custom "cfbt_extras" section from a theme file: whatever CTk's own theme format
 # doesn't cover (because these styles are applied by explicit code instead of being linked to named CTK elements).
 # Returns {} if the file or section is missing,
 # so a theme that doesn't define an extra simply keeps the config.py default

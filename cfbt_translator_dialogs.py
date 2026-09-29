@@ -1,6 +1,6 @@
-import ct4f_config as config
-import ct4f_exceptions as exceptions
-import ct4f_i18n as i18n
+import cfbt_config as config
+import cfbt_exceptions as exceptions
+import cfbt_i18n as i18n
 import queue
 
 _request_queue = queue.Queue()

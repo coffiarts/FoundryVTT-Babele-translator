@@ -1,13 +1,13 @@
-import ct4f_config as config
-import ct4f_translator as translator
-import ct4f_translator_dialogs as translator_dialogs
-import ct4f_ui_dialogs as ui_dialogs
-import ct4f_core_functions as fn
-import ct4f_i18n as i18n
-import ct4f_security as security
-import ct4f_settings as settings
-import ct4f_ui_widgets as ui_widgets
-#import ct4f_unit_tests as unit_tests
+import cfbt_config as config
+import cfbt_translator as translator
+import cfbt_translator_dialogs as translator_dialogs
+import cfbt_ui_dialogs as ui_dialogs
+import cfbt_core_functions as fn
+import cfbt_i18n as i18n
+import cfbt_security as security
+import cfbt_settings as settings
+import cfbt_ui_widgets as ui_widgets
+#import cfbt_unit_tests as unit_tests
 import queue
 import threading
 from pathlib import Path

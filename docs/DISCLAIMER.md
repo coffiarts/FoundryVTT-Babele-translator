@@ -2,7 +2,7 @@
 
 ## No affiliation
 
-This project ("CT4F" / FoundryVTT-Babele-translator) is an independent, unofficial tool. It is not
+This project ("CFBT" / coffiarts' FoundryVTT-Babele-translator) is an independent, unofficial tool. It is not
 affiliated with, endorsed by, or sponsored by Wizards of the Coast, Foundry Gaming LLC, Paizo Inc., Ulisses Spiele, or any
 other game publisher, system creator, or content owner whose material may be processed with it.
 All trademarks and copyrights referenced or implied are the property of their respective owners.

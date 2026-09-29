@@ -1,10 +1,10 @@
-import ct4f_config as config
-import ct4f_settings as settings
-import ct4f_i18n as i18n
-import ct4f_security as security
-import ct4f_core_functions as fn
-import ct4f_translator_dialogs as dialogs
-import ct4f_ui_widgets as ui_widgets
+import cfbt_config as config
+import cfbt_settings as settings
+import cfbt_i18n as i18n
+import cfbt_security as security
+import cfbt_core_functions as fn
+import cfbt_translator_dialogs as dialogs
+import cfbt_ui_widgets as ui_widgets
 import customtkinter as ctk
 
 LOGGER = print

@@ -1,4 +1,4 @@
-import ct4f_config as config
+import cfbt_config as config
 import keyring
 
 SERVICE_NAME = config.APP_FULL_NAME

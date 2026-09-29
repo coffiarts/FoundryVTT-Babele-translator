@@ -1,5 +1,5 @@
-import ct4f_config as config
-import ct4f_core_functions as fn
+import cfbt_config as config
+import cfbt_core_functions as fn
 
 
 # ------------------------------------------------------------

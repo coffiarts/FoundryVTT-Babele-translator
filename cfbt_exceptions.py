@@ -1,4 +1,4 @@
-import ct4f_i18n as i18n
+import cfbt_i18n as i18n
 
 
 # The user cancelled a running process

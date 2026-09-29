@@ -1,7 +1,7 @@
-import ct4f_config as config
-import ct4f_translator_dialogs as translator_dialogs
-import ct4f_core_functions as fn
-import ct4f_exceptions as exceptions
+import cfbt_config as config
+import cfbt_translator_dialogs as translator_dialogs
+import cfbt_core_functions as fn
+import cfbt_exceptions as exceptions
 import json
 import time
 import traceback
