@@ -405,10 +405,10 @@ UI_THEME = "fantasy" # just the default and fallback
 
 # assets/themes/cfbt-theme-<style>.json holds each theme's colors and fonts
 THEMES_DIR = "assets/themes"
-IMG_DIR = "assets/img"
+IMG_DIR = "assets/themes/img"
 FONTS_DIR = f"{THEMES_DIR}/fonts"
 
-FONT_HEADING = None   # resolved from the active theme at startup, see cfbt_app.py
+FONT_HEADING = None   # resolved from the active theme at startup, see cfbt.py
 FONT_TEXT = None
 FONT_TOOLTIP = None
 
