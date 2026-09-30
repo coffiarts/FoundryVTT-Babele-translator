@@ -298,6 +298,8 @@ class ErrorDialog(ctk.CTkToplevel):
 
         ui_widgets.center_over_parent(self, parent)
 
+        fn.play_sound_alert()
+
 
 class HintDialog(ctk.CTkToplevel):
 
@@ -323,6 +325,9 @@ class HintDialog(ctk.CTkToplevel):
         ctk.CTkButton(btn_frame, text=i18n.t("dialog.ok"), command=self.destroy).pack(side="right")
 
         ui_widgets.center_over_parent(self, parent)
+
+        fn.play_sound_alert()
+
 
 
 class ConfirmDialog(ctk.CTkToplevel):
@@ -359,6 +364,8 @@ class ConfirmDialog(ctk.CTkToplevel):
             ).pack(side="left", padx=(20, 0))
 
         ui_widgets.center_over_parent(self, parent)
+
+        fn.play_sound_alert()
 
 
     def _answer(self, callback):

@@ -138,7 +138,7 @@ def _prepare(logger: Callable[str]):
             # Start fresh: the NEW_RUN branch below initializes the progress
             fn.cleanup_progress_files()
             run_mode = config.NEW_RUN
-            fn.LOGGER(fn.log_header(f"Run mode: {run_mode}", color=config.CONSOLE_YELLOW))
+            fn.LOGGER(fn.log_header(f"Run mode: {run_mode}"), config.TAG_WARNING)
 
     # ---------------------------------------------------
     # INITIALIZE RUN, DEPENDING ON RUN MODE
@@ -544,6 +544,8 @@ def _run(logger: Callable[str], cancel_event):
                 if config.MOCK_MODE:
                     time.sleep(mock_delay_per_batch)
 
+                fn.play_sound_batch_complete()
+
             # ---------------------------------------------------
             # ... END OF TERMINOLOGY BATCH LOOP
             # ---------------------------------------------------
@@ -569,6 +571,8 @@ def _run(logger: Callable[str], cancel_event):
                 config.TAG_SUCCESS
             )
             fn.show_status(f"Saved {len(master_terminology["terms"])} entries in Master Terminology: {config.TERMINOLOGY_FILE}")
+
+            fn.play_sound_phase_complete()
 
         # ---------------------------------------------------
         # PAUSE FOR TERMINOLOGY REVIEW (IF REQUESTED)
@@ -904,6 +908,8 @@ def _run(logger: Callable[str], cancel_event):
                                     batch_id=batch["id"], batch_cnt=len(batches)), config.TAG_SUCCESS)
 
                 abort_if_cancelled(cancel_event)
+
+                fn.play_sound_batch_complete()
 
                 if config.MOCK_MODE:
                     time.sleep(mock_delay_per_batch)

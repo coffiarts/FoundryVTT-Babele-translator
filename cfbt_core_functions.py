@@ -1802,3 +1802,16 @@ def play_sound(path):
 
     except Exception as e:
         LOGGER(f"Could not play sound: {e}", config.TAG_WARNING)
+
+
+def play_sound_alert():
+    play_sound(resource_path(f"{config.AUDIO_DIR}/alert.wav"))
+
+def play_sound_batch_complete():
+    play_sound(resource_path(f"{config.AUDIO_DIR}/tick-low.wav"))
+
+def play_sound_phase_complete():
+    play_sound(resource_path(f"{config.AUDIO_DIR}/tick-high.wav"))
+
+def play_sound_completed():
+    play_sound(resource_path(f"{config.AUDIO_DIR}/completed.wav"))

@@ -94,7 +94,7 @@ class App(ctk.CTk):
         ui_dialogs.set_logger(self.LOGGER)
 
         self.title(config.APP_FULL_NAME)
-        self.iconbitmap(fn.resource_path("assets/icon.ico"))
+        self.iconbitmap(fn.resource_path(f"{config.ASSETS_DIR}/icon.ico"))
         self.calculate_window_dimensions(min_width=800, min_height=800, factor=0.80)
 
         # =========================================
@@ -980,10 +980,10 @@ class App(ctk.CTk):
 
         if outcome["outcome"] == config.OUTCOME_SUCCESS:
             self.show_results() # needs to be called after return_to_prepared_state, so that results can't get overwritten by the "Ready to start." status message
-            fn.play_sound(fn.resource_path("assets/completed.wav"))
+            fn.play_sound_completed()
         elif outcome["outcome"] == config.OUTCOME_PAUSED:
             self.show_terminology_review()
-            fn.play_sound(fn.resource_path("assets/completed.wav"))
+            fn.play_sound_completed()
         else:
             self.show_outcome_status(outcome)
 
