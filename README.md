@@ -12,7 +12,7 @@ CFBT is a free, open-source desktop tool that translates [Babele](https://foundr
 compendium exports — or a Foundry module's own localization files — into other languages, using an LLM of your choice
 (e.g. OpenAI, or your own local/remote model server) to do the actual translation work.
 
-![App screenshot main](docs/img/readme-screenshot-main.jpg)
+![App screenshot main ("fantasy" theme)](docs/img/readme-screenshot-theme-fantasy.jpg)
 
 ## Table of Contents
 
@@ -23,6 +23,7 @@ compendium exports — or a Foundry module's own localization files — into oth
 - [What's not free](#whats-not-free)
 - [Getting Started](#getting-started)
 - [Requirements & Installation](#requirements--installation)
+- [Choose Your UI Theme](#choose-your-ui-theme)
 - [Detailed Usage](#detailed-usage)
   - [What to expect: a simple example](#what-to-expect-a-simple-example)
   - [1. Configure Settings](#1-configure-settings)
@@ -107,6 +108,15 @@ To uninstall, simply delete the extracted folder (your settings and API key are 
 profile, so they won't be removed with it). If you'd rather run CFBT from Python source instead of the packaged
 build, see *Advanced Features* below.
 
+## Choose Your UI Theme!
+
+CFBT ships with four built-in themes, each with its own fonts, colors, and banner artwork. Pick one in
+**Settings** (see step 1) — switching prompts a quick restart to apply.
+
+| Fantasy (default) | Sci-Fi | Horror | Desert | Neutral |
+|---|---|---|---|---|
+| ![Fantasy theme](docs/img/readme-screenshot-theme-fantasy.jpg) | ![Sci-Fi theme](docs/img/readme-screenshot-theme-scifi.jpg) | ![Horror theme](docs/img/readme-screenshot-theme-horror.jpg) | ![Horror theme](docs/img/readme-screenshot-theme-desert.jpg) | ![Neutral theme](docs/img/readme-screenshot-theme-neutral.jpg) |
+
 ## Detailed Usage
 
 ### What to expect: a simple example
@@ -116,36 +126,43 @@ Before diving into the details, here's what CFBT actually does to your data — 
 
 **Input** (excerpt from a Babele-exported compendium in ENGLISH):
 ```json
-    "Shadows Over Duskmere": {
-  "name": "Shadows Over Duskmere",
-  "description": "<p>See the <a href=\"https://example.com/notes\">campaign notes</a> for ongoing updates.</p><aside class=\"notable\"><p>The village of Duskmere has always kept its secrets close, but lately something darker stirs beneath its cobbled streets. Strangers have vanished without a trace, and the villagers whisper of a cult gathering strength in the old cairn outside town. It falls to the party to uncover what's really happening, before Duskmere loses more than it can bear.</p></aside><p>",
-  "folders": {
-    "Prologue": "Prologue",
-    "Part One: The Vanishing": "Part One: The Vanishing",
-    "Part Two: Beneath the Stones": "Part Two: Beneath the Stones",
-    "Part Three: The Ashen Circle": "Part Three: The Ashen Circle",
-    "Epilogue": "Epilogue",
-    "NPC Portraits": "NPC Portraits",
-    "Hazards & Traps": "Hazards & Traps",
-    "Starting Notes": "Starting Notes"
-  },
-  "drawings": {
-    "signpost-01": "The Hollow Cairn — turn back if you value your life.",
-    "warning-glyph-02": "Trespassers will be forgotten."
-  },
-  "journals": {
-    "Whispers Beneath Duskmere": {
-      "name": "Whispers Beneath Duskmere",
-      "pages": {
-        "Rumors and Leads": {
-          "name": "Rumors and Leads",
-          "caption": "A hand-drawn sketch of the village square, pinned to the tavern notice board.",
-          "text": "Most of the villagers are preoccupied with the Ashen Circle, however, and no one in town knows the exact location of the Hollow Cairn's entrance; however, @UUID[JournalEntry.dmerVillageNPC.JournalEntryPage.b7C88GIRhkdsryPU]{Maren Thistledown} and @UUID[JournalEntry.dmerVillageNPC.JournalEntryPage.XGCTPZoAabSMFPsv]{Corvin Ashgate} can offer suggestions on how the party might find someone who knows the way. If asked directly, Maren will only agree to talk after a successful [[/r 1d20 + 2]]{Persuasion Check} against her natural suspicion of outsiders. Corvin, if convinced to join the search, fights using [[/r 2d6 + 3]]{his old guard-captain's blade} whenever the party is ambushed along the trail."
+{
+  "label": "Shadows Over Duskmere",
+  ...,
+  "entries": {
+    ..."Shadows Over Duskmere": {
+      "name": "Shadows Over Duskmere",
+      "description": "<p>See the <a href=\"https://example.com/notes\">campaign notes</a> for ongoing updates.</p><aside class=\"notable\"><p>The village of Duskmere has always kept its secrets close, but lately something darker stirs beneath its cobbled streets. Strangers have vanished without a trace, and the villagers whisper of a cult gathering strength in the old cairn outside town. It falls to the party to uncover what's really happening, before Duskmere loses more than it can bear.</p></aside><p>",
+      "folders": {
+        "Prologue": "Prologue",
+        "Part One: The Vanishing": "Part One: The Vanishing",
+        "Part Two: Beneath the Stones": "Part Two: Beneath the Stones",
+        "Part Three: The Ashen Circle": "Part Three: The Ashen Circle",
+        "Epilogue": "Epilogue",
+        "NPC Portraits": "NPC Portraits",
+        "Hazards & Traps": "Hazards & Traps",
+        "Starting Notes": "Starting Notes"
+      },
+      "drawings": {
+        "signpost-01": "The Hollow Cairn — turn back if you value your life.",
+        "warning-glyph-02": "Trespassers will be forgotten."
+      },
+      "journals": {
+        "Whispers Beneath Duskmere": {
+          "name": "Whispers Beneath Duskmere",
+          "pages": {
+            "Rumors and Leads": {
+              "name": "Rumors and Leads",
+              "caption": "A hand-drawn sketch of the village square, pinned to the tavern notice board.",
+              "text": "Most of the villagers are preoccupied with the Ashen Circle, however, and no one in town knows the exact location of the Hollow Cairn's entrance; however, @UUID[JournalEntry.dmerVillageNPC.JournalEntryPage.b7C88GIRhkdsryPU]{Maren Thistledown} and @UUID[JournalEntry.dmerVillageNPC.JournalEntryPage.XGCTPZoAabSMFPsv]{Corvin Ashgate} can offer suggestions on how the party might find someone who knows the way. If asked directly, Maren will only agree to talk after a successful [[/r 1d20 + 2]]{Persuasion Check} against her natural suspicion of outsiders. Corvin, if convinced to join the search, fights using [[/r 2d6 + 3]]{his old guard-captain's blade} whenever the party is ambushed along the trail."
+            }
+          }
         }
       }
-    }
+    },
+    ...
   }
-},
+}
 ```
 
 **Output** (after CFBT translates it to FRENCH):
