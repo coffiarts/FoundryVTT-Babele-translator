@@ -249,6 +249,20 @@ class App(ctk.CTk):
         self.radio_input_type_localization.pack(side="left")
 
         # =========================================
+        # Module name suggestion (editable)
+        # =========================================
+        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.module_name"), anchor="w", font=config.FONT_HEADING) \
+            .grid(row=5, column=0, sticky="w", padx=(20, 10), pady=5)
+
+        self.module_name_entry = ctk.CTkEntry(
+            self.configuration_frame,
+            width=MENU_WIDTH_WIDE,
+            font=config.FONT_TEXT
+        )
+        self.module_name_entry.grid(row=5, column=1, sticky="w", padx=(0, 20), pady=5)
+        self.module_name_entry.insert(0, i18n.t("label.pick_file_first"))
+
+        # =========================================
         # Language selection
         # =========================================
         # The display name is localized (language file key "language.<code>"), the English name is the fallback
@@ -261,10 +275,10 @@ class App(ctk.CTk):
         language_option_by_code = {lang["code"]: option for option, lang in self.language_by_option.items()}
 
         ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.language"), anchor="w", font=config.FONT_HEADING) \
-            .grid(row=5, column=0, sticky="w", padx=(20, 10), pady=5)
+            .grid(row=6, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.language_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
-        self.language_frame.grid(row=5, column=1, sticky="w", padx=(0, 20), pady=5)
+        self.language_frame.grid(row=6, column=1, sticky="w", padx=(0, 20), pady=5)
 
         self.source_language_var = ctk.StringVar(
             value=language_option_by_code[config.SOURCE_LANGUAGE["code"]]
@@ -296,10 +310,10 @@ class App(ctk.CTk):
         # Translation Flavour (Game System / Genre)
         # =========================================
         ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.flavour"), anchor="w", font=config.FONT_HEADING) \
-            .grid(row=6, column=0, sticky="w", padx=(20, 10), pady=5)
+            .grid(row=7, column=0, sticky="w", padx=(20, 10), pady=5)
 
         self.flavour_frame = ctk.CTkFrame(self.configuration_frame, fg_color="transparent")
-        self.flavour_frame.grid(row=6, column=1, sticky="w", padx=(0, 20), pady=5)
+        self.flavour_frame.grid(row=7, column=1, sticky="w", padx=(0, 20), pady=5)
 
         # The dropdowns show localized texts, whereas the (English) values are used everywhere else
         self.game_system_by_option = {
@@ -333,20 +347,6 @@ class App(ctk.CTk):
             variable=self.genre_var
         )
         self.genre_menu.grid(row=0, column=2)
-
-        # =========================================
-        # Module name suggestion (editable)
-        # =========================================
-        ctk.CTkLabel(self.configuration_frame, text=i18n.t("label.module_name"), anchor="w", font=config.FONT_HEADING) \
-            .grid(row=7, column=0, sticky="w", padx=(20, 10), pady=5)
-
-        self.module_name_entry = ctk.CTkEntry(
-            self.configuration_frame,
-            width=MENU_WIDTH_WIDE,
-            font=config.FONT_TEXT
-        )
-        self.module_name_entry.grid(row=7, column=1, sticky="w", padx=(0, 20), pady=5)
-        self.module_name_entry.insert(0, i18n.t("label.pick_file_first"))
 
         # =========================================
         # Max Batch Size
@@ -1096,8 +1096,11 @@ class App(ctk.CTk):
     # Updates the live readout while the slider is being dragged
     # ===========================================
     def on_max_batch_size_changed(self, value):
+        previous_state = self.max_batch_size_entry.cget("state")
+        self.max_batch_size_entry.configure(state="normal")
         self.max_batch_size_entry.delete(0, "end")
         self.max_batch_size_entry.insert(0, str(int(round(value))))
+        self.max_batch_size_entry.configure(state=previous_state)
 
     def on_max_batch_size_entry_changed(self, event=None):
         try:
