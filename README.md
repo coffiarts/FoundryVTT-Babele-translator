@@ -39,6 +39,13 @@ compendium exports — or a Foundry module's own localization files — into oth
   - [11. Handling Placeholder Integrity Errors & Review Items](#11-handling-placeholder-integrity-errors--review-items)
   - [12. Reintegrating the Result into Foundry VTT](#12-reintegrating-the-result-into-foundry-vtt)
 - [A General Note on Translation Quality](#a-general-note-on-translation-quality)
+- [Advanced Features](#advanced-features)
+  - [Using a Local LLM Server (e.g. Ollama)](#using-a-local-llm-server-eg-ollama)
+  - [Running CFBT from Source](#running-cfbt-from-source)
+  - [Tweaking Translatable Fields & Containers](#tweaking-translatable-fields--containers)
+  - [Tweaking Prompt Instructions](#tweaking-prompt-instructions)
+  - [Building Your Own Package](#building-your-own-package)
+- [Development Notes](#development-notes)
 
 ## What CFBT is:
 A guided, review-friendly workflow around an LLM translation call — terminology extraction first,
@@ -64,9 +71,10 @@ CFBT itself, fully — the application, its source code, and its UI.
 Using a remote LLM provider (e.g. OpenAI) incurs that provider's own API costs; running a
 local model server is free but requires your own hardware/setup.
 
-> Before going further, please read the [Disclaimer](docs/DISCLAIMER.md) — in short, you are responsible for
-> having the rights to translate whatever content you feed into CFBT. Third-party licenses for bundled fonts
-> and packages are listed in [Third-Party Notices](docs/THIRD_PARTY_NOTICES.md).
+> CFBT is released under the [MIT License](LICENSE). Before going further, please read the
+> [Disclaimer](docs/DISCLAIMER.md) — in short, you are responsible for having the rights to translate whatever
+> content you feed into CFBT. Third-party licenses for bundled fonts and packages are listed in
+> [Third-Party Notices](docs/THIRD_PARTY_NOTICES.md).
 
 Don't get overwhelmed — it may sound technical, but it's easier than you think. You just need to understand a
 few basics, explained below:
@@ -267,6 +275,13 @@ Open **Settings** from the main window to configure:
 ![Settings button](docs/img/readme-screenshot-settings-button.jpg)
 ![Settings dialog](docs/img/readme-screenshot-settings.jpg)
 
+**Choosing a model and provider:** the default works well for most use cases — a solid balance of quality and
+cost. If you want to experiment: smaller/cheaper models cut costs further, at some risk to translation quality,
+especially for nuanced or idiomatic text; larger/more capable models catch more nuance but cost more per
+request. A local/self-hosted OpenAI-compatible server (e.g. Ollama) is free to run but needs your own hardware,
+and quality depends entirely on the model you host — worth trying for cost-free experimentation, but review the
+results carefully before relying on it for a large compendium.
+
 ### 2. Select Input, Output, and Module Name
 
 - **Input File** — pick the file to translate: either a Babele JSON export, or a Foundry localization file
@@ -455,3 +470,55 @@ native language), somewhat less for English → French, only rudimentary checks 
 at all for Japanese. Feedback on any language is very welcome. The current language list is just a starting
 point — I'm happy to extend it on request (please open a GitHub issue), but I'd rather not pre-add many languages
 I have zero ability to judge myself, to avoid ending up with an unmaintainable mess.
+
+## Advanced Features
+
+### Using a Local LLM Server (e.g. Ollama)
+
+Running a model locally via [Ollama](https://ollama.com/) means zero API cost and no data leaving your machine,
+at the expense of needing capable hardware yourself and generally lower translation quality than top-tier hosted
+models.
+
+Quick start:
+
+1. Install Ollama and pull a model, e.g. `ollama pull llama3.1`.
+2. In CFBT's Settings, set **API Base URL** to `http://localhost:11434/v1`, set **LLM Model** to the model name
+   you pulled, and enable **"No key needed"**.
+3. Start translating — no API key, no per-request cost.
+
+Since translation quality varies a lot between local models, review results carefully (see *A General Note on
+Translation Quality* above) before relying on it for a large compendium.
+
+The following, on the other hand, require running CFBT from Python source rather than the packaged build, since
+they involve editing `cfbt_config.py` directly.
+
+### Running CFBT from Source
+
+1. Clone or download the repository.
+2. Install dependencies: `pip install -r requirements.txt`.
+3. Run it: `python cfbt.py`.
+
+### Tweaking Translatable Fields & Containers
+
+`TRANSLATABLE_FIELDS` and `TRANSLATABLE_CONTAINERS` (see *A General Note on Translation Quality* above) define
+which JSON field and container names CFBT treats as translatable. If your input file uses field names these
+fixed lists don't cover, extending them here is currently the only way to pick that content up.
+
+### Tweaking Prompt Instructions
+
+The exact instructions sent to the LLM live in `get_translation_instructions()` and
+`get_terminology_instructions()` in `cfbt_config.py`. Editing these lets you fine-tune tone, style, or add
+domain-specific guidance for the AI.
+
+### Building Your Own Package
+
+CFBT is packaged with PyInstaller via `cfbt.spec`. After installing dependencies, run `pyinstaller cfbt.spec` to
+produce your own `--onedir` build in `dist/cfbt/`.
+
+## Development Notes
+
+This project was developed with substantial assistance from AI coding tools (Claude Code), used throughout for
+architecture discussions, code generation, and documentation — including this README. All AI-assisted output was
+reviewed, tested, and integrated by the author.
+
+In my own words: *I did **not** have Claude generate this software from scratch to end: Instead, every signle requirement, every architecture decision, every block of code habe been discussed, reviewed, assembled intensively and interactively in chat mode, some parts being changed or extended by myself. So I consider this not some "automated robot output", but a robust result of AI-assisted pair programming. It was a lot of challenge and fun, and I've learned a ton of good things from it!*
