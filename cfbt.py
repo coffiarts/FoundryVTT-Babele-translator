@@ -61,7 +61,7 @@ for font_file in all_font_files:
     ctk.FontManager.load_font(fn.resource_path(f"{config.FONTS_DIR}/{font_file}"))
 
 BANNER_HEIGHT = 90
-BANNER_IMAGE_WIDTH_RATIO = 0.95   # share of the banner width covered by the image
+BANNER_IMAGE_WIDTH_RATIO = 0.9   # share of the banner width covered by the image
 
 DECO_IMAGE_HEIGHT_RATIO = 0.43   # share of the frame height covered by the image
 
@@ -159,6 +159,14 @@ class App(ctk.CTk):
             self.banner_frame, text="⚙", width=60, height=60, command=self.open_settings, font=config.FONT_TEXT
         )
         self.settings_button.pack(side="right", padx=10, pady=5)
+
+        # =========================================
+        # Help button
+        # =========================================
+        self.help_button = ctk.CTkButton(
+            self.banner_frame, text="?", width=60, height=60, command=self.open_help, font=config.FONT_TEXT
+        )
+        self.help_button.pack(side="right", padx=10, pady=5)
 
         # =========================================
         # Input File picker
@@ -575,6 +583,7 @@ class App(ctk.CTk):
 
         # Banner
         tip(self.settings_button, i18n.t("tooltip.settings"))
+        tip(self.help_button, i18n.t("tooltip.help"))
 
         # Configuration
         tip(self.file_button, i18n.t("tooltip.input_file"))
@@ -1440,6 +1449,14 @@ class App(ctk.CTk):
     # ===========================================
     def open_settings(self, callback=None):
         ui_dialogs.SettingsDialog(self, on_save_callback=callback)
+
+
+    # ===========================================
+    # Function: Open Help
+    #
+    # ===========================================
+    def open_help(self):
+        ui_dialogs.HelpDialog(self)
 
 
     # ===========================================

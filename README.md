@@ -2,6 +2,10 @@
 
 # Coffiarts' Translator for Foundry VTT (CFBT)
 
+![GitHub All Releases](https://img.shields.io/github/downloads/coffiarts/FoundryVTT-Babele-Translator/cfbt.zip?label=All+time+downloads)
+![GitHub All Releases](https://img.shields.io/github/downloads/coffiarts/FoundryVTT-Babele-Translator/cfbt.zip?label=Latest+release) 
+[![GitHub issues](https://img.shields.io/github/issues/coffiarts/FoundryVTT-Babele-Translator/bug)](https://github.com/coffiarts/FoundryVTT-crunch-my-party/issues?label=Open+Bugs)
+
 Tired of desperately wanting to play your favourite Foundry VTT adventure module, only to find it's
 just not available in your language? And translating it yourself by hand feels tedious, if not
 downright impossible for a large compendium?

@@ -46,7 +46,14 @@
     "show": "Show",
     "pop_out_log": "Pop Out Log",
     "open_output_folder": "Open Output Folder",
-    "open_terminology_folder": "Open Terminology Folder"
+    "open_terminology_folder": "Open Terminology Folder",
+    "open_readme": "View README",
+    "open_changelog": "View Changelog",
+    "open_disclaimer": "View Disclaimer",
+    "open_third_party_notices": "View Third-Party Notices",
+    "open_github": "Open GitHub Repository",
+    "support_kofi": "Support on Ko-fi",
+    "support_github_sponsors": "Sponsor on GitHub"
   },
   "stats": {
     "chars": "Chars:",
@@ -162,6 +169,12 @@
     "clear_terminology": "Discards the terminology of this input file. It will be rebuilt on next start.",
     "clear_translation": "Discards all translations of this input file. They will be redone on next start.",
     "show_review_items": "Opens the list of translation issues you accepted, with the context of each, so that you can fix them later by hand.",
-    "pop_out_log": "Opens the log in its own window, which keeps updating during the run."
+    "pop_out_log": "Opens the log in its own window, which keeps updating during the run.",
+    "help": "Version info, documentation, and ways to support this project."
+  },
+  "help": {
+    "title": "Help & About",
+    "version": "Version {version}"
   }
+
 }

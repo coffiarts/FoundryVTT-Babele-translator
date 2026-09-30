@@ -6,6 +6,7 @@ import cfbt_core_functions as fn
 import cfbt_translator_dialogs as dialogs
 import cfbt_ui_widgets as ui_widgets
 import customtkinter as ctk
+import webbrowser
 
 LOGGER = print
 
@@ -487,3 +488,29 @@ class ReviewItemsDialog(ctk.CTkToplevel):
             self.view.insert("end", part)
             if index < len(parts) - 1:
                 self.view.insert("end", placeholder, "placeholder")
+
+
+class HelpDialog(ctk.CTkToplevel):
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title(i18n.t("help.title"))
+        self.geometry("400x430")
+        self.resizable(False, False)
+        self.transient(parent)
+        self.grab_set()
+
+        ctk.CTkLabel(self, text=config.APP_FULL_NAME, font=(config.FONT_FAMILY_LOG, 16, "bold")).pack(padx=20, pady=(20, 5))
+        ctk.CTkLabel(self, text=i18n.t("help.version", version=config.APP_VERSION), font=config.FONT_TEXT).pack(padx=20, pady=(0, 15))
+
+        ctk.CTkButton(self, text=i18n.t("button.open_readme"), command=lambda: fn.open_folder(config.APP_DIR / "README.md")).pack(padx=20, pady=5, fill="x")
+        ctk.CTkButton(self, text=i18n.t("button.open_changelog"), command=lambda: fn.open_folder(config.APP_DIR / "CHANGELOG.md")).pack(padx=20, pady=5, fill="x")
+        ctk.CTkButton(self, text=i18n.t("button.open_disclaimer"), command=lambda: fn.open_folder(config.APP_DIR / "docs" / "DISCLAIMER.md")).pack(padx=20, pady=5, fill="x")
+        ctk.CTkButton(self, text=i18n.t("button.open_third_party_notices"), command=lambda: fn.open_folder(config.APP_DIR / "docs" / "THIRD_PARTY_NOTICES.md")).pack(padx=20, pady=5, fill="x")
+        ctk.CTkButton(self, text=i18n.t("button.open_github"), command=lambda: webbrowser.open("https://github.com/coffiarts/FoundryVTT-Babele-translator")).pack(padx=20, pady=5, fill="x")
+        ctk.CTkButton(self, text=i18n.t("button.support_kofi"), command=lambda: webbrowser.open("https://ko-fi.com/coffiarts")).pack(padx=20, pady=5, fill="x")
+        ctk.CTkButton(self, text=i18n.t("button.support_github_sponsors"), command=lambda: webbrowser.open("https://github.com/sponsors/coffiarts")).pack(padx=20, pady=(5, 20), fill="x")
+
+        ctk.CTkButton(self, text=i18n.t("dialog.close"), fg_color=config.GREY, command=self.destroy).pack(padx=20, pady=(0, 20))
+
+        ui_widgets.center_over_parent(self, parent)

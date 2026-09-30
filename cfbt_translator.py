@@ -469,7 +469,7 @@ def _run(logger: Callable[str], cancel_event):
                 )
 
                 fn.LOGGER(fn.batch_log_msg(
-                    f"Terminology has {len(batch_payload)} chars",
+                    f"Extracting Terminology from {len(batch_payload)} chars",
                     batch_id=batch['id'], batch_cnt=len(batches)))
                 fn.show_status(fn.batch_log_msg(
                     f"Extracting terminology from {len(batch_payload)} chars",
