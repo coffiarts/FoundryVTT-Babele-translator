@@ -1,6 +1,7 @@
 {
   "meta": {
-    "language_name": "English"
+    "language_name": "English",
+	"test":"Test"
   },
   "status": {
     "waiting_for_configuration": "Waiting for configuration...",

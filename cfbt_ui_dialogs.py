@@ -346,7 +346,7 @@ class ConfirmDialog(ctk.CTkToplevel):
     def __init__(self, parent, question: str, on_yes, on_no, on_show_log=None):
         super().__init__(parent)
         self.title(i18n.t("dialog.confirm_title"))
-        self.minsize(400, 150)
+        self.minsize(450, 150)
         self.transient(parent)
         self.grab_set()
         self.protocol("WM_DELETE_WINDOW", lambda: self._answer(on_no))
