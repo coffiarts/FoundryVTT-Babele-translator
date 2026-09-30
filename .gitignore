@@ -227,7 +227,7 @@ __marimo__/
 /.claude/
 
 #local input and output files
-/input/
+/input-real/
 /terminology/
 /output/
 /progress/

@@ -1,0 +1,73 @@
+{
+  "label": "Shadows Over Duskmere",
+  "mapping": {
+    "weight": {
+      "path": "system.weight",
+      "converter": "weight"
+    },
+    "rangeActivities": {
+      "path": "system.activities",
+      "converter": "rangeActivities"
+    },
+    "advancement": {
+      "path": "system.advancement",
+      "converter": "advancement"
+    }
+  },
+  "folders": {
+    "Player Handouts": "Player Handouts",
+    "Faction Notes": "Faction Notes",
+    "Rewards": "Rewards"
+  },
+  "entries": {
+    "Convictions": {
+      "name": "Convictions",
+      "results": {
+        "1": "I gave my word to a dying stranger, and I mean to keep it no matter the cost.",
+        "2": "A rival humiliated me once. I've sworn never to let it happen again, to anyone.",
+        "3": "I carry a token from someone I failed to save. It reminds me why I keep going.",
+        "4": "My family lost everything to a corrupt official. I still dream of setting things right.",
+        "5": "I once turned away someone who needed help. I look for chances to make up for it.",
+        "6": "A mentor risked everything to teach me what I know. I owe them a debt I can never fully repay."
+      }
+    },
+    "Shadows Over Duskmere": {
+      "name": "Shadows Over Duskmere",
+      "description": "<p>See the <a href=\"https://example.com/notes\">campaign notes</a> for ongoing updates.</p><aside class=\"notable\"><p>The village of Duskmere has always kept its secrets close, but lately something darker stirs beneath its cobbled streets. Strangers have vanished without a trace, and the villagers whisper of a cult gathering strength in the old cairn outside town. It falls to the party to uncover what's really happening, before Duskmere loses more than it can bear.</p></aside><p>",
+      "folders": {
+        "Prologue": "Prologue",
+        "Part One: The Vanishing": "Part One: The Vanishing",
+        "Part Two: Beneath the Stones": "Part Two: Beneath the Stones",
+        "Part Three: The Ashen Circle": "Part Three: The Ashen Circle",
+        "Epilogue": "Epilogue",
+        "NPC Portraits": "NPC Portraits",
+        "Hazards & Traps": "Hazards & Traps",
+        "Starting Notes": "Starting Notes"
+      },
+      "drawings": {
+        "signpost-01": "The Hollow Cairn — turn back if you value your life.",
+        "warning-glyph-02": "Trespassers will be forgotten."
+      },
+      "journals": {
+        "Whispers Beneath Duskmere": {
+          "name": "Whispers Beneath Duskmere",
+          "pages": {
+            "Rumors and Leads": {
+              "name": "Rumors and Leads",
+              "caption": "A hand-drawn sketch of the village square, pinned to the tavern notice board.",
+              "text": "Most of the villagers are preoccupied with the Ashen Circle, however, and no one in town knows the exact location of the Hollow Cairn's entrance; however, @UUID[JournalEntry.dmerVillageNPC.JournalEntryPage.b7C88GIRhkdsryPU]{Maren Thistledown} and @UUID[JournalEntry.dmerVillageNPC.JournalEntryPage.XGCTPZoAabSMFPsv]{Corvin Ashgate} can offer suggestions on how the party might find someone who knows the way. If asked directly, Maren will only agree to talk after a successful [[/r 1d20 + 2]]{Persuasion Check} against her natural suspicion of outsiders. Corvin, if convinced to join the search, fights using [[/r 2d6 + 3]]{his old guard-captain's blade} whenever the party is ambushed along the trail."
+            }
+          }
+        }
+      }
+    },
+    "List Entry": [
+      {
+        "name": "Page A"
+      },
+      {
+        "text": "Page B"
+      }
+    ]
+  }
+}

@@ -97,6 +97,7 @@ TRANSLATABLE_FIELDS = {
 #     "2-2": "Ergebnis 2",
 #     "3-3": "Ergebnis 3:
 TRANSLATABLE_CONTAINERS = {
+    "journals",
     "folders",
     "results",
     "drawings"

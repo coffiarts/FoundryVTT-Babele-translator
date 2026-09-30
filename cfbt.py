@@ -1327,6 +1327,7 @@ class App(ctk.CTk):
 
         if kind == config.OUTCOME_CANCELLED:
             self.LOGGER("Cancelled by user.", config.TAG_WARNING)
+            fn.play_sound_phase_complete()
 
         elif kind == config.OUTCOME_DECLINED:
             self.LOGGER("Aborted by user.", config.TAG_WARNING)

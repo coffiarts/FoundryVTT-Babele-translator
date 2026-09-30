@@ -9,10 +9,35 @@ downright impossible for a large compendium?
 ![Atmospheric decoration](docs/img/readme-deco-image.png)
 
 CFBT is a free, open-source desktop tool that translates [Babele](https://foundryvtt.com/packages/babele/)-compatible
-compendium exports for [Foundry Virtual Tabletop](https://foundryvtt.com/) into other languages, using an LLM
+compendium exports — or a Foundry module's own localization files — into other languages, using an LLM of your choice
 (e.g. OpenAI, or your own local/remote model server) to do the actual translation work.
 
-![App screenshot main](docs/img/screenshot-main.jpg)
+![App screenshot main](docs/img/readme-screenshot-main.jpg)
+
+## Table of Contents
+
+- [What CFBT is](#what-cfbt-is)
+- [What CFBT is not](#what-cfbt-is-not)
+- [Why use this tool then?](#why-use-this-tool-then)
+- [What's free](#whats-free)
+- [What's not free](#whats-not-free)
+- [Getting Started](#getting-started)
+- [Requirements & Installation](#requirements--installation)
+- [Detailed Usage](#detailed-usage)
+  - [What to expect: a simple example](#what-to-expect-a-simple-example)
+  - [1. Configure Settings](#1-configure-settings)
+  - [2. Select Input, Output, and Module Name](#2-select-input-output-and-module-name)
+  - [3. Set the Translation Context](#3-set-the-translation-context)
+  - [4. Max Batch Size](#4-max-batch-size)
+  - [5. (Optional) Review Terminology Before Translating](#5-optional-review-terminology-before-translating)
+  - [6. (Optional) Simulate Only](#6-optional-simulate-only)
+  - [7. Preparation](#7-preparation)
+  - [8. Run Translation](#8-run-translation)
+  - [9. Resuming an Incomplete Translation](#9-resuming-an-incomplete-translation)
+  - [10. Monitor Progress](#10-monitor-progress)
+  - [11. Handling Placeholder Integrity Errors & Review Items](#11-handling-placeholder-integrity-errors--review-items)
+  - [12. Reintegrating the Result into Foundry VTT](#12-reintegrating-the-result-into-foundry-vtt)
+- [A General Note on Translation Quality](#a-general-note-on-translation-quality)
 
 ## What CFBT is:
 A guided, review-friendly workflow around an LLM translation call — terminology extraction first,
@@ -89,14 +114,127 @@ build, see *Advanced Features* below.
 Before diving into the details, here's what CFBT actually does to your data — a minimal before/after example
 (English → French):
 
-**Input** (excerpt from a Babele-exported compendium):
+**Input** (excerpt from a Babele-exported compendium in ENGLISH):
 ```json
-TODO: paste a minimal real input excerpt here
+    "Shadows Over Duskmere": {
+  "name": "Shadows Over Duskmere",
+  "description": "<p>See the <a href=\"https://example.com/notes\">campaign notes</a> for ongoing updates.</p><aside class=\"notable\"><p>The village of Duskmere has always kept its secrets close, but lately something darker stirs beneath its cobbled streets. Strangers have vanished without a trace, and the villagers whisper of a cult gathering strength in the old cairn outside town. It falls to the party to uncover what's really happening, before Duskmere loses more than it can bear.</p></aside><p>",
+  "folders": {
+    "Prologue": "Prologue",
+    "Part One: The Vanishing": "Part One: The Vanishing",
+    "Part Two: Beneath the Stones": "Part Two: Beneath the Stones",
+    "Part Three: The Ashen Circle": "Part Three: The Ashen Circle",
+    "Epilogue": "Epilogue",
+    "NPC Portraits": "NPC Portraits",
+    "Hazards & Traps": "Hazards & Traps",
+    "Starting Notes": "Starting Notes"
+  },
+  "drawings": {
+    "signpost-01": "The Hollow Cairn — turn back if you value your life.",
+    "warning-glyph-02": "Trespassers will be forgotten."
+  },
+  "journals": {
+    "Whispers Beneath Duskmere": {
+      "name": "Whispers Beneath Duskmere",
+      "pages": {
+        "Rumors and Leads": {
+          "name": "Rumors and Leads",
+          "caption": "A hand-drawn sketch of the village square, pinned to the tavern notice board.",
+          "text": "Most of the villagers are preoccupied with the Ashen Circle, however, and no one in town knows the exact location of the Hollow Cairn's entrance; however, @UUID[JournalEntry.dmerVillageNPC.JournalEntryPage.b7C88GIRhkdsryPU]{Maren Thistledown} and @UUID[JournalEntry.dmerVillageNPC.JournalEntryPage.XGCTPZoAabSMFPsv]{Corvin Ashgate} can offer suggestions on how the party might find someone who knows the way. If asked directly, Maren will only agree to talk after a successful [[/r 1d20 + 2]]{Persuasion Check} against her natural suspicion of outsiders. Corvin, if convinced to join the search, fights using [[/r 2d6 + 3]]{his old guard-captain's blade} whenever the party is ambushed along the trail."
+        }
+      }
+    }
+  }
+},
 ```
 
-**Output** (after CFBT translates it):
+**Output** (after CFBT translates it to FRENCH):
+
+Note how both the JSON structure with its node and label names, as well as Foundry-specific Macro Code (lower block) is preserved!
+
 ```json
-TODO: paste the matching translated excerpt here
+{
+  "label": "Ombres sur Duskmere",
+  ...,
+  "entries": {
+    ...,
+    "Shadows Over Duskmere": {
+      "name": "Ombres sur Duskmere",
+      "description": "<p>Consulte les <a href=\"https://example.com/notes\">notes de campagne</a> pour connaître les mises à jour régulières.</p><aside class=\"notable\"><p>Le village de Duskmere a toujours gardé ses secrets bien à l'abri, mais dernièrement, quelque chose de plus sombre s'agite sous ses rues pavées. Des inconnus ont disparu sans laisser de traces, et les villageois murmurent qu'un culte gagne en puissance dans le vieux cairn à l'extérieur du village. C'est au groupe d'aventuriers de découvrir ce qui se passe réellement, avant que Duskmere ne perde plus qu'il ne peut le supporter.</p></aside><p>",
+      "folders": {
+        "Prologue": "Prologue",
+        "Part One: The Vanishing": "Première partie : Les disparitions",
+        "Part Two: Beneath the Stones": "Deuxième partie : Sous les pierres",
+        "Part Three: The Ashen Circle": "Troisième partie : le Cercle cendré",
+        "Epilogue": "Épilogue",
+        "NPC Portraits": "Portraits de PNJ",
+        "Hazards & Traps": "Dangers et pièges",
+        "Starting Notes": "Notes de départ"
+      },
+      "drawings": {
+        "signpost-01": "Le Cairn creux — rebrousse chemin si tu tiens à la vie.",
+        "warning-glyph-02": "Les intrus seront oubliés."
+      },
+      "journals": {
+        "Whispers Beneath Duskmere": {
+          "name": "Murmures sous Duskmere",
+          "pages": {
+            "Rumors and Leads": {
+              "name": "Rumeurs et pistes",
+              "caption": "Un croquis dessiné à la main de la place du village, épinglé au tableau d’affichage de la taverne.",
+              "text": "La plupart des villageois sont toutefois préoccupés par le Cercle cendré, et personne au village ne connaît l’emplacement exact de l’entrée du Cairn creux ; cependant, @UUID[JournalEntry.dmerVillageNPC.JournalEntryPage.b7C88GIRhkdsryPU]{Maren Thistledown} et @UUID[JournalEntry.dmerVillageNPC.JournalEntryPage.XGCTPZoAabSMFPsv]{Corvin Ashgate} peuvent suggérer comment le groupe d’aventuriers pourrait trouver quelqu’un qui connaît le chemin. Si on lui pose directement la question, Maren n’acceptera de parler qu’après un [[/r 1d20 + 2]]{test de Persuasion} réussi contre sa méfiance naturelle envers les étrangers. Corvin, s’il est convaincu de se joindre aux recherches, se bat avec [[/r 2d6 + 3]]{sa vieille lame de capitaine de la garde} chaque fois que le groupe d’aventuriers tombe dans une embuscade le long du sentier."
+            }
+          }
+        }
+      }
+    },
+    ...
+  }
+}
+```
+**Output** (after CFBT translates it to GERMAN):
+
+Note how both the JSON structure with its node and label names, as well as Foundry-specific Macro Code (lower block) is preserved!
+
+```json
+{
+  "label": "Schatten über Duskmere",
+  ...,
+  "entries": {
+    ...,
+    "Shadows Over Duskmere": {
+      "name": "Schatten über Duskmere",
+      "description": "<p>Sieh in den <a href=\"https://example.com/notes\">Kampagnenotizen</a> nach, um laufende Aktualisierungen zu erhalten.</p><aside class=\"notable\"><p>Das Dorf Duskmere hat seine Geheimnisse schon immer für sich behalten, doch seit Kurzem regt sich etwas Dunkleres unter seinen kopfsteingepflasterten Straßen. Fremde sind spurlos verschwunden, und die Dorfbewohner flüstern von einem Kult, der im alten Steinhügel außerhalb des Ortes an Stärke gewinnt. Es liegt an der Abenteurergruppe, herauszufinden, was wirklich geschieht, bevor Duskmere mehr verliert, als es verkraften kann.</p></aside><p>",
+      "folders": {
+        "Prologue": "Prolog",
+        "Part One: The Vanishing": "Teil Eins: Das Verschwinden",
+        "Part Two: Beneath the Stones": "Teil Zwei: Unter den Steinen",
+        "Part Three: The Ashen Circle": "Teil Drei: The Ashen Circle",
+        "Epilogue": "Epilog",
+        "NPC Portraits": "NSC-Porträts",
+        "Hazards & Traps": "Gefahren und Fallen",
+        "Starting Notes": "Startnotizen"
+      },
+      "drawings": {
+        "signpost-01": "Der hohle Steinhügel – kehr um, wenn dir dein Leben lieb ist.",
+        "warning-glyph-02": "Eindringlinge geraten in Vergessenheit."
+      },
+      "journals": {
+        "Whispers Beneath Duskmere": {
+          "name": "Geflüster unter Duskmere",
+          "pages": {
+            "Rumors and Leads": {
+              "name": "Gerüchte und Hinweise",
+              "caption": "Eine handgezeichnete Skizze des Dorfplatzes, die am Anschlagbrett der Taverne befestigt ist.",
+              "text": "Die meisten Dorfbewohner sind allerdings mit dem Ashen Circle beschäftigt, und niemand im Ort kennt die genaue Lage des Eingangs zum Hollow Cairn; allerdings können @UUID[JournalEntry.dmerVillageNPC.JournalEntryPage.b7C88GIRhkdsryPU]{Maren Thistledown} und @UUID[JournalEntry.dmerVillageNPC.JournalEntryPage.XGCTPZoAabSMFPsv]{Corvin Ashgate} Vorschläge dazu machen, wie die Abenteurergruppe jemanden finden könnte, der den Weg kennt. Wenn man Maren direkt fragt, stimmt sie einem Gespräch erst nach einer erfolgreichen [[/r 1d20 + 2]]{Überreden-Probe} gegen ihr natürliches Misstrauen gegenüber Außenstehenden zu. Falls Corvin überzeugt wird, sich der Suche anzuschließen, kämpft er immer dann mit [[/r 2d6 + 3]]{seiner alten Klinge als Hauptmann der Wache}, wenn die Abenteurergruppe entlang des Pfades überfallen wird."
+            }
+          }
+        }
+      }
+    },
+    ...
+  }
+}
 ```
 
 ### 1. Configure Settings
@@ -109,4 +247,194 @@ Open **Settings** from the main window to configure:
 - **API Key** — required for most providers; toggle **"No key needed"** if you're running a local server that
   doesn't require one.
 
-![Settings dialog](docs/img/screenshot-settings.jpg)
+![Settings button](docs/img/readme-screenshot-settings-button.jpg)
+![Settings dialog](docs/img/readme-screenshot-settings.jpg)
+
+### 2. Select Input, Output, and Module Name
+
+- **Input File** — pick the file to translate: either a Babele JSON export, or a Foundry localization file
+  (`lang/*.json`). The **Input Type** radio buttons tell CFBT which one you're using, since it changes how text
+  is extracted and the output is named.
+- **Output Folder** — where the translated file and review items are written. Defaults to your user data folder;
+  use **Reset** to return to that default at any time.
+- **Module Name** — auto-suggested from your input file, but editable. Best practice: name it exactly after the
+  module ID of the source Foundry module.
+
+![Main window: input/output selection](docs/img/readme-screenshot-input-output.jpg)
+
+### 3. Set the Translation Context
+
+- **Language** — pick the source and target language for the translation.
+- **Flavour** — pick the game system and genre. Both steer the AI's terminology and translation style — e.g.
+  picking the right game system helps keep rules-specific terms consistent.
+
+![Main window: language selection](docs/img/readme-screenshot-language-selection.jpg)
+![Main window: game system selection](docs/img/readme-screenshot-game-system-selection.jpg)
+![Main window: genre selection](docs/img/readme-screenshot-genre-selection.jpg)
+
+### 4. Max Batch Size
+
+Controls how many characters CFBT packs into a single AI request. This is exactly the "batch handling" mentioned
+earlier in *Why use this tool then?* — getting it right matters for both cost and reliability:
+
+- **Larger batches** mean fewer AI requests (faster overall, sometimes cheaper), but risk hitting your provider's
+  per-request size/rate limits, and a failed batch means retrying more work at once.
+- **Smaller batches** are more failsafe (fewer retries if something goes wrong), but cause more overhead and a
+  longer total processing time.
+
+The default works well for most compendiums. If a single translatable entry (e.g. one very long description) is
+itself larger than the configured Max Batch Size, CFBT stops with an error telling you exactly which entry it
+was and how large — simply raise the Max Batch Size and click **Prepare** again.
+
+![Main window: Max Batch Size slider](docs/img/readme-screenshot-max-batch-size.jpg)
+
+### 5. (Optional) Review Terminology Before Translating
+
+Enable **"Review terminology before translating (once)"** before starting. CFBT will then stop right after
+building the terminology list, letting you review and edit it by hand — useful for locking in consistent
+names/terms before the (usually much larger) translation pass begins. Click **Start** again to continue once
+you're happy with it. This option auto-disables itself after each run, so re-enable it whenever you start a new
+input file.
+
+![Pause after terminology checkbox](docs/img/readme-screenshot-pause-after-terminology.jpg)
+
+### 6. (Optional) Simulate Only
+
+Toggle **"Simulate only"** to do a full dry run: CFBT walks through the whole workflow without making any real AI
+requests, so nothing is actually translated and no cost is incurred. Progress from simulated runs is kept
+separate from real ones, so you can safely try things out first, then turn it off before a real run. Note: this
+setting isn't remembered between sessions — it always starts off, so you never accidentally leave it on.
+
+![Simulate only switch](docs/img/readme-screenshot-simulate-only.jpg)
+
+### 7. Preparation
+
+Click **Prepare** — this is the offline part: CFBT validates your input file, extracts the translatable text
+segments, and builds the batch plan. No AI calls happen yet. Once it succeeds, the button becomes **Start**,
+ready for the next step.
+
+If CFBT finds saved progress for this exact input file, it resumes from there. If your settings (or the input
+file's content) changed since that progress was saved, you'll be asked whether to discard it and start fresh, or
+keep it and restore your previous settings first — see *Resuming an Incomplete Translation* below.
+
+![Prepare button](docs/img/readme-screenshot-prepare.jpg)
+A **successful preparation result** looks like this (all batches defined, no saved progress, ready to start!):
+![Preparation result](docs/img/readme-screenshot-preparation-result.jpg)
+
+### 8. Run Translation
+
+Click **Start** (see above) to begin the actual AI-driven work. CFBT first builds the terminology (a glossary of key terms,
+via the LLM), then uses it to translate:
+
+- **Without** "Review terminology before translating" (step 5): runs straight through, terminology then
+  translation, without stopping.
+- **With** it enabled: CFBT stops right after terminology is built, letting you review and edit it:<br/><br>
+  ![Pause after terminology](docs/img/readme-screenshot-open-terminology.jpg)<br/><br/>
+  Example of an automatically extracted English => French terminology. Edit this in the text editor of your choice and save it in place before continuing:<br/><br>
+  ![Pause after terminology](docs/img/readme-screenshot-review-terminology.jpg)
+
+- click
+  **Start** again to continue into the actual translation.
+
+While running, the main button turns into **Cancel** — safe to use at any point, since progress is saved
+continuously. See *Resuming an Incomplete Translation* below for what happens next if you do.
+
+![Start and Cancel buttons](docs/img/readme-screenshot-start-cancel.jpg)
+
+After clicking **Cancel** the batch that's currently being worked on will be completed first, so you might have to wait a few seconds, or in case of large batches, even a couple of minutes, before the view returns to step 7. (Preparation)
+
+![Waiting for cancel](docs/img/readme-screenshot-waiting-for-cancel.jpg)
+
+### 9. Resuming an Incomplete Translation
+
+If a run was cancelled, or CFBT was closed before finishing, nothing is lost. Reopen CFBT with the same input
+file and click **Prepare** — it detects the saved progress and lets you continue with **Start** instead of
+starting over. If anything relevant changed in the meantime (settings, or the input file itself), CFBT tells you
+exactly what changed and asks whether to discard the old progress or keep it.
+
+### 10. Monitor Progress
+
+While running, the main window shows:
+- **Stats** — character count and batch count, plus a highlighted **Review Items** counter that only appears
+  when there's something to look at (click **Show** next to it — more on that in the next step).
+- **Progress bars** for Terminology and Translation, each showing "X / Y completed", with a **Clear** option to
+  discard that phase's progress if you want to redo it.
+- **Log** — detailed step-by-step output; use **Pop Out Log** to view it in its own window.
+
+When a run finishes, CFBT plays a completion sound.
+
+![Progress monitoring](docs/img/readme-screenshot-progress.jpg)
+
+### 11. Handling Placeholder Integrity Errors & Review Items
+
+Protected syntax (`@UUID[...]`, `@Embed[...]`, `@Compendium[...]`, and `[[...]]` inline rolls) is masked with
+placeholders before being sent to the AI, so it should survive translation untouched. Occasionally, though, the
+AI's response drops or mangles a placeholder anyway. When that happens, CFBT doesn't silently ignore it — it
+pauses that batch and asks you what to do:
+
+![Review items confirmation](docs/img/readme-screenshot-confirm-review-items.jpg)
+
+- **Keep it** — the batch is accepted as-is, and the affected entries are exported as **Review Items** for you to
+  fix by hand afterward.
+- **Discard it** — the batch is thrown away and retried from scratch on the next run.
+
+Kept review items show up as a highlighted counter in the stats box — click **Show** to open them:
+
+![Review items counter and Show button](docs/img/readme-screenshot-show-review-items.jpg)
+
+The detail view shows exactly where the placeholder sat in the original text, and what the AI's translation
+looks like around the same spot:
+
+![Review items detail view](docs/img/readme-screenshot-check-review-items.jpg)
+
+- This view is read-only — nothing gets fixed automatically here. Think of it as a todo list pointing you to
+  exactly what needs manual attention.
+- The same list is also saved as its own file in your output folder, alongside the translated file itself, so
+  you can work through it at your own pace after the run finishes, without needing to reopen this dialog.
+
+### 12. Reintegrating the Result into Foundry VTT
+
+**Localization input** → CFBT's output lands at `<module>/lang/<language-code>.json`, exactly matching Foundry's
+own module `lang/` folder convention. Drop it into the target module's `lang/` folder, and make sure that
+language is listed in the module's `module.json`.
+
+**Babele input** → CFBT's output lands at `<module>/babele/<language-code>/<module-name>.<compendium-name>.json`.
+Babele itself expects `<your configured Translation Files Directory>/<language-code>/<module-name>.<compendium-name>.json`
+— so copy just the contents *below* the `babele/` folder (the `<language-code>/` folders and their files) into
+whatever directory you've set as Babele's **Translation Files Directory** (a world setting, configurable anywhere
+under Foundry's Data folder). This only lines up correctly if your original input file was already named
+`<module-name>.<compendium-name>.json` in the first place, matching Babele's own convention — CFBT preserves
+that filename as-is.
+
+![Babele Translation Files Directory setting](docs/img/readme-screenshot-babele-translations-files-directory.jpg)
+
+Either way: any `*-review-items.json` file needs to be worked through by hand first (see step 11) — Babele and
+Foundry ignore it entirely, so once its fixes are applied to the corresponding translation file, it can be
+deleted.
+
+**The only manual step required (if any):**
+
+- **Locate**: Compare "Review Items" and final translation side-by-side, identifying each pair of Review Item and related translation paragraph.
+- **Replace**: Restore the missing text (Foundry Macro Syntax) in the translation with what's given under "original value"
+
+![Reintegrated content in Foundry](docs/img/readme-screenshot-reintegration.jpg)
+
+## A General Note on Translation Quality
+
+**LLM output is inherently non-deterministic.** Running the exact same text through the same model twice in a
+row will usually yield at least *some* differences. Feel encouraged to experiment — Max Batch Size, game
+system/genre, even just re-running a batch can shift the result. It's ultimately a trade-off between chasing the
+optimal translation and controlling API cost. In practice, AI translations tend to land around "~90% right" —
+the rest is up to you: ignore it, or fix it by hand.
+
+**CFBT recognizes translatable content by fixed rules.** It identifies what to translate inside a Babele-exported
+JSON by a fixed set of field names and container names (see `TRANSLATABLE_FIELDS` / `TRANSLATABLE_CONTAINERS` in
+the source). Given how many different mods and Babele output configurations exist, these fixed rules won't cover
+every case — some content might not be recognized and stay untranslated. Making this configurable isn't
+supported yet, but may come in a future CFBT version.
+
+**Per-language quality varies, because so does my own testing.** I've done intensive QA for English → German (my
+native language), somewhat less for English → French, only rudimentary checks for Spanish and Italian, and none
+at all for Japanese. Feedback on any language is very welcome. The current language list is just a starting
+point — I'm happy to extend it on request (please open a GitHub issue), but I'd rather not pre-add many languages
+I have zero ability to judge myself, to avoid ending up with an unmaintainable mess.
