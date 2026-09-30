@@ -14,6 +14,16 @@ compendium exports — or a Foundry module's own localization files — into oth
 
 ![App screenshot main ("fantasy" theme)](docs/img/readme-screenshot-theme-fantasy.jpg)
 
+## Support This Project
+
+CFBT is free and always will be. If it saved you time (or your sanity), consider buying my Babelfish some food 🐠
+
+[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/coffiarts) &nbsp;
+[![GitHub Sponsors](docs/img/Github-sponsor.png)](https://github.com/sponsors/coffiarts)
+
+No obligation, no perks, no strings attached — just a nice gesture if it made your life easier.
+
+
 ## Table of Contents
 
 - [What CFBT is](#what-cfbt-is)
@@ -521,4 +531,4 @@ This project was developed with substantial assistance from AI coding tools (Cla
 architecture discussions, code generation, and documentation — including this README. All AI-assisted output was
 reviewed, tested, and integrated by the author.
 
-In my own words: *I did **not** have Claude generate this software from scratch to end: Instead, every signle requirement, every architecture decision, every block of code habe been discussed, reviewed, assembled intensively and interactively in chat mode, some parts being changed or extended by myself. So I consider this not some "automated robot output", but a robust result of AI-assisted pair programming. It was a lot of challenge and fun, and I've learned a ton of good things from it!*
+In my own words: *I did **not** have Claude generate this software from scratch to end: Instead, every signle requirement, every architecture decision, every block of code have been discussed, reviewed, assembled intensively and interactively in chat mode, some parts being changed or extended by myself. So I consider this not some "automated robot output", but a robust result of AI-assisted pair programming. It was still (is continuing to be) a LOT of brainwork, challenge and fun, and I've learned a ton of good things from it!*
