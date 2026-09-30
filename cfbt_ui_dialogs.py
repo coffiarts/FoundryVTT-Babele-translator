@@ -78,7 +78,7 @@ class SettingsDialog(ctk.CTkToplevel):
     def __init__(self, parent, on_save_callback=None):
         super().__init__(parent)
         self.title(i18n.t("settings.title"))
-        self.geometry("700x720")
+        self.geometry("700x750")
         self.resizable(False, False)
         self.transient(parent)
         self.grab_set()
@@ -195,6 +195,14 @@ class SettingsDialog(ctk.CTkToplevel):
             variable=self.hide_tooltips_var,
         ).pack(padx=20, pady=(20, 5), anchor="w")
 
+        self.disable_sound_effects_var = ctk.BooleanVar(value=config.DISABLE_SOUND_EFFECTS)
+        ctk.CTkCheckBox(
+            self,
+            text=i18n.t("settings.disable_sound_effects"),
+            font=(config.FONT_FAMILY_LOG, 14),
+            variable=self.disable_sound_effects_var,
+        ).pack(padx=20, pady=(5, 5), anchor="w")
+
         # Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(padx=20, pady=(10, 15), fill="x")
@@ -227,12 +235,14 @@ class SettingsDialog(ctk.CTkToplevel):
 
         config.API_KEY_REQUIRED = not self.no_key_var.get()
         config.HIDE_TOOLTIPS = self.hide_tooltips_var.get()
+        config.DISABLE_SOUND_EFFECTS = self.disable_sound_effects_var.get()
 
         settings.update_settings({
             "llm_model": config.LLM_MODEL,
             "api_base_url": config.API_BASE_URL,
             "api_key_required": config.API_KEY_REQUIRED,
-            "hide_tooltips": config.HIDE_TOOLTIPS
+            "hide_tooltips": config.HIDE_TOOLTIPS,
+            "disable_sound_effects": config.DISABLE_SOUND_EFFECTS
         })
 
         security.set_api_key(self.entry.get().strip())

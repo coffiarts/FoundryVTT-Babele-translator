@@ -1786,6 +1786,9 @@ def restart_app():
 # ------------------------------------------------------------
 def play_sound(path):
 
+    if config.DISABLE_SOUND_EFFECTS:
+        return
+
     try:
         if sys.platform.startswith("win"):
             import winsound # Windows-only module, so imported here

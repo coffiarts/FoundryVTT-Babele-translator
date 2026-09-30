@@ -97,6 +97,7 @@
     "no_key_needed": "This server needs no API key",
     "no_key_hint": "Local servers only. OpenAI always requires a key.",
     "hide_tooltips": "Hide tooltips",
+    "disable_sound_effects": "Disable sound effects",
     "ui_language": "Language of the user interface (requires restart):",
     "ui_theme": "UI Theme (requires restart):",
     "theme_fantasy": "Fantasy",

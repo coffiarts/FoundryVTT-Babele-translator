@@ -1509,6 +1509,8 @@ class App(ctk.CTk):
         config.LLM_MODEL = saved.get("llm_model") or config.LLM_MODEL
 
         config.HIDE_TOOLTIPS = bool(saved.get("hide_tooltips", False))
+        config.DISABLE_SOUND_EFFECTS = bool(saved.get("disable_sound_effects", False))
+
 
         # Output folder: independent of the input file
         output_dir = saved.get("base_output_dir")

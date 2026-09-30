@@ -143,6 +143,9 @@ API_KEY_REQUIRED = True
 # If True, no hover info texts (tooltips) are shown
 HIDE_TOOLTIPS = False
 
+# If True, audio signals (on error, on completion, batch progress "ticker") are suppressed
+DISABLE_SOUND_EFFECTS = False
+
 # Language of the user interface: code of a language file in the lang folder (see cfbt_i18n.py)
 UI_LANGUAGE = "en"
 
