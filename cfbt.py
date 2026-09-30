@@ -1048,16 +1048,20 @@ class App(ctk.CTk):
                 request["response_queue"].put(config.YES if is_yes else config.NO)
             else:
                 callback = request["on_yes"] if is_yes else request["on_no"]
+
                 if callback:
                     callback()
+
+        def on_show_log():
+            self.current_confirm_dialog.grab_release()
+            self.log_viewer.show()
 
         self.current_confirm_dialog = ui_dialogs.ConfirmDialog(
             self,
             question=request["question"],
             on_yes=lambda: answer(True),
             on_no=lambda: answer(False),
-            on_show_log=lambda: self.log_viewer.show(modal=True)
-
+            on_show_log=on_show_log
         )
 
 

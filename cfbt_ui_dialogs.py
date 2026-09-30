@@ -408,7 +408,7 @@ class LogViewerDialog(ctk.CTkToplevel):
     def append(self, message, tag=""):
         self.log_view.append(message, tag)
 
-    def show(self, modal=False):
+    def show(self):
         if self._normal_geometry:
             self.geometry(self._normal_geometry)
         else:
