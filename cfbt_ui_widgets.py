@@ -102,6 +102,14 @@ class BatchStatusBar(ctk.CTkFrame):
                 ctk.CTkFrame(self.icon_area, width=ICON_SIZE, height=ICON_SIZE, corner_radius=3)
                 for _ in self.batches
             ]
+
+            for index, icon in enumerate(self.icons):
+                Tooltip(icon, lambda i=index: i18n.t(
+                    "tooltip.batch_icon",
+                    chars=self.batches[i]["char_count"],
+                    status=i18n.t(f"batch_status.{self.batches[i]['status']}")
+                ))
+
             self._columns = 0  # force a fresh layout
             self._layout_icons()
 

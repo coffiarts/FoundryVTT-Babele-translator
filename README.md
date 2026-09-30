@@ -401,7 +401,18 @@ exactly what changed and asks whether to discard the old progress or keep it.
 ### 10. Monitor Progress
 
 While running, the main window shows:
-- **Stats** — character count and batch count, plus a highlighted **Review Items** counter that only appears
+- **Stats** — character count and batch count, plus a highlighted
+
+
+    (!) Note:
+    Character count here reflects only the condensed char count of all the translatable
+    text chunks extracted from the source file. Don't worry if this count should be 
+    significantly smaller than the char count of the original file you might be seeing
+    in a  text editor. Imagine it as the "naked" text stripped of all its "clothes" 
+    (i.e. all the JSON overhead).
+
+
+- **Review Items** counter that only appears
   when there's something to look at (click **Show** next to it — more on that in the next step).
 - **Progress bars** for Terminology and Translation, each showing "X / Y completed", with a **Clear** option to
   discard that phase's progress if you want to redo it.
@@ -535,4 +546,4 @@ This project was developed with substantial assistance from AI coding tools (Cla
 architecture discussions, code generation, and documentation — including this README. All AI-assisted output was
 reviewed, tested, and integrated by the author.
 
-In my own words: *I did **not** have Claude generate this software from scratch to end: Instead, every signle requirement, every architecture decision, every block of code have been discussed, reviewed, assembled intensively and interactively in chat mode, some parts being changed or extended by myself. So I consider this not some "automated robot output", but a robust result of AI-assisted pair programming. It was still (is continuing to be) a LOT of brainwork, challenge and fun, and I've learned a ton of good things from it!*
+In my own words: *I did **not** have Claude generate this software from scratch to end: Instead, every single requirement, every architecture decision, every block of code have been discussed, reviewed, assembled intensively and interactively in chat mode, some parts being changed or extended by myself. So I consider this not some "automated robot output", but a robust result of AI-assisted pair programming. It was still (is continuing to be) a LOT of brainwork, challenge and fun, and I've learned a ton of good things from it!*

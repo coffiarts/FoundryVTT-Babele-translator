@@ -14,6 +14,13 @@
     "terminology_review": "Terminology ready for review. Edit it as required, then click Start to continue: {file}",
     "translation_completed": "Translation completed: {file}"
   },
+  "batch_status": {
+    "UNPROCESSED": "Unprocessed",
+    "PROCESSING": "Processing",
+    "COMPLETED": "Completed",
+    "FAILED": "Failed",
+    "REVIEW_REQUIRED": "Review Required"
+  },
   "label": {
     "input_file": "Input File",
     "no_file_selected": "No file selected",
@@ -169,6 +176,7 @@
     "clear_terminology": "Discards the terminology of this input file. It will be rebuilt on next start.",
     "clear_translation": "Discards all translations of this input file. They will be redone on next start.",
     "show_review_items": "Opens the list of translation issues you accepted, with the context of each, so that you can fix them later by hand.",
+    "batch_icon": "{chars:,} chars — {status}",
     "pop_out_log": "Opens the log in its own window, which keeps updating during the run.",
     "help": "Version info, documentation, and ways to support this project."
   },
