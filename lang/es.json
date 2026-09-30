@@ -1,0 +1,167 @@
+{
+  "meta": {
+    "language_name": "Español"
+  },
+  "status": {
+    "waiting_for_configuration": "Esperando la configuración...",
+    "preparing": "Preparando...",
+    "ready_to_start": "Listo para comenzar.",
+    "running": "Ejecutando...",
+    "cancelled": "Cancelado por el usuario",
+    "aborted": "Abortado por el usuario",
+    "error": "Error; consulta el registro para obtener más detalles: {message}",
+    "unexpected_error": "Error inesperado; consulta el registro para obtener más detalles",
+    "terminology_review": "La terminología está lista para su revisión. Edítala según sea necesario y, a continuación, haz clic en Iniciar para continuar: {file}",
+    "translation_completed": "Traducción completada: {file}"
+  },
+  "label": {
+    "input_file": "Archivo de entrada",
+    "no_file_selected": "No se ha seleccionado ningún archivo",
+    "output_folder": "Carpeta de salida",
+    "default_output_folder": "Predeterminado: carpeta de datos del usuario",
+    "input_type": "Tipo de entrada",
+    "input_type_babele": "exportación JSON de Babele",
+    "input_type_localization": "archivo de localización (lang/*.json)",
+    "language": "Idioma",
+    "flavour": "Ambientación",
+    "module_name": "Nombre del módulo",
+    "pick_file_first": "(Selecciona primero un archivo)",
+    "max_batch_size": "Tamaño máximo del lote",
+    "chars_unit": "caracteres"
+  },
+  "option": {
+    "review_terminology": "Revisar la terminología antes de traducir (una vez)",
+    "simulate_only": "Solo simular"
+  },
+  "button": {
+    "select_input_file": "Seleccionar archivo de entrada",
+    "select_output_folder": "Seleccionar carpeta de salida",
+    "reset_output_folder": "Restablecer",
+    "prepare": "Preparar",
+    "start": "Iniciar ▶▶",
+    "cancel": "Cancelar",
+    "clear": "Borrar",
+    "please_wait": "Espera a que se complete el lote...",
+    "reconfigure": "◀ Reconfigurar",
+    "show": "Mostrar",
+    "pop_out_log": "Abrir registro en otra ventana",
+    "open_output_folder": "Abrir carpeta de salida",
+    "open_terminology_folder": "Abrir carpeta de terminología"
+  },
+  "stats": {
+    "chars": "Caracteres:",
+    "batches": "Lotes:",
+    "review_items": "Elementos para revisión:",
+    "terminology": "Terminología",
+    "translation": "Traducción",
+    "batch_progress": "{completed} / {total} completados"
+  },
+  "dialog": {
+    "unexpected_error": "Se produjo un error inesperado:\n{message}",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "ok": "Aceptar",
+    "yes": "Sí",
+    "no": "No",
+    "show_log": "Mostrar registro",
+    "log_title": "Registro",
+    "hint_title": "Ten en cuenta",
+    "confirm_title": "Confirma",
+    "error_title": "¡Ups... tenemos un problema!",
+    "select_file_title": "Selecciona el archivo que quieres traducir",
+    "json_files": "Archivos JSON",
+    "select_output_title": "Selecciona la carpeta de salida"
+  },
+  "settings": {
+    "title": "Configuración",
+    "llm_model": "Modelo de LLM:",
+    "api_base_url": "URL base de la API:",
+    "default_url": "Predeterminado: {url}",
+    "api_key": "Clave de API:",
+    "show_key": "Mostrar clave",
+    "no_key_needed": "Este servidor no necesita ninguna clave de API",
+    "no_key_hint": "Solo servidores locales. OpenAI siempre requiere una clave.",
+    "hide_tooltips": "Ocultar información sobre herramientas",
+    "ui_language": "Idioma de la interfaz de usuario (requiere reiniciar):",
+    "ui_theme": "Tema de la interfaz de usuario (requiere reiniciar):",
+    "theme_fantasy": "Fantasía",
+    "theme_scifi": "Ciencia ficción",
+    "theme_horror": "¡Terror!",
+    "theme_desert": "Desierto",
+    "theme_neutral": "Neutro",
+    "restart_prompt": "Este cambio tendrá efecto después de reiniciar la aplicación.\n\n¿Quieres reiniciarla ahora?",
+    "restart_busy": "Este cambio tendrá efecto después de reiniciar la aplicación.\n\nEspera a que termine el proceso actual y, a continuación, reinicia la aplicación."
+  },
+  "review": {
+    "title": "Elementos para revisión ({count})",
+    "item_header": "#{position}  {placeholder}  =  {value}   (encontrado {count} veces en la traducción)",
+    "original": "Original:",
+    "translation": "Traducción:"
+  },
+  "hint": {
+    "languages_must_differ": "El idioma de origen y el idioma de destino deben ser diferentes."
+  },
+  "confirm": {
+    "clear_terminology": "¿Borrar la terminología?\n\nEsto descarta la terminología ya creada para este archivo de entrada. Se volverá a crear desde cero con nuevas llamadas remotas a la IA.\nLas traducciones existentes permanecerán como están, basadas en la terminología anterior. Para aplicarles también la nueva terminología, borra también las traducciones.\n\n¿Quieres continuar?",
+    "clear_translation": "¿Borrar las traducciones?\n\nEsto descarta todas las traducciones ya realizadas para este archivo de entrada. Todo se traducirá desde cero con nuevas llamadas remotas a la IA.\n\n¿Quieres continuar?"
+  },
+  "error": {
+    "invalid_lang_file_top_level": "ARCHIVO DE ENTRADA NO VÁLIDO\nEl archivo no parece ser un archivo de localización (lang): el nivel superior debe ser un objeto, pero es un {type}.",
+    "invalid_lang_file_values": "ARCHIVO DE ENTRADA NO VÁLIDO\nEl archivo no parece ser un archivo de localización (lang): todos los valores deben ser textos, pero {count} entradas no lo son.\nPrimeras entradas problemáticas:\n{entries}",
+    "no_translatables": "NO SE HAN ENCONTRADO ELEMENTOS TRADUCIBLES\nEste archivo no contiene ningún elemento traducible identificable.\n\n¿Seguro que has seleccionado el tipo de entrada correcto:\n\"{babele}\" frente a \"{localization}\"?\n\nSeleccionado actualmente: {selected}",
+    "text_exceeds_batch_size": "EL TEXTO TRADUCIBLE SUPERA MAX_BATCH_SIZE.\nEl elemento traducible {id} contiene {size} caracteres y supera MAX_BATCH_SIZE={max}\nSolución propuesta: aumenta el tamaño máximo del lote y vuelve a preparar.",
+    "llm_structure": "La respuesta del LLM no tiene la estructura esperada (un objeto JSON con una lista llamada \"terms\").\nEs posible que el modelo seleccionado no sea adecuado para esta tarea. Reanuda el proceso para volver a intentarlo o elige otro modelo.",
+    "llm_term_invalid": "La respuesta del LLM contiene un término sin un \"original\" y un \"proposedTranslation\" válidos.\nEs posible que el modelo seleccionado no sea adecuado para esta tarea. Reanuda el proceso para volver a intentarlo o elige otro modelo."
+  },
+  "prompt": {
+    "unusual_lang_file_name": "\n=== NOMBRE DE ARCHIVO INUSUAL PARA UN ARCHIVO DE LOCALIZACIÓN ===\nEl archivo seleccionado se llama '{file}', pero los archivos de localización (lang) normalmente se llaman <código de idioma>.json (como en.json o pt-BR.json).\n¿Seguro que es un archivo de localización y no un archivo de Babele?\n[{yes}] Sí, continuar de todos modos.\n[{no}] No, abortar.",
+    "discard_progress": "\n=== LA CONFIGURACIÓN HA CAMBIADO DESDE LA ÚLTIMA EJECUCIÓN ===\nEstas opciones de configuración difieren de las del progreso existente para este archivo de entrada:\n{changes}\nNo se pueden aplicar a un proceso que ya está en curso.\n[{yes}] Descartar el progreso existente y comenzar de nuevo con la configuración actual.\n[{no}] No, conservar el progreso (restaura tú las opciones anteriores y vuelve a preparar).",
+    "batch_nonfatal_errors": "El lote {batch}/{batches} contiene {count} error(es) de traducción de marcadores de posición.\nHaz clic en '{show_log}' para investigar los detalles.\n\n¿Quieres conservar este lote (exportando los errores como elementos para revisión posterior) o descartarlo para que se vuelva a intentar en la próxima ejecución?",
+    "overwrite_terminology": "\n=== SE SOBRESCRIBIRÁ EL ARCHIVO DE TERMINOLOGÍA EXISTENTE ===\nYa existe un archivo de terminología para esta entrada:\n{file}\nSe sustituirá por una terminología creada de nuevo.\n¡Se perderán los cambios que hayas hecho manualmente!\nSi consideras que es definitiva, guárdala en otra ubicación antes de continuar.\n[{yes}] Sí, sobrescribirla.\n[{no}] No, abortar (para que puedas mover el archivo primero).",
+    "input_file_changed": "- INPUT_FILE: el contenido ha cambiado"
+  },
+  "language": {
+    "en": "Inglés",
+    "de": "Alemán",
+    "fr": "Francés",
+    "it": "Italiano",
+    "es": "Español",
+    "ja": "Japonés"
+  },
+  "game_system": {
+    "dnd5e": "Dungeons & Dragons (DnD5e)",
+    "tde5": "The Dark Eye/Das Schwarze Auge (TDE5/DSA5)",
+    "pf2e": "Pathfinder (PF2e)",
+    "generic": "Genérico (independiente del sistema)"
+  },
+  "genre": {
+    "classical_fantasy": "Fantasía clásica",
+    "sci_fi": "Ciencia ficción",
+    "horror": "Terror",
+    "generic": "Genérico"
+  },
+  "tooltip": {
+    "settings": "Abre la configuración de la aplicación.",
+    "input_file": "Elige el archivo que quieres traducir: una exportación JSON de Babele o un archivo de localización de Foundry (lang/*.json).",
+    "no_file_selected": "Todavía no se ha seleccionado ningún archivo.",
+    "output_folder": "Aquí se escriben el archivo traducido y los elementos para revisión. Predeterminado: tu carpeta de datos del usuario.",
+    "reset_output_folder": "Volver a la carpeta de salida predeterminada.",
+    "input_type": "Indica qué tipo de archivo estás traduciendo. Esto cambia la forma en que se extraen los textos y se asigna el nombre a la salida.",
+    "language": "Idioma de origen y de destino de la traducción.",
+    "flavour": "Sistema de juego y género. Guían la terminología y el estilo de la traducción mediante IA.",
+    "module_name": "Se utiliza para asignar el nombre a la carpeta y los archivos de salida. Se obtiene del archivo de entrada o de su ruta. Edítalo según sea necesario. Como buena práctica, asígnale exactamente el nombre del module-id del módulo de Foundry VTT de origen.",
+    "max_batch_size": "Número máximo de caracteres por solicitud individual a la IA. Los lotes más grandes requieren menos solicitudes, pero pueden fallar si superan los límites. Los lotes más pequeños son más seguros (requieren menos reintentos), pero pueden generar sobrecarga y aumentar el tiempo total de procesamiento.",
+    "review_terminology": "Se detiene cuando se completa la terminología, para que puedas revisarla y editarla según sea necesario. Después, haz clic en Iniciar para continuar. Se recomienda activar esta opción para cada archivo de entrada nuevo; se desactiva automáticamente después de cada ejecución.",
+    "simulate_only": "Simula todas las solicitudes a la IA sin costes. No se traduce nada realmente y el progreso se conserva por separado de las ejecuciones reales.",
+    "prepare": "Analiza el archivo de entrada y crea los lotes. Todavía no se envía nada a la IA.",
+    "start": "Inicia o reanuda la terminología y la traducción.",
+    "cancel": "Completa el lote actual y, a continuación, se detiene. El progreso se conserva, por lo que puedes reanudarlo más tarde.",
+    "waiting": "Esperando a que se complete el lote actual. Después, la ejecución se detendrá.",
+    "reconfigure": "Volver a la configuración. El progreso existente se conserva.",
+    "clear_terminology": "Descarta la terminología de este archivo de entrada. Se volverá a crear en el próximo inicio.",
+    "clear_translation": "Descarta todas las traducciones de este archivo de entrada. Se volverán a realizar en el próximo inicio.",
+    "show_review_items": "Abre la lista de problemas de traducción que has aceptado, con el contexto de cada uno, para que puedas corregirlos manualmente más tarde.",
+    "pop_out_log": "Abre el registro en su propia ventana, que se actualiza continuamente durante la ejecución."
+  }
+}
