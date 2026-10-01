@@ -7,6 +7,7 @@ import time
 import traceback
 from datetime import datetime
 from collections.abc import Callable
+import cfbt_i18n as i18n
 
 
 # ------------------------------------------------------------
@@ -124,7 +125,7 @@ def _prepare(logger: Callable[str]):
     # CHECK RESUME-RELEVANT CONFIG
     # If settings have changed since the last run, the user decides whether to discard the progress
     # ---------------------------------------------------
-    if run_mode == config.RESUME:
+    if run_mode in (config.RESUME, config.POSTPROCESSING_ONLY):
 
         differences = fn.get_resume_config_differences(
             fn.load_json_input(config.PROGRESS_INFO_FILE)
@@ -359,6 +360,21 @@ def _run(logger: Callable[str], cancel_event):
     # RETRIEVE PREPARATION DATA
     # ---------------------------------------------------
     run_mode = fn.determine_run_mode()
+
+    # A stale Resume/Post-Processing must never run on top of data that no longer matches
+    # the current settings/input file - the user must go through Prepare again for that
+    if run_mode != config.NEW_RUN:
+        differences = fn.get_resume_config_differences(fn.load_json_input(config.PROGRESS_INFO_FILE))
+        if differences:
+            changed = "\n".join(
+                i18n.t_en("prompt.input_file_changed") if name == "INPUT_FILE_HASH"
+                else f"- {name}: {change['stored']} => {change['current']}"
+                for name, change in differences.items()
+            )
+            raise exceptions.ExpectedException("error.resume_config_changed", changes=changed)
+
+    progress_info = None
+    resume_batch = None
     progress_info = None
     resume_batch = None
 

@@ -1,7 +1,6 @@
 {
   "meta": {
-    "language_name": "日本語 (Japanese)",
-    "test": "テスト"
+    "language_name": "日本語 (Japanese)"
   },
   "status": {
     "waiting_for_configuration": "設定を待機中…",
@@ -10,35 +9,35 @@
     "running": "実行中…",
     "cancelled": "ユーザーによりキャンセルされました",
     "aborted": "ユーザーにより中止されました",
-    "error": "エラー — 詳細はログを確認してください：{message}",
+    "error": "エラー — 詳細はログを確認してください: {message}",
     "unexpected_error": "予期しないエラー — 詳細はログを確認してください",
-    "terminology_review": "用語のレビュー準備ができました。必要に応じて編集してから、「開始」をクリックして続行してください：{file}",
-    "translation_completed": "翻訳が完了しました：{file}"
+    "terminology_review": "用語集の確認準備ができました。必要に応じて編集してから、開始をクリックして続行してください: {file}",
+    "translation_completed": "翻訳完了: {file}"
   },
   "batch_status": {
     "UNPROCESSED": "未処理",
     "PROCESSING": "処理中",
     "COMPLETED": "完了",
     "FAILED": "失敗",
-    "REVIEW_REQUIRED": "レビューが必要"
+    "REVIEW_REQUIRED": "確認が必要"
   },
   "label": {
     "input_file": "入力ファイル",
     "no_file_selected": "ファイルが選択されていません",
     "output_folder": "出力フォルダー",
-    "default_output_folder": "既定：ユーザーデータフォルダー",
+    "default_output_folder": "デフォルト: ユーザーデータフォルダー",
     "input_type": "入力タイプ",
     "input_type_babele": "Babele JSONエクスポート",
     "input_type_localization": "ローカライズファイル（lang/*.json）",
     "language": "言語",
-    "flavour": "テイスト",
+    "flavour": "雰囲気",
     "module_name": "モジュール名",
     "pick_file_first": "（先にファイルを選択してください）",
     "max_batch_size": "最大バッチサイズ",
     "chars_unit": "文字"
   },
   "option": {
-    "review_terminology": "翻訳前に用語をレビューする（1回）",
+    "review_terminology": "翻訳前に用語集を確認（1回）",
     "simulate_only": "シミュレーションのみ"
   },
   "button": {
@@ -54,25 +53,25 @@
     "show": "表示",
     "pop_out_log": "ログを別ウィンドウで開く",
     "open_output_folder": "出力フォルダーを開く",
-    "open_terminology_folder": "用語フォルダーを開く",
+    "open_terminology_folder": "用語集フォルダーを開く",
     "open_readme": "READMEを表示",
     "open_changelog": "変更履歴を表示",
     "open_disclaimer": "免責事項を表示",
-    "open_third_party_notices": "第三者に関する通知を表示",
+    "open_third_party_notices": "サードパーティーに関する通知を表示",
     "open_github": "GitHubリポジトリを開く",
     "support_kofi": "Ko-fiで支援する",
     "support_github_sponsors": "GitHubでスポンサーになる"
   },
   "stats": {
-    "chars": "文字数：",
-    "batches": "バッチ数：",
-    "review_items": "レビュー項目：",
-    "terminology": "用語",
+    "chars": "文字数:",
+    "batches": "バッチ:",
+    "review_items": "確認項目:",
+    "terminology": "用語集",
     "translation": "翻訳",
     "batch_progress": "{completed} / {total} 完了"
   },
   "dialog": {
-    "unexpected_error": "予期しないエラーが発生しました：\n{message}",
+    "unexpected_error": "予期しないエラーが発生しました:\n{message}",
     "save": "保存",
     "cancel": "キャンセル",
     "close": "閉じる",
@@ -90,17 +89,17 @@
   },
   "settings": {
     "title": "設定",
-    "llm_model": "LLMモデル：",
-    "api_base_url": "APIベースURL：",
-    "default_url": "既定：{url}",
-    "api_key": "APIキー：",
+    "llm_model": "LLMモデル:",
+    "api_base_url": "APIベースURL:",
+    "default_url": "デフォルト: {url}",
+    "api_key": "APIキー:",
     "show_key": "キーを表示",
     "no_key_needed": "このサーバーではAPIキーは不要です",
-    "no_key_hint": "ローカルサーバー専用です。OpenAIでは常にキーが必要です。",
+    "no_key_hint": "ローカルサーバーのみ。OpenAIでは常にキーが必要です。",
     "hide_tooltips": "ツールチップを非表示",
     "disable_sound_effects": "効果音を無効化",
-    "ui_language": "ユーザーインターフェースの言語（再起動が必要）：",
-    "ui_theme": "UIテーマ（再起動が必要）：",
+    "ui_language": "ユーザーインターフェースの言語（再起動が必要）:",
+    "ui_theme": "UIテーマ（再起動が必要）:",
     "theme_fantasy": "ファンタジー",
     "theme_scifi": "SF",
     "theme_horror": "ホラー！",
@@ -110,32 +109,33 @@
     "restart_busy": "この変更はアプリの再起動後に反映されます。\n\n現在の処理が完了するまで待ってから、アプリを再起動してください。"
   },
   "review": {
-    "title": "レビュー項目（{count}）",
+    "title": "確認項目（{count}）",
     "item_header": "#{position}  {placeholder}  =  {value}   （翻訳内で{count}回検出）",
-    "original": "原文：",
-    "translation": "翻訳："
+    "original": "原文:",
+    "translation": "翻訳:"
   },
   "hint": {
-    "languages_must_differ": "原文の言語と翻訳先の言語は異なる必要があります。"
+    "languages_must_differ": "入力元言語と翻訳先言語は異なる必要があります。"
   },
   "confirm": {
-    "clear_terminology": "用語をクリアしますか？\n\nこの入力ファイル用にすでに作成された用語が破棄されます。新しいリモートAI呼び出しによって最初から再構築されます。\n既存の翻訳は、古い用語に基づいたまま維持されます。新しい用語をそれらにも適用するには、翻訳もクリアしてください。\n\n続行しますか？",
-    "clear_translation": "翻訳をクリアしますか？\n\nこの入力ファイルですでに作成されたすべての翻訳が破棄されます。新しいリモートAI呼び出しによってすべて最初から翻訳されます。\n\n続行しますか？"
+    "clear_terminology": "用語集をクリアしますか？\n\nこの入力ファイル用に作成済みの用語集を破棄します。新しいリモートAI呼び出しによって最初から再構築されます。\n既存の翻訳は、古い用語集に基づいたまま維持されます。新しい用語集を既存の翻訳にも適用するには、翻訳もクリアしてください。\n\n続行しますか？",
+    "clear_translation": "翻訳をクリアしますか？\n\nこの入力ファイルで作成済みのすべての翻訳を破棄します。新しいリモートAI呼び出しによってすべて最初から翻訳されます。\n\n続行しますか？"
   },
   "error": {
-    "invalid_lang_file_top_level": "無効な入力ファイル\nこのファイルはローカライズ（lang）ファイルの形式ではありません。トップレベルはオブジェクトである必要がありますが、{type}です。",
-    "invalid_lang_file_values": "無効な入力ファイル\nこのファイルはローカライズ（lang）ファイルの形式ではありません。すべての値はテキストである必要がありますが、{count}個の項目がそうなっていません。\n最初に該当した項目：\n{entries}",
-    "no_translatables": "翻訳可能な要素が見つかりません\nこのファイルには、翻訳可能と判定できる要素が含まれていません。\n\n正しい入力タイプを選択していますか？\n「{babele}」と「{localization}」のどちらですか？\n\n現在の選択：{selected}",
-    "text_exceeds_batch_size": "翻訳可能なテキストがMAX_BATCH_SIZEを超えています。\n翻訳対象の{ id }には{size}文字あり、MAX_BATCH_SIZE={max}を超えています。\n解決策：最大バッチサイズを増やして、もう一度準備してください。",
-    "llm_structure": "LLMの回答の構造が想定と異なります（「terms」という名前のリストを含むJSONオブジェクトである必要があります）。\n選択したモデルはこのタスクに適していない可能性があります。処理を再開してもう一度試すか、別のモデルを選択してください。",
-    "llm_term_invalid": "LLMの回答に、有効な「original」と「proposedTranslation」を持たない用語が含まれています。\n選択したモデルはこのタスクに適していない可能性があります。処理を再開してもう一度試すか、別のモデルを選択してください。"
+    "invalid_lang_file_top_level": "無効な入力ファイル\nこのファイルはローカライズ（lang）ファイルの形式ではありません: 最上位要素はオブジェクトである必要がありますが、{type}です。",
+    "invalid_lang_file_values": "無効な入力ファイル\nこのファイルはローカライズ（lang）ファイルの形式ではありません: すべての値はテキストである必要がありますが、{count}件のエントリがそうなっていません。\n最初に該当したエントリ:\n{entries}",
+    "no_translatables": "翻訳可能要素が見つかりません\nこのファイルには、識別可能な翻訳可能要素が含まれていません。\n\n正しい入力タイプを選択したか確認してください:\n「{babele}」と「{localization}」のどちらですか？\n\n現在の選択: {selected}",
+    "text_exceeds_batch_size": "翻訳対象テキストがMAX_BATCH_SIZEを超えています。\n翻訳可能な{ id }には{size}文字あり、MAX_BATCH_SIZE={max}を超えています\n推奨される解決策: 最大バッチサイズを増やして、もう一度準備してください。",
+    "llm_structure": "LLMの回答に期待される構造（\"terms\"という名前のリストを含むJSONオブジェクト）がありません。\n選択したモデルはこのタスクに適していない可能性があります。処理を再開してもう一度試すか、別のモデルを選択してください。",
+    "llm_term_invalid": "LLMの回答に、有効な\"original\"と\"proposedTranslation\"を持たない用語が含まれています。\n選択したモデルはこのタスクに適していない可能性があります。処理を再開してもう一度試すか、別のモデルを選択してください。",
+    "resume_config_changed": "前回の準備以降に設定または入力ファイルが変更されています:\n{changes}\n開始する前に、もう一度「準備」をクリックしてください。"
   },
   "prompt": {
-    "unusual_lang_file_name": "\n=== ローカライズファイルとして通常とは異なるファイル名 ===\n選択したファイルの名前は「{file}」ですが、ローカライズ（lang）ファイルは通常、<言語コード>.json（en.jsonやpt-BR.jsonなど）という名前です。\nこれはローカライズファイルであり、Babeleファイルではないことを確認してください。\n[{yes}] はい、このまま続行します。\n[{no}] いいえ、中止します。",
-    "discard_progress": "\n=== 前回の実行以降に設定が変更されています ===\nこれらの設定は、この入力ファイルに対して既存の進行状況で使用されている設定と異なります：\n{changes}\nすでに進行中の処理には適用できません。\n[{yes}] 既存の進行状況を破棄し、現在の設定で最初から開始します。\n[{no}] いいえ、進行状況を維持します（以前の設定に自分で戻してから、もう一度準備してください）。",
-    "batch_nonfatal_errors": "バッチ{batch}/{batches}にプレースホルダー翻訳エラーが{count}件あります。\n詳細を調べるには「{show_log}」をクリックしてください。\n\nこのバッチを保持しますか（後で確認できるよう、エラーをレビュー項目としてエクスポートします）、それとも破棄して次回の実行で再試行しますか？",
-    "overwrite_terminology": "\n=== 既存の用語ファイルは上書きされます ===\nこの入力用の用語ファイルがすでに存在します：\n{file}\n新しく作成した用語で置き換えられます。\n手動で加えた変更はすべて失われます！\n完成版と考えている場合は、続行する前に別の場所へ保存してください。\n[{yes}] はい、上書きします。\n[{no}] いいえ、中止します（先にファイルを移動できます）。",
-    "input_file_changed": "- INPUT_FILE：内容が変更されています"
+    "unusual_lang_file_name": "\n=== ローカライズファイルとして通常とは異なるファイル名 ===\n選択したファイルの名前は「{file}」ですが、ローカライズ（lang）ファイルは通常、<言語コード>.json（en.jsonやpt-BR.jsonなど）という名前です。\nこれはBabeleファイルではなく、ローカライズファイルで間違いありませんか？\n[{yes}] はい、そのまま続行します。\n[{no}] いいえ、中止します。",
+    "discard_progress": "\n=== 前回の実行以降に設定が変更されています ===\nこれらの設定は、この入力ファイルに存在する進行状況の設定と異なります:\n{changes}\nすでに進行中の処理には適用できません。\n[{yes}] 既存の進行状況を破棄し、現在の設定で最初から開始します。\n[{no}] いいえ、進行状況を維持します（以前の設定を自分で復元してから、もう一度準備してください）。",
+    "batch_nonfatal_errors": "バッチ{batch}/{batches}にプレースホルダー翻訳エラーが{count}件あります。\n「{show_log}」をクリックして詳細を確認してください。\n\nこのバッチをそのまま保持しますか（エラーを後で確認するための確認項目としてエクスポートします）、それとも破棄して次回の実行時に再試行しますか？",
+    "overwrite_terminology": "\n=== 既存の用語集ファイルが上書きされます ===\nこの入力用の用語集ファイルがすでに存在します:\n{file}\n新しく作成した用語集に置き換えられます。\n手動で加えた変更はすべて失われます！\n完成版だと思う場合は、続行する前に別の場所へ保存してください。\n[{yes}] はい、上書きします。\n[{no}] いいえ、中止します（先にファイルを移動できます）。",
+    "input_file_changed": "- INPUT_FILE: 内容が変更されています"
   },
   "language": {
     "en": "英語",
@@ -152,38 +152,38 @@
     "generic": "汎用（システム非依存）"
   },
   "genre": {
-    "classical_fantasy": "クラシックファンタジー",
+    "classical_fantasy": "古典ファンタジー",
     "sci_fi": "SF",
     "horror": "ホラー",
     "generic": "汎用"
   },
   "tooltip": {
     "settings": "アプリケーション設定を開きます。",
-    "input_file": "翻訳するファイルを選択します：Babele JSONエクスポートまたはFoundryのローカライズファイル（lang/*.json）。",
+    "input_file": "翻訳するファイルを選択します: Babele JSONエクスポートまたはFoundry VTTのローカライズファイル（lang/*.json）。",
     "no_file_selected": "まだファイルが選択されていません。",
-    "output_folder": "翻訳済みファイルとレビュー項目の保存先です。既定ではユーザーデータフォルダーです。",
-    "reset_output_folder": "既定の出力フォルダーに戻します。",
+    "output_folder": "翻訳済みファイルと確認項目の出力先です。デフォルトはユーザーデータフォルダーです。",
+    "reset_output_folder": "デフォルトの出力フォルダーに戻します。",
     "input_type": "翻訳するファイルの種類です。テキストの抽出方法と出力名が変わります。",
-    "language": "翻訳の原文言語と翻訳先言語です。",
-    "flavour": "ゲームシステムとジャンルです。AI翻訳の用語とスタイルに影響します。",
-    "module_name": "出力フォルダーとファイルの名前に使用します。入力ファイルとそのパスから生成されます。必要に応じて編集してください。推奨：元のFoundry VTTモジュールのモジュールIDとまったく同じ名前にします。",
-    "max_batch_size": "1回のAIリクエストあたりの最大文字数です。バッチを大きくするとリクエスト回数を減らせますが、上限を超えると失敗する可能性があります。小さなバッチはより安全（再試行が少ない）ですが、オーバーヘッドが発生し、合計処理時間が長くなる場合があります。",
-    "review_terminology": "用語が完成した時点で停止するため、必要に応じてレビューや編集ができます。その後、「開始」をクリックして続行してください。新しい入力ファイルごとにこのオプションを使用することをおすすめします。各実行後に自動的に無効になります。",
+    "language": "翻訳の入力元言語と翻訳先言語です。",
+    "flavour": "ゲームシステムとジャンルです。AI翻訳の用語と文体に影響します。",
+    "module_name": "出力フォルダーとファイルの名前に使用します。入力ファイルやそのパスから生成されます。必要に応じて編集してください。推奨: 元のFoundry VTTモジュールのmodule-idとまったく同じ名前にします。",
+    "max_batch_size": "1回のAIリクエストあたりの最大文字数です。バッチが大きいほどリクエスト回数は少なくなりますが、上限を超えると失敗する可能性があります。バッチが小さいほど安全性が高く（再試行が少なく）なりますが、オーバーヘッドが発生し、処理時間が全体的に長くなる場合があります。",
+    "review_terminology": "用語集の作成後に停止するため、必要に応じて確認・編集できます。その後、開始をクリックして続行してください。新しい入力ファイルごとにこのオプションを使用することを推奨します。各実行後に自動的に無効になります。",
     "simulate_only": "すべてのAIリクエストを費用なしでシミュレーションします。実際の翻訳は行われず、進行状況も実行時のものとは別に保持されます。",
-    "prepare": "入力ファイルを分析してバッチを作成します。まだAIには何も送信されません。",
-    "start": "用語作成と翻訳を開始（または再開）します。",
+    "prepare": "入力ファイルを分析してバッチを作成します。AIにはまだ何も送信されません。",
+    "start": "用語集の作成と翻訳を開始（または再開）します。",
     "cancel": "現在のバッチを完了してから停止します。進行状況は保持されるため、後で再開できます。",
-    "waiting": "現在のバッチが完了するのを待機しています。完了後、実行を停止します。",
+    "waiting": "現在のバッチの完了を待機中です。その後、実行を停止します。",
     "reconfigure": "設定に戻ります。既存の進行状況は保持されます。",
-    "clear_terminology": "この入力ファイルの用語を破棄します。次回の開始時に再構築されます。",
-    "clear_translation": "この入力ファイルのすべての翻訳を破棄します。次回の開始時にやり直されます。",
-    "show_review_items": "承認した翻訳上の問題を、それぞれの文脈とともに一覧表示します。後で手動で修正できます。",
+    "clear_terminology": "この入力ファイルの用語集を破棄します。次回の開始時に再構築されます。",
+    "clear_translation": "この入力ファイルのすべての翻訳を破棄します。次回の開始時に再翻訳されます。",
+    "show_review_items": "承認した翻訳上の問題の一覧を、それぞれの文脈とともに開きます。後で手作業で修正できます。",
     "batch_icon": "{chars:,}文字 — {status}",
     "pop_out_log": "ログを専用ウィンドウで開きます。実行中も更新され続けます。",
-    "help": "バージョン情報、ドキュメント、このプロジェクトを支援する方法です。"
+    "help": "バージョン情報、ドキュメント、このプロジェクトの支援方法です。"
   },
   "help": {
     "title": "ヘルプと概要",
-    "version": "バージョン{version}"
+    "version": "バージョン {version}"
   }
 }

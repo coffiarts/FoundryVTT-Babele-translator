@@ -866,6 +866,7 @@ class App(ctk.CTk):
             analysis = fn.analyze_progress_info()
             self.show_bars(analysis)
             self.update_clear_buttons(analysis)
+            self.set_main_button_role(i18n.t("button.prepare"), self.prepare, TOOLTIP_PREPARE)
 
         ui_dialogs.confirm_yes_no(
             key,

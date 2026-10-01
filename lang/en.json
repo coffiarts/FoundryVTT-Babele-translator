@@ -1,7 +1,6 @@
 {
   "meta": {
-    "language_name": "English",
-	"test":"Test"
+    "language_name": "English"
   },
   "status": {
     "waiting_for_configuration": "Waiting for configuration...",
@@ -128,7 +127,8 @@
     "no_translatables": "NO TRANSLATABLE ELEMENTS FOUND\nThis file doesn't contain any identifiable translatable elements.\n\nAre you sure that you've picked the right input type:\n\"{babele}\" vs. \"{localization}\"?\n\nCurrently selected: {selected}",
     "text_exceeds_batch_size": "TRANSLATABLE TEXT EXCEEDS MAX_BATCH_SIZE.\nTranslatable {id} contains {size} chars and exceeds MAX_BATCH_SIZE={max}\nProposed solution: Increase Max Batch Size and prepare again.",
     "llm_structure": "The LLM answer doesn't have the expected structure (a JSON object with a list named \"terms\").\nThe selected model may not be suited for this task. Resume the process to try again, or choose another model.",
-    "llm_term_invalid": "The LLM answer contains a term without a valid \"original\" and \"proposedTranslation\".\nThe selected model may not be suited for this task. Resume the process to try again, or choose another model."
+    "llm_term_invalid": "The LLM answer contains a term without a valid \"original\" and \"proposedTranslation\".\nThe selected model may not be suited for this task. Resume the process to try again, or choose another model.",
+    "resume_config_changed": "Settings or the input file have changed since this was last prepared:\n{changes}\nPlease click 'Prepare' again before starting."
   },
   "prompt": {
     "unusual_lang_file_name": "\n=== UNUSUAL FILE NAME FOR A LOCALIZATION FILE ===\nThe selected file is named '{file}', but Localization (lang) files are usually named <language code>.json (like en.json, or pt-BR.json).\nAre you sure that this is a Localization file and not a Babele file?\n[{yes}] Yes, continue anyway.\n[{no}] No, abort.",

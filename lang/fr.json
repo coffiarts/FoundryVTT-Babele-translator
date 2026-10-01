@@ -1,18 +1,17 @@
 {
   "meta": {
-    "language_name": "Français",
-    "test": "Test"
+    "language_name": "Français"
   },
   "status": {
     "waiting_for_configuration": "En attente de la configuration...",
     "preparing": "Préparation...",
     "ready_to_start": "Prêt à démarrer.",
-    "running": "En cours...",
+    "running": "Exécution...",
     "cancelled": "Annulé par l’utilisateur",
     "aborted": "Interrompu par l’utilisateur",
     "error": "Erreur — consulte le journal pour plus de détails : {message}",
     "unexpected_error": "Erreur inattendue — consulte le journal pour plus de détails",
-    "terminology_review": "La terminologie est prête à être révisée. Modifie-la comme nécessaire, puis clique sur Démarrer pour continuer : {file}",
+    "terminology_review": "La terminologie est prête à être vérifiée. Modifie-la si nécessaire, puis clique sur Démarrer pour continuer : {file}",
     "translation_completed": "Traduction terminée : {file}"
   },
   "batch_status": {
@@ -20,53 +19,53 @@
     "PROCESSING": "Traitement en cours",
     "COMPLETED": "Terminé",
     "FAILED": "Échec",
-    "REVIEW_REQUIRED": "Révision requise"
+    "REVIEW_REQUIRED": "Vérification requise"
   },
   "label": {
-    "input_file": "Fichier d’entrée",
+    "input_file": "Fichier source",
     "no_file_selected": "Aucun fichier sélectionné",
     "output_folder": "Dossier de sortie",
     "default_output_folder": "Par défaut : dossier de données utilisateur",
-    "input_type": "Type d’entrée",
+    "input_type": "Type de fichier source",
     "input_type_babele": "Export JSON de Babele",
     "input_type_localization": "Fichier de localisation (lang/*.json)",
     "language": "Langue",
-    "flavour": "Ambiance",
+    "flavour": "Style",
     "module_name": "Nom du module",
     "pick_file_first": "(Sélectionne d’abord un fichier)",
     "max_batch_size": "Taille maximale des lots",
     "chars_unit": "caractères"
   },
   "option": {
-    "review_terminology": "Réviser la terminologie avant la traduction (une fois)",
+    "review_terminology": "Vérifier la terminologie avant de traduire (une fois)",
     "simulate_only": "Simuler uniquement"
   },
   "button": {
-    "select_input_file": "Sélectionner le fichier d’entrée",
+    "select_input_file": "Sélectionner le fichier source",
     "select_output_folder": "Sélectionner le dossier de sortie",
     "reset_output_folder": "Réinitialiser",
     "prepare": "Préparer",
     "start": "Démarrer ▶▶",
     "cancel": "Annuler",
     "clear": "Effacer",
-    "please_wait": "Attends que le lot soit terminé...",
+    "please_wait": "Attends la fin du lot...",
     "reconfigure": "◀ Reconfigurer",
     "show": "Afficher",
     "pop_out_log": "Détacher le journal",
     "open_output_folder": "Ouvrir le dossier de sortie",
     "open_terminology_folder": "Ouvrir le dossier de terminologie",
-    "open_readme": "Voir le README",
-    "open_changelog": "Voir le journal des modifications",
-    "open_disclaimer": "Voir la clause de non-responsabilité",
-    "open_third_party_notices": "Voir les mentions concernant les tiers",
+    "open_readme": "Afficher le README",
+    "open_changelog": "Afficher le journal des modifications",
+    "open_disclaimer": "Afficher la clause de non-responsabilité",
+    "open_third_party_notices": "Afficher les mentions concernant les tiers",
     "open_github": "Ouvrir le dépôt GitHub",
     "support_kofi": "Soutenir sur Ko-fi",
-    "support_github_sponsors": "Devenir sponsor sur GitHub"
+    "support_github_sponsors": "Soutenir sur GitHub"
   },
   "stats": {
     "chars": "Caractères :",
     "batches": "Lots :",
-    "review_items": "Éléments à réviser :",
+    "review_items": "Éléments à vérifier :",
     "terminology": "Terminologie",
     "translation": "Traduction",
     "batch_progress": "{completed} / {total} terminés"
@@ -93,9 +92,9 @@
     "llm_model": "Modèle de LLM :",
     "api_base_url": "URL de base de l’API :",
     "default_url": "Par défaut : {url}",
-    "api_key": "Clé d’API :",
+    "api_key": "Clé API :",
     "show_key": "Afficher la clé",
-    "no_key_needed": "Ce serveur ne nécessite aucune clé d’API",
+    "no_key_needed": "Ce serveur ne nécessite aucune clé API",
     "no_key_hint": "Serveurs locaux uniquement. OpenAI nécessite toujours une clé.",
     "hide_tooltips": "Masquer les infobulles",
     "disable_sound_effects": "Désactiver les effets sonores",
@@ -110,8 +109,8 @@
     "restart_busy": "Cette modification prendra effet après le redémarrage de l’application.\n\nAttends la fin du processus en cours, puis redémarre l’application."
   },
   "review": {
-    "title": "Éléments à réviser ({count})",
-    "item_header": "#{position}  {placeholder}  =  {value}   ({count} occurrence(s) trouvée(s) dans la traduction)",
+    "title": "Éléments à vérifier ({count})",
+    "item_header": "#{position}  {placeholder}  =  {value}   (trouvé {count} fois dans la traduction)",
     "original": "Original :",
     "translation": "Traduction :"
   },
@@ -119,23 +118,24 @@
     "languages_must_differ": "La langue source et la langue cible doivent être différentes."
   },
   "confirm": {
-    "clear_terminology": "Effacer la terminologie ?\n\nCela supprime la terminologie déjà constituée pour ce fichier d’entrée. Elle sera reconstruite à partir de zéro avec de nouveaux appels à l’IA distante.\nLes traductions existantes restent telles quelles, sur la base de l’ancienne terminologie. Pour appliquer également la nouvelle terminologie à ces traductions, efface aussi les traductions.\n\nVeux-tu continuer ?",
-    "clear_translation": "Effacer les traductions ?\n\nCela supprime toutes les traductions déjà effectuées pour ce fichier d’entrée. Tout sera traduit à partir de zéro avec de nouveaux appels à l’IA distante.\n\nVeux-tu continuer ?"
+    "clear_terminology": "Effacer la terminologie ?\n\nCela supprimera la terminologie déjà créée pour ce fichier source. Elle sera recréée à partir de zéro avec de nouveaux appels à l’IA distante.\nLes traductions existantes resteront telles quelles, en fonction de l’ancienne terminologie. Pour appliquer également la nouvelle terminologie à ces traductions, efface aussi les traductions.\n\nVeux-tu continuer ?",
+    "clear_translation": "Effacer les traductions ?\n\nCela supprimera toutes les traductions déjà réalisées pour ce fichier source. Tout sera traduit à partir de zéro avec de nouveaux appels à l’IA distante.\n\nVeux-tu continuer ?"
   },
   "error": {
-    "invalid_lang_file_top_level": "FICHIER D’ENTRÉE NON VALIDE\nLe fichier ne ressemble pas à un fichier de localisation (lang) : le niveau supérieur doit être un objet, mais il s’agit d’un {type}.",
-    "invalid_lang_file_values": "FICHIER D’ENTRÉE NON VALIDE\nLe fichier ne ressemble pas à un fichier de localisation (lang) : toutes les valeurs doivent être du texte, mais {count} entrées ne le sont pas.\nPremières entrées problématiques :\n{entries}",
-    "no_translatables": "AUCUN ÉLÉMENT TRADUISIBLE TROUVÉ\nCe fichier ne contient aucun élément traduisible identifiable.\n\nEs-tu sûr d’avoir choisi le bon type d’entrée :\n« {babele} » ou « {localization} » ?\n\nActuellement sélectionné : {selected}",
+    "invalid_lang_file_top_level": "FICHIER SOURCE INVALIDE\nLe fichier ne ressemble pas à un fichier de localisation (lang) : le niveau supérieur doit être un objet, mais c’est un {type}.",
+    "invalid_lang_file_values": "FICHIER SOURCE INVALIDE\nLe fichier ne ressemble pas à un fichier de localisation (lang) : toutes les valeurs doivent être des textes, mais {count} entrées ne le sont pas.\nPremières entrées problématiques :\n{entries}",
+    "no_translatables": "AUCUN ÉLÉMENT TRADUISIBLE TROUVÉ\nCe fichier ne contient aucun élément traduisible identifiable.\n\nEs-tu sûr d’avoir choisi le bon type de fichier source :\n\"{babele}\" contre \"{localization}\" ?\n\nActuellement sélectionné : {selected}",
     "text_exceeds_batch_size": "LE TEXTE TRADUISIBLE DÉPASSE MAX_BATCH_SIZE.\nL’élément traduisible {id} contient {size} caractères et dépasse MAX_BATCH_SIZE={max}\nSolution proposée : augmente la taille maximale des lots et prépare à nouveau.",
-    "llm_structure": "La réponse du LLM n’a pas la structure attendue (un objet JSON contenant une liste nommée « terms »).\nLe modèle sélectionné n’est peut-être pas adapté à cette tâche. Reprends le processus pour réessayer ou choisis un autre modèle.",
-    "llm_term_invalid": "La réponse du LLM contient un terme sans « original » et « proposedTranslation » valides.\nLe modèle sélectionné n’est peut-être pas adapté à cette tâche. Reprends le processus pour réessayer ou choisis un autre modèle."
+    "llm_structure": "La réponse du LLM n’a pas la structure attendue (un objet JSON contenant une liste nommée \"terms\").\nLe modèle sélectionné n’est peut-être pas adapté à cette tâche. Reprends le processus pour réessayer ou choisis un autre modèle.",
+    "llm_term_invalid": "La réponse du LLM contient un terme sans \"original\" et \"proposedTranslation\" valides.\nLe modèle sélectionné n’est peut-être pas adapté à cette tâche. Reprends le processus pour réessayer ou choisis un autre modèle.",
+    "resume_config_changed": "Les paramètres ou le fichier source ont changé depuis la dernière préparation :\n{changes}\nClique à nouveau sur « Préparer » avant de démarrer."
   },
   "prompt": {
     "unusual_lang_file_name": "\n=== NOM DE FICHIER INHABITUEL POUR UN FICHIER DE LOCALISATION ===\nLe fichier sélectionné s’appelle « {file} », mais les fichiers de localisation (lang) s’appellent généralement <code de langue>.json (comme en.json ou pt-BR.json).\nEs-tu sûr qu’il s’agit d’un fichier de localisation et non d’un fichier Babele ?\n[{yes}] Oui, continuer quand même.\n[{no}] Non, interrompre.",
-    "discard_progress": "\n=== PARAMÈTRES MODIFIÉS DEPUIS LA DERNIÈRE EXÉCUTION ===\nCes paramètres diffèrent de ceux de la progression existante pour ce fichier d’entrée :\n{changes}\nIls ne peuvent pas être appliqués à un processus déjà en cours.\n[{yes}] Abandonner la progression existante et recommencer avec les paramètres actuels.\n[{no}] Non, conserver la progression (rétablis toi-même les anciens paramètres, puis prépare à nouveau).",
-    "batch_nonfatal_errors": "Le lot {batch}/{batches} contient {count} erreur(s) de traduction de paramètre substituable.\nClique sur « {show_log} » pour examiner les détails.\n\nVeux-tu conserver ce lot quand même (en exportant les erreurs comme éléments à réviser ultérieurement) ou le supprimer pour qu’il soit retenté lors de la prochaine exécution ?",
-    "overwrite_terminology": "\n=== LE FICHIER DE TERMINOLOGIE EXISTANT VA ÊTRE REMPLACÉ ===\nIl existe déjà un fichier de terminologie pour cette entrée :\n{file}\nIl sera remplacé par une terminologie nouvellement constituée.\nToutes les modifications que tu as pu y apporter manuellement seront perdues !\nSi tu le considères comme définitif, enregistre-le à un autre emplacement avant de continuer.\n[{yes}] Oui, le remplacer.\n[{no}] Non, interrompre (pour pouvoir déplacer le fichier d’abord).",
-    "input_file_changed": "- FICHIER_D_ENTRÉE : le contenu a changé"
+    "discard_progress": "\n=== PARAMÈTRES MODIFIÉS DEPUIS LA DERNIÈRE EXÉCUTION ===\nCes paramètres diffèrent de ceux de la progression existante pour ce fichier source :\n{changes}\nIls ne peuvent pas être appliqués à un processus déjà en cours.\n[{yes}] Oui, supprimer la progression existante et recommencer avec les paramètres actuels.\n[{no}] Non, conserver la progression (rétablis toi-même les paramètres précédents, puis prépare à nouveau).",
+    "batch_nonfatal_errors": "Le lot {batch}/{batches} contient {count} erreur(s) de traduction de paramètre fictif.\nClique sur « {show_log} » pour examiner les détails.\n\nVeux-tu conserver ce lot (en exportant les erreurs comme éléments à vérifier ultérieurement) ou le supprimer afin qu’il soit réessayé lors de la prochaine exécution ?",
+    "overwrite_terminology": "\n=== LE FICHIER DE TERMINOLOGIE EXISTANT SERA REMPLACÉ ===\nIl existe déjà un fichier de terminologie pour cette entrée :\n{file}\nIl sera remplacé par une terminologie fraîchement créée.\nToutes les modifications manuelles que tu as pu y apporter seront perdues !\nSi tu le considères comme définitif, enregistre-le à un autre emplacement avant de continuer.\n[{yes}] Oui, le remplacer.\n[{no}] Non, interrompre (pour pouvoir déplacer le fichier d’abord).",
+    "input_file_changed": "- FICHIER_SOURCE : le contenu a changé"
   },
   "language": {
     "en": "Anglais",
@@ -159,24 +159,24 @@
   },
   "tooltip": {
     "settings": "Ouvre les paramètres de l’application.",
-    "input_file": "Choisis le fichier à traduire : un export JSON de Babele ou un fichier de localisation Foundry (lang/*.json).",
+    "input_file": "Choisis le fichier à traduire : un export JSON de Babele ou un fichier de localisation de Foundry (lang/*.json).",
     "no_file_selected": "Aucun fichier sélectionné pour le moment.",
-    "output_folder": "Emplacement où sont enregistrés le fichier traduit et les éléments à réviser. Par défaut : ton dossier de données utilisateur.",
-    "reset_output_folder": "Revient au dossier de sortie par défaut.",
-    "input_type": "Type de fichier que tu traduis. Cela détermine la façon dont les textes sont extraits et le nom de la sortie.",
+    "output_folder": "Emplacement où sont enregistrés le fichier traduit et les éléments à vérifier. Par défaut : ton dossier de données utilisateur.",
+    "reset_output_folder": "Rétablit le dossier de sortie par défaut.",
+    "input_type": "Type de fichier que tu traduis. Modifie la façon dont les textes sont extraits et le nom de la sortie.",
     "language": "Langue source et langue cible de la traduction.",
     "flavour": "Système de jeu et genre. Ils orientent la terminologie et le style de la traduction par l’IA.",
-    "module_name": "Utilisé pour nommer le dossier et les fichiers de sortie. Dérivé du fichier d’entrée et/ou de son chemin. Modifie-le si nécessaire. Bonne pratique : donne-lui exactement le nom de l’identifiant de module du module Foundry VTT source.",
-    "max_batch_size": "Nombre maximal de caractères par requête à l’IA. Les lots plus grands nécessitent moins de requêtes, mais peuvent échouer s’ils dépassent les limites. Les lots plus petits sont plus fiables (moins de nouvelles tentatives), mais peuvent entraîner une surcharge et augmenter la durée totale du traitement.",
-    "review_terminology": "S’arrête une fois la terminologie terminée, afin que tu puisses la réviser et la modifier si nécessaire. Clique ensuite sur Démarrer pour continuer. Cette option est recommandée pour chaque nouveau fichier d’entrée et se désactive automatiquement après chaque exécution.",
-    "simulate_only": "Simule toutes les requêtes à l’IA sans frais. Rien n’est réellement traduit et la progression est conservée séparément des exécutions réelles.",
-    "prepare": "Analyse le fichier d’entrée et constitue les lots. Rien n’est encore envoyé à l’IA.",
+    "module_name": "Utilisé pour nommer le dossier et les fichiers de sortie. Dérivé du fichier source et/ou de son chemin. Modifie-le si nécessaire. Bonne pratique : donne-lui exactement le nom de l’identifiant de module du module Foundry VTT source.",
+    "max_batch_size": "Nombre maximal de caractères par requête d’IA. Les lots plus importants nécessitent moins de requêtes, mais peuvent échouer s’ils dépassent les limites. Les lots plus petits sont plus fiables (moins de nouvelles tentatives), mais peuvent entraîner une surcharge et augmenter la durée totale du traitement.",
+    "review_terminology": "S’arrête une fois la terminologie terminée, afin que tu puisses la vérifier et la modifier si nécessaire. Clique ensuite sur Démarrer pour continuer. Cette option est recommandée pour chaque nouveau fichier source et se désactive automatiquement après chaque exécution.",
+    "simulate_only": "Simule toutes les requêtes d’IA sans frais. Rien n’est réellement traduit et la progression est conservée séparément des exécutions réelles.",
+    "prepare": "Analyse le fichier source et crée les lots. Rien n’est encore envoyé à l’IA.",
     "start": "Démarre (ou reprend) la terminologie et la traduction.",
     "cancel": "Termine le lot actuel, puis s’arrête. La progression est conservée afin que tu puisses reprendre plus tard.",
     "waiting": "En attente de la fin du lot actuel. L’exécution s’arrêtera ensuite.",
     "reconfigure": "Retourne aux paramètres. La progression existante est conservée.",
-    "clear_terminology": "Supprime la terminologie de ce fichier d’entrée. Elle sera reconstituée au prochain démarrage.",
-    "clear_translation": "Supprime toutes les traductions de ce fichier d’entrée. Elles seront refaites au prochain démarrage.",
+    "clear_terminology": "Supprime la terminologie de ce fichier source. Elle sera recréée au prochain démarrage.",
+    "clear_translation": "Supprime toutes les traductions de ce fichier source. Elles seront recréées au prochain démarrage.",
     "show_review_items": "Ouvre la liste des problèmes de traduction que tu as acceptés, avec le contexte de chacun, afin que tu puisses les corriger manuellement plus tard.",
     "batch_icon": "{chars:,} caractères — {status}",
     "pop_out_log": "Ouvre le journal dans sa propre fenêtre, qui continue de se mettre à jour pendant l’exécution.",

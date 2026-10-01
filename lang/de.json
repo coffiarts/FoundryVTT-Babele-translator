@@ -3,15 +3,15 @@
     "language_name": "Deutsch"
   },
   "status": {
-    "waiting_for_configuration": "Warte auf die Konfiguration ...",
+    "waiting_for_configuration": "Warten auf Konfiguration ...",
     "preparing": "Vorbereitung ...",
     "ready_to_start": "Bereit zum Start.",
     "running": "Wird ausgeführt ...",
     "cancelled": "Vom Benutzer abgebrochen",
     "aborted": "Vom Benutzer beendet",
-    "error": "Fehler – siehe Protokoll für Details: {message}",
-    "unexpected_error": "Unerwarteter Fehler – siehe Protokoll für Details",
-    "terminology_review": "Die Terminologie kann geprüft werden. Bearbeite sie nach Bedarf und klicke dann auf Start, um fortzufahren: {file}",
+    "error": "Fehler – Details findest du im Protokoll: {message}",
+    "unexpected_error": "Unerwarteter Fehler – Details findest du im Protokoll",
+    "terminology_review": "Terminologie zur Überprüfung bereit. Bearbeite sie nach Bedarf und klicke dann auf „Start“, um fortzufahren: {file}",
     "translation_completed": "Übersetzung abgeschlossen: {file}"
   },
   "batch_status": {
@@ -19,13 +19,13 @@
     "PROCESSING": "Wird verarbeitet",
     "COMPLETED": "Abgeschlossen",
     "FAILED": "Fehlgeschlagen",
-    "REVIEW_REQUIRED": "Prüfung erforderlich"
+    "REVIEW_REQUIRED": "Überprüfung erforderlich"
   },
   "label": {
     "input_file": "Eingabedatei",
     "no_file_selected": "Keine Datei ausgewählt",
     "output_folder": "Ausgabeordner",
-    "default_output_folder": "Standard: Benutzer-Datenordner",
+    "default_output_folder": "Standard: Benutzerdatenordner",
     "input_type": "Eingabetyp",
     "input_type_babele": "Babele-JSON-Export",
     "input_type_localization": "Lokalisierungsdatei (lang/*.json)",
@@ -33,11 +33,11 @@
     "flavour": "Genre",
     "module_name": "Modulname",
     "pick_file_first": "(Bitte wähle zuerst eine Datei aus)",
-    "max_batch_size": "Maximale Batch-Größe",
+    "max_batch_size": "Maximale Stapelgröße",
     "chars_unit": "Zeichen"
   },
   "option": {
-    "review_terminology": "Terminologie vor dem Übersetzen prüfen (einmalig)",
+    "review_terminology": "Terminologie vor dem Übersetzen überprüfen (einmalig)",
     "simulate_only": "Nur simulieren"
   },
   "button": {
@@ -48,10 +48,10 @@
     "start": "Start ▶▶",
     "cancel": "Abbrechen",
     "clear": "Leeren",
-    "please_wait": "Bitte warte, bis der Batch abgeschlossen ist ...",
+    "please_wait": "Bitte warte, bis der Stapel abgeschlossen ist ...",
     "reconfigure": "◀ Neu konfigurieren",
     "show": "Anzeigen",
-    "pop_out_log": "Protokoll in eigenem Fenster öffnen",
+    "pop_out_log": "Protokoll ausblenden",
     "open_output_folder": "Ausgabeordner öffnen",
     "open_terminology_folder": "Terminologieordner öffnen",
     "open_readme": "README anzeigen",
@@ -60,11 +60,11 @@
     "open_third_party_notices": "Hinweise zu Drittanbietern anzeigen",
     "open_github": "GitHub-Repository öffnen",
     "support_kofi": "Auf Ko-fi unterstützen",
-    "support_github_sponsors": "Auf GitHub sponsern"
+    "support_github_sponsors": "Auf GitHub unterstützen"
   },
   "stats": {
     "chars": "Zeichen:",
-    "batches": "Batches:",
+    "batches": "Stapel:",
     "review_items": "Prüfeinträge:",
     "terminology": "Terminologie",
     "translation": "Übersetzung",
@@ -82,7 +82,7 @@
     "log_title": "Protokoll",
     "hint_title": "Bitte beachte",
     "confirm_title": "Bitte bestätige",
-    "error_title": "Ups ... wir haben ein Problem!",
+    "error_title": "Hoppla ... wir haben ein Problem!",
     "select_file_title": "Datei zum Übersetzen auswählen",
     "json_files": "JSON-Dateien",
     "select_output_title": "Ausgabeordner auswählen"
@@ -98,19 +98,19 @@
     "no_key_hint": "Nur lokale Server. OpenAI benötigt immer einen Schlüssel.",
     "hide_tooltips": "Tooltips ausblenden",
     "disable_sound_effects": "Soundeffekte deaktivieren",
-    "ui_language": "Sprache der Benutzeroberfläche (Neustart erforderlich):",
-    "ui_theme": "UI-Theme (Neustart erforderlich):",
+    "ui_language": "Sprache der Benutzeroberfläche (erfordert Neustart):",
+    "ui_theme": "UI-Design (erfordert Neustart):",
     "theme_fantasy": "Fantasy",
     "theme_scifi": "Science-Fiction",
     "theme_horror": "Horror!",
     "theme_desert": "Wüste",
     "theme_neutral": "Neutral",
-    "restart_prompt": "Diese Änderung wird nach einem Neustart der App wirksam.\n\nMöchtest du jetzt neu starten?",
-    "restart_busy": "Diese Änderung wird nach einem Neustart der App wirksam.\n\nBitte warte, bis der aktuelle Prozess abgeschlossen ist, und starte dann die App neu."
+    "restart_prompt": "Diese Änderung wird nach einem Neustart wirksam.\n\nMöchtest du jetzt neu starten?",
+    "restart_busy": "Diese Änderung wird nach einem Neustart wirksam.\n\nBitte warte, bis der aktuelle Prozess abgeschlossen ist, und starte die Anwendung dann neu."
   },
   "review": {
     "title": "Prüfeinträge ({count})",
-    "item_header": "#{position}  {placeholder}  =  {value}   ({count}x in der Übersetzung gefunden)",
+    "item_header": "#{position}  {placeholder}  =  {value}   ({count}× in der Übersetzung gefunden)",
     "original": "Original:",
     "translation": "Übersetzung:"
   },
@@ -118,23 +118,24 @@
     "languages_must_differ": "Quell- und Zielsprache müssen unterschiedlich sein."
   },
   "confirm": {
-    "clear_terminology": "Terminologie löschen?\n\nDadurch wird die für diese Eingabedatei bereits erstellte Terminologie verworfen. Sie wird durch neue Anfragen an die entfernte KI von Grund auf neu erstellt.\nVorhandene Übersetzungen bleiben auf Grundlage der alten Terminologie erhalten. Um die neue Terminologie auch auf sie anzuwenden, musst du zusätzlich die Übersetzungen löschen.\n\nMöchtest du fortfahren?",
-    "clear_translation": "Übersetzungen löschen?\n\nDadurch werden alle für diese Eingabedatei bereits erstellten Übersetzungen verworfen. Alles wird durch neue Anfragen an die entfernte KI von Grund auf neu übersetzt.\n\nMöchtest du fortfahren?"
+    "clear_terminology": "Terminologie leeren?\n\nDadurch wird die bereits für diese Eingabedatei erstellte Terminologie verworfen. Sie wird mithilfe neuer entfernter KI-Aufrufe von Grund auf neu erstellt.\nVorhandene Übersetzungen bleiben auf Grundlage der alten Terminologie bestehen. Um die neue Terminologie auch auf sie anzuwenden, musst du zusätzlich die Übersetzungen leeren.\n\nMöchtest du fortfahren?",
+    "clear_translation": "Übersetzungen leeren?\n\nDadurch werden alle bereits für diese Eingabedatei erstellten Übersetzungen verworfen. Alles wird mithilfe neuer entfernter KI-Aufrufe von Grund auf neu übersetzt.\n\nMöchtest du fortfahren?"
   },
   "error": {
     "invalid_lang_file_top_level": "UNGÜLTIGE EINGABEDATEI\nDie Datei sieht nicht wie eine Lokalisierungsdatei (lang) aus: Die oberste Ebene muss ein Objekt sein, ist aber ein {type}.",
-    "invalid_lang_file_values": "UNGÜLTIGE EINGABEDATEI\nDie Datei sieht nicht wie eine Lokalisierungsdatei (lang) aus: Alle Werte müssen Texte sein, aber {count} Einträge sind es nicht.\nErste betroffene Einträge:\n{entries}",
-    "no_translatables": "KEINE ÜBERSETZBAREN ELEMENTE GEFUNDEN\nDiese Datei enthält keine identifizierbaren übersetzbaren Elemente.\n\nBist du sicher, dass du den richtigen Eingabetyp ausgewählt hast:\n\"{babele}\" oder \"{localization}\"?\n\nDerzeit ausgewählt: {selected}",
-    "text_exceeds_batch_size": "ÜBERSETZBARER TEXT ÜBERSCHREITET MAX_BATCH_SIZE.\nÜbersetzbarer Text {id} enthält {size} Zeichen und überschreitet MAX_BATCH_SIZE={max}\nVorgeschlagene Lösung: Erhöhe die maximale Batch-Größe und bereite erneut vor.",
-    "llm_structure": "Die Antwort des LLM hat nicht die erwartete Struktur (ein JSON-Objekt mit einer Liste namens \"terms\").\nDas ausgewählte Modell ist möglicherweise für diese Aufgabe nicht geeignet. Setze den Prozess fort, um es erneut zu versuchen, oder wähle ein anderes Modell.",
-    "llm_term_invalid": "Die Antwort des LLM enthält einen Term ohne gültiges \"original\" und \"proposedTranslation\".\nDas ausgewählte Modell ist möglicherweise für diese Aufgabe nicht geeignet. Setze den Prozess fort, um es erneut zu versuchen, oder wähle ein anderes Modell."
+    "invalid_lang_file_values": "UNGÜLTIGE EINGABEDATEI\nDie Datei sieht nicht wie eine Lokalisierungsdatei (lang) aus: Alle Werte müssen Texte sein, aber {count} Einträge sind es nicht.\nErste fehlerhafte Einträge:\n{entries}",
+    "no_translatables": "KEINE ÜBERSETZBAREN ELEMENTE GEFUNDEN\nDiese Datei enthält keine identifizierbaren übersetzbaren Elemente.\n\nBist du sicher, dass du den richtigen Eingabetyp ausgewählt hast:\n„{babele}“ oder „{localization}“?\n\nDerzeit ausgewählt: {selected}",
+    "text_exceeds_batch_size": "ÜBERSETZBARER TEXT ÜBERSCHREITET MAX_BATCH_SIZE.\nÜbersetzbare {id} enthält {size} Zeichen und überschreitet MAX_BATCH_SIZE={max}\nVorgeschlagene Lösung: Erhöhe die maximale Stapelgröße und bereite die Datei erneut vor.",
+    "llm_structure": "Die Antwort des LLM hat nicht die erwartete Struktur (ein JSON-Objekt mit einer Liste namens „terms“).\nDas ausgewählte Modell ist möglicherweise für diese Aufgabe nicht geeignet. Setze den Prozess fort, um es erneut zu versuchen, oder wähle ein anderes Modell.",
+    "llm_term_invalid": "Die Antwort des LLM enthält einen Begriff ohne gültiges „original“ und „proposedTranslation“.\nDas ausgewählte Modell ist möglicherweise für diese Aufgabe nicht geeignet. Setze den Prozess fort, um es erneut zu versuchen, oder wähle ein anderes Modell.",
+    "resume_config_changed": "Die Einstellungen oder die Eingabedatei wurden seit der letzten Vorbereitung geändert:\n{changes}\nBitte klicke erneut auf „Vorbereiten“, bevor du startest."
   },
   "prompt": {
-    "unusual_lang_file_name": "\n=== UNGEWÖHNLICHER DATEINAME FÜR EINE LOKALISIERUNGSDATEI ===\nDie ausgewählte Datei heißt '{file}', aber Lokalisierungsdateien (lang) heißen normalerweise <Sprachcode>.json (z. B. en.json oder pt-BR.json).\nBist du sicher, dass dies eine Lokalisierungsdatei und keine Babele-Datei ist?\n[{yes}] Ja, trotzdem fortfahren.\n[{no}] Nein, abbrechen.",
-    "discard_progress": "\n=== EINSTELLUNGEN SEIT DEM LETZTEN AUSFÜHRUNGSDURCHLAUF GEÄNDERT ===\nDiese Einstellungen unterscheiden sich von denen des vorhandenen Fortschritts für diese Eingabedatei:\n{changes}\nSie können nicht auf einen bereits laufenden Prozess angewendet werden.\n[{yes}] Ja, vorhandenen Fortschritt verwerfen und mit den aktuellen Einstellungen neu beginnen.\n[{no}] Nein, Fortschritt beibehalten (stelle die vorherigen Einstellungen selbst wieder her und bereite erneut vor).",
-    "batch_nonfatal_errors": "Batch {batch}/{batches} enthält {count} Platzhalter-Übersetzungsfehler.\nKlicke auf '{show_log}', um die Details zu untersuchen.\n\nMöchtest du diesen Batch trotzdem behalten (die Fehler später als Prüfeinträge exportieren) oder verwerfen, damit er beim nächsten Durchlauf erneut versucht wird?",
-    "overwrite_terminology": "\n=== VORHANDENE TERMINOLOGIEDATEI WIRD ÜBERSCHRIEBEN ===\nFür diese Eingabedatei gibt es bereits eine Terminologiedatei:\n{file}\nSie wird durch eine frisch erstellte Terminologie ersetzt.\nAlle manuellen Änderungen, die du daran vorgenommen hast, gehen verloren!\nWenn du sie für fertig hältst, speichere sie an einem anderen Ort, bevor du fortfährst.\n[{yes}] Ja, überschreiben.\n[{no}] Nein, abbrechen (damit du die Datei zuerst verschieben kannst).",
-    "input_file_changed": "- INPUT_FILE: Inhalt wurde geändert"
+    "unusual_lang_file_name": "\n=== UNGEWÖHNLICHER DATEINAME FÜR EINE LOKALISIERUNGSDATEI ===\nDie ausgewählte Datei heißt „{file}“, aber Lokalisierungsdateien (lang) heißen normalerweise <Sprachcode>.json (z. B. en.json oder pt-BR.json).\nBist du sicher, dass es sich um eine Lokalisierungsdatei und nicht um eine Babele-Datei handelt?\n[{yes}] Ja, trotzdem fortfahren.\n[{no}] Nein, abbrechen.",
+    "discard_progress": "\n=== EINSTELLUNGEN SEIT DEM LETZTEN DURCHLAUF GEÄNDERT ===\nDiese Einstellungen unterscheiden sich von denen des vorhandenen Fortschritts für diese Eingabedatei:\n{changes}\nSie können nicht auf einen bereits laufenden Prozess angewendet werden.\n[{yes}] Vorhandenen Fortschritt verwerfen und mit den aktuellen Einstellungen neu beginnen.\n[{no}] Nein, Fortschritt beibehalten (vorherige Einstellungen selbst wiederherstellen und dann erneut vorbereiten).",
+    "batch_nonfatal_errors": "Stapel {batch}/{batches} enthält {count} Platzhalter-Übersetzungsfehler.\nKlicke auf „{show_log}“, um die Details zu untersuchen.\n\nMöchtest du diesen Stapel trotzdem behalten (wobei die Fehler später als Prüfeinträge exportiert werden), oder ihn verwerfen, damit er beim nächsten Durchlauf erneut versucht wird?",
+    "overwrite_terminology": "\n=== VORHANDENE TERMINOLOGIEDATEI WIRD ÜBERSCHRIEBEN ===\nFür diese Eingabedatei existiert bereits eine Terminologiedatei:\n{file}\nSie wird durch eine neu erstellte Terminologie ersetzt.\nAlle manuellen Änderungen, die du daran vorgenommen hast, gehen verloren!\nWenn du sie als endgültig betrachtest, speichere sie vor dem Fortfahren an einem anderen Ort.\n[{yes}] Ja, überschreiben.\n[{no}] Nein, abbrechen (damit du die Datei zuerst verschieben kannst).",
+    "input_file_changed": "- EINGABEDATEI: Inhalt wurde geändert"
   },
   "language": {
     "en": "Englisch",
@@ -160,25 +161,25 @@
     "settings": "Öffnet die Anwendungseinstellungen.",
     "input_file": "Wähle die zu übersetzende Datei aus: einen Babele-JSON-Export oder eine Foundry-Lokalisierungsdatei (lang/*.json).",
     "no_file_selected": "Noch keine Datei ausgewählt.",
-    "output_folder": "Hier werden die übersetzte Datei und die Prüfeinträge gespeichert. Standard: dein Benutzer-Datenordner.",
+    "output_folder": "Hier werden die übersetzte Datei und die Prüfeinträge gespeichert. Standard: dein Benutzerdatenordner.",
     "reset_output_folder": "Zum standardmäßigen Ausgabeordner zurückkehren.",
-    "input_type": "Welche Art von Datei du übersetzt. Dies ändert, wie Texte extrahiert werden und wie die Ausgabe benannt wird.",
+    "input_type": "Welche Art von Datei du übersetzt. Ändert, wie Texte extrahiert werden und wie die Ausgabe benannt wird.",
     "language": "Quell- und Zielsprache der Übersetzung.",
     "flavour": "Spielsystem und Genre. Sie beeinflussen Terminologie und Stil der KI-Übersetzung.",
-    "module_name": "Wird zur Benennung des Ausgabeordners und der Dateien verwendet. Wird aus der Eingabedatei und/oder ihrem Pfad abgeleitet. Bearbeite den Namen nach Bedarf. Bewährte Vorgehensweise: Benenne ihn genau nach der Modul-ID des Quellmods für Foundry VTT.",
-    "max_batch_size": "Maximale Zeichenanzahl pro einzelner KI-Anfrage. Größere Batches erfordern weniger Anfragen, können aber fehlschlagen, wenn sie die Grenzen überschreiten. Kleinere Batches sind ausfallsicherer (weniger Wiederholungen), können aber zusätzlichen Aufwand verursachen und die gesamte Verarbeitungszeit erhöhen.",
-    "review_terminology": "Stoppt, sobald die Terminologie vollständig ist, damit du sie nach Bedarf prüfen und bearbeiten kannst. Klicke dann auf Start, um fortzufahren. Die Option wird für jede neue Eingabedatei empfohlen und nach jedem Durchlauf automatisch deaktiviert.",
-    "simulate_only": "Simuliert alle KI-Anfragen ohne Kosten. Es wird nichts wirklich übersetzt, und der Fortschritt bleibt von echten Durchläufen getrennt.",
-    "prepare": "Analysiert die Eingabedatei und erstellt die Batches. Noch nichts wird an die KI gesendet.",
-    "start": "Startet (oder setzt) Terminologie und Übersetzung fort.",
-    "cancel": "Schließt den aktuellen Batch ab und stoppt dann. Der Fortschritt wird beibehalten, damit du später fortfahren kannst.",
-    "waiting": "Warte, bis der aktuelle Batch abgeschlossen ist. Danach wird der Durchlauf beendet.",
+    "module_name": "Wird zur Benennung des Ausgabeordners und der Dateien verwendet. Wird aus der Eingabedatei und/oder ihrem Pfad abgeleitet. Bearbeite den Namen nach Bedarf. Bewährte Vorgehensweise: Benenne ihn exakt nach der Modul-ID des Quellmods für Foundry VTT.",
+    "max_batch_size": "Maximale Zeichenanzahl pro einzelner KI-Anfrage. Größere Stapel benötigen weniger Anfragen, können aber fehlschlagen, wenn sie Grenzen überschreiten. Kleinere Stapel sind ausfallsicherer (weniger Wiederholungen), können aber zusätzlichen Aufwand verursachen und die gesamte Verarbeitungszeit erhöhen.",
+    "review_terminology": "Stoppt nach Abschluss der Terminologie, damit du sie nach Bedarf überprüfen und bearbeiten kannst. Klicke anschließend auf „Start“, um fortzufahren. Diese Option wird für jede neue Eingabedatei empfohlen und nach jedem Durchlauf automatisch deaktiviert.",
+    "simulate_only": "Simuliert alle KI-Anfragen ohne Kosten. Es wird nichts tatsächlich übersetzt, und der Fortschritt wird getrennt von echten Durchläufen gespeichert.",
+    "prepare": "Analysiert die Eingabedatei und erstellt die Stapel. Bisher wird noch nichts an die KI gesendet.",
+    "start": "Startet die Terminologie und Übersetzung oder setzt sie fort.",
+    "cancel": "Schließt den aktuellen Stapel ab und stoppt dann. Der Fortschritt wird gespeichert, damit du später fortfahren kannst.",
+    "waiting": "Warten auf den Abschluss des aktuellen Stapels. Danach wird der Durchlauf beendet.",
     "reconfigure": "Zurück zu den Einstellungen. Der vorhandene Fortschritt wird beibehalten.",
     "clear_terminology": "Verwirft die Terminologie dieser Eingabedatei. Sie wird beim nächsten Start neu erstellt.",
-    "clear_translation": "Verwirft alle Übersetzungen dieser Eingabedatei. Sie werden beim nächsten Start neu erstellt.",
+    "clear_translation": "Verwirft alle Übersetzungen dieser Eingabedatei. Sie werden beim nächsten Start erneut erstellt.",
     "show_review_items": "Öffnet die Liste der von dir akzeptierten Übersetzungsprobleme mit dem jeweiligen Kontext, damit du sie später von Hand beheben kannst.",
     "batch_icon": "{chars:,} Zeichen — {status}",
-    "pop_out_log": "Öffnet das Protokoll in einem eigenen Fenster, das während des Durchlaufs laufend aktualisiert wird.",
+    "pop_out_log": "Öffnet das Protokoll in einem eigenen Fenster, das während des Durchlaufs fortlaufend aktualisiert wird.",
     "help": "Versionsinformationen, Dokumentation und Möglichkeiten, dieses Projekt zu unterstützen."
   },
   "help": {
