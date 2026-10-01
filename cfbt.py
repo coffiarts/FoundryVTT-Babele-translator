@@ -1,13 +1,13 @@
-import cfbt_config as config
-import cfbt_translator as translator
-import cfbt_translator_dialogs as translator_dialogs
-import cfbt_ui_dialogs as ui_dialogs
-import cfbt_core_functions as fn
-import cfbt_i18n as i18n
-import cfbt_security as security
-import cfbt_settings as settings
-import cfbt_ui_widgets as ui_widgets
-#import cfbt_unit_tests as unit_tests
+import lib.cfbt_config as config
+import lib.cfbt_translator as translator
+import lib.cfbt_translator_dialogs as translator_dialogs
+import lib.cfbt_ui_dialogs as ui_dialogs
+import lib.cfbt_core_functions as fn
+import lib.cfbt_i18n as i18n
+import lib.cfbt_security as security
+import lib.cfbt_settings as settings
+import lib.cfbt_ui_widgets as ui_widgets
+#import lib.cfbt_unit_tests as unit_tests
 import queue
 import threading
 from pathlib import Path
