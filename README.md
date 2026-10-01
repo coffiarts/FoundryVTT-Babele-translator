@@ -76,7 +76,7 @@ If all the translation is done by AI anyway, why not just use DeepL, ChatGPT, or
 Because reliably translating a large, structured compendium is a different problem than translating chat text.
 Free/chat-based AI tools aren't built for the consistent, robust batch handling this requires — things like
 protecting technical labels and Foundry-specific syntax from being mistranslated, respecting provider rate/size
-limits, and recovering cleanly from unpredictable AI hiccups. See *Advanced Features* below for the details.
+limits, and recovering cleanly from unpredictable AI hiccups. See [Advanced Features](#advanced-features) below for the details.
 
 ## What's free:
 CFBT itself, fully — the application, its source code, and its UI.
@@ -111,7 +111,7 @@ Here's the whole journey from zero to a translated module, in order:
    module, and the piece that actually displays translated content in your game.
 2. **Export the compendium you want translated** as a Babele JSON file — this is the "translatable" that CFBT will
    work on. See Babele's own documentation (linked above) for how to do this.
-3. **Install CFBT** — see *Requirements & Installation* below.
+3. **Install CFBT** — see [Requirements & Installation](#requirements--installation) below.
 4. **Choose an LLM provider and get an API key** — e.g. for OpenAI, create one at
    [platform.openai.com/api-keys](https://platform.openai.com/api-keys). (You can also point CFBT at a local/self-hosted
    model server instead — see *Advanced Features*.)
@@ -122,8 +122,8 @@ Here's the whole journey from zero to a translated module, in order:
 
 - **Windows 10/11 (64-bit)** — no Python installation needed. CFBT *should* also run on Linux and macOS from
   source, though this hasn't been tested yet — feedback on that is warmly welcome!
-- Download the latest release `.zip` from the [GitHub Releases page](../../releases), and extract it anywhere on
-  your system. There's no installer, and nothing is written to the Windows registry.
+- Download file **[cfbt.zip](https://github.com/coffiarts/FoundryVTT-Babele-translator/releases/download/latest/cfbt.zip)** from the [latest release on GitHub](https://github.com/coffiarts/FoundryVTT-Babele-translator/releases/tag/latest)
+- extract it anywhere on your system. There's no installer, and nothing is written to the Windows registry.
 - Run `cfbt.exe` from the extracted folder to start CFBT.
 
 To uninstall, simply delete the extracted folder (your settings and API key are stored separately in your user
@@ -150,9 +150,10 @@ Before diving into the details, here's what CFBT actually does to your data — 
 ```json
 {
   "label": "Shadows Over Duskmere",
-  ...,
+  "aaa": "...",
   "entries": {
-    ..."Shadows Over Duskmere": {
+    "bbb": "...",
+    "Shadows Over Duskmere": {
       "name": "Shadows Over Duskmere",
       "description": "<p>See the <a href=\"https://example.com/notes\">campaign notes</a> for ongoing updates.</p><aside class=\"notable\"><p>The village of Duskmere has always kept its secrets close, but lately something darker stirs beneath its cobbled streets. Strangers have vanished without a trace, and the villagers whisper of a cult gathering strength in the old cairn outside town. It falls to the party to uncover what's really happening, before Duskmere loses more than it can bear.</p></aside><p>",
       "folders": {
@@ -182,7 +183,7 @@ Before diving into the details, here's what CFBT actually does to your data — 
         }
       }
     },
-    ...
+    "ccc": "..."
   }
 }
 ```
@@ -194,9 +195,9 @@ Note how both the JSON structure with its node and label names, as well as Found
 ```json
 {
   "label": "Ombres sur Duskmere",
-  ...,
+  "aaa": "...",
   "entries": {
-    ...,
+    "bbb": "...",
     "Shadows Over Duskmere": {
       "name": "Ombres sur Duskmere",
       "description": "<p>Consulte les <a href=\"https://example.com/notes\">notes de campagne</a> pour connaître les mises à jour régulières.</p><aside class=\"notable\"><p>Le village de Duskmere a toujours gardé ses secrets bien à l'abri, mais dernièrement, quelque chose de plus sombre s'agite sous ses rues pavées. Des inconnus ont disparu sans laisser de traces, et les villageois murmurent qu'un culte gagne en puissance dans le vieux cairn à l'extérieur du village. C'est au groupe d'aventuriers de découvrir ce qui se passe réellement, avant que Duskmere ne perde plus qu'il ne peut le supporter.</p></aside><p>",
@@ -227,7 +228,7 @@ Note how both the JSON structure with its node and label names, as well as Found
         }
       }
     },
-    ...
+    "ccc": "..."
   }
 }
 ```
@@ -238,9 +239,9 @@ Note how both the JSON structure with its node and label names, as well as Found
 ```json
 {
   "label": "Schatten über Duskmere",
-  ...,
+  "aaa": "...",
   "entries": {
-    ...,
+    "bbb": "...",
     "Shadows Over Duskmere": {
       "name": "Schatten über Duskmere",
       "description": "<p>Sieh in den <a href=\"https://example.com/notes\">Kampagnenotizen</a> nach, um laufende Aktualisierungen zu erhalten.</p><aside class=\"notable\"><p>Das Dorf Duskmere hat seine Geheimnisse schon immer für sich behalten, doch seit Kurzem regt sich etwas Dunkleres unter seinen kopfsteingepflasterten Straßen. Fremde sind spurlos verschwunden, und die Dorfbewohner flüstern von einem Kult, der im alten Steinhügel außerhalb des Ortes an Stärke gewinnt. Es liegt an der Abenteurergruppe, herauszufinden, was wirklich geschieht, bevor Duskmere mehr verliert, als es verkraften kann.</p></aside><p>",
@@ -271,7 +272,7 @@ Note how both the JSON structure with its node and label names, as well as Found
         }
       }
     },
-    ...
+    "ccc": "..."
   }
 }
 ```
