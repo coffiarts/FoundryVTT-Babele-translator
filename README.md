@@ -23,7 +23,7 @@ compendium exports — or a Foundry module's own localization files — into oth
 CFBT is free and always will be. If it saved you time (or your sanity), consider buying my Babelfish some food 🐠
 
 [![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/coffiarts) &nbsp;
-[![GitHub Sponsors](docs/img/Github-sponsor.png)](https://github.com/sponsors/coffiarts)
+[![GitHub Sponsors](docs/img/github-sponsor.png)](https://github.com/sponsors/coffiarts)
 
 No obligation, no perks, no strings attached — just a nice gesture if it made your life easier.
 
