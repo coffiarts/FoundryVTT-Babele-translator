@@ -16,6 +16,10 @@ CFBT is a free, open-source desktop tool that translates [Babele](https://foundr
 compendium exports — or a Foundry module's own localization files — into other languages, using an LLM of your choice
 (e.g. OpenAI, or your own local/remote model server) to do the actual translation work.
 
+**Two independent modes:**
+- **Translating a compendium?** → you'll need [Babele](https://foundryvtt.com/packages/babele/) installed in Foundry to actually see the translated content in-game.
+- **Translating a module's own UI text instead** (`lang/*.json`)? → no Babele involved at all — CFBT handles Foundry's native localization files directly.
+
 ![App screenshot main ("fantasy" theme)](docs/img/readme-screenshot-theme-fantasy.jpg)
 
 ## Support This Project
@@ -60,6 +64,7 @@ No obligation, no perks, no strings attached — just a nice gesture if it made 
   - [Tweaking Prompt Instructions](#tweaking-prompt-instructions)
   - [Building Your Own Package](#building-your-own-package)
 - [Development Notes](#development-notes)
+
 
 ## What CFBT is:
 A guided, review-friendly workflow around an LLM translation call — terminology extraction first,
@@ -107,14 +112,13 @@ guarantee, but as long as you use the tool reasonably, the cost shouldn't be a c
 
 Here's the whole journey from zero to a translated module, in order:
 
-1. **Install [Babele](https://foundryvtt.com/packages/babele/)** into your Foundry VTT installation — it's a free
-   module, and the piece that actually displays translated content in your game.
+1. **If you're translating a Babele compendium export**, install [Babele](https://foundryvtt.com/packages/babele/) into your Foundry VTT installation first — it's a free module, and the piece that actually displays translated content in your game. (Skip this step if you're translating only your module's own localization file instead — no Babele needed.)
 2. **Export the compendium you want translated** as a Babele JSON file — this is the "translatable" that CFBT will
    work on. See Babele's own documentation (linked above) for how to do this.
 3. **Install CFBT** — see [Requirements & Installation](#requirements--installation) below.
 4. **Choose an LLM provider and get an API key** — e.g. for OpenAI, create one at
    [platform.openai.com/api-keys](https://platform.openai.com/api-keys). (You can also point CFBT at a local/self-hosted
-   model server instead — see *Advanced Features*.)
+   model server instead — see [Advanced Features](#advanced-features) .)
 5. **Start CFBT** and follow the detailed steps below: register your API key in Settings, pick your translatable
    input file and output folder, run the translation, and reintegrate the result back into Foundry.
 
@@ -128,7 +132,7 @@ Here's the whole journey from zero to a translated module, in order:
 
 To uninstall, simply delete the extracted folder (your settings and API key are stored separately in your user
 profile, so they won't be removed with it). If you'd rather run CFBT from Python source instead of the packaged
-build, see *Advanced Features* below.
+build, see [Advanced Features](#advanced-features)  below.
 
 ## Choose Your UI Theme!
 
