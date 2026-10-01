@@ -112,14 +112,12 @@ guarantee, but as long as you use the tool reasonably, the cost shouldn't be a c
 
 Here's the whole journey from zero to a translated module, in order:
 
-1. **If you're translating a Babele compendium export**, install [Babele](https://foundryvtt.com/packages/babele/) into your Foundry VTT installation first — it's a free module, and the piece that actually displays translated content in your game. (Skip this step if you're translating only your module's own localization file instead — no Babele needed.)
-2. **Export the compendium you want translated** as a Babele JSON file — this is the "translatable" that CFBT will
-   work on. See Babele's own documentation (linked above) for how to do this.
-3. **Install CFBT** — see [Requirements & Installation](#requirements--installation) below.
-4. **Choose an LLM provider and get an API key** — e.g. for OpenAI, create one at
+1. **If you're translating a Babele compendium export**, install [Babele](https://foundryvtt.com/packages/babele/) into your Foundry VTT installation first — it's a free module, and the piece that actually displays translated content in your game. (Skip this step if you're translating only your module's own localization file instead — no Babele needed.). Export the compendium you want translated as a Babele JSON file — this is the "translatable" that CFBT will work on. See Babele's own documentation (linked above) for how to do this.
+2. **Install CFBT** — see [Requirements & Installation](#requirements--installation) below
+3. **Choose an LLM provider and get an API key** — e.g. for OpenAI, create one at
    [platform.openai.com/api-keys](https://platform.openai.com/api-keys). (You can also point CFBT at a local/self-hosted
    model server instead — see [Advanced Features](#advanced-features) .)
-5. **Start CFBT** and follow the detailed steps below: register your API key in Settings, pick your translatable
+4. **Start CFBT** and follow the detailed steps below: register your API key in Settings, pick your translatable
    input file and output folder, run the translation, and reintegrate the result back into Foundry.
 
 ## Requirements & Installation
